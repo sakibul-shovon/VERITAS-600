@@ -1,0 +1,48 @@
+{
+  "watchlist": [
+    {
+      "entity_id": "sanct-ent-001",
+      "lookup_name": "Northern Petrochemical Holdings",
+      "matched_name": "Northern Petrochemical Holdings Ltd",
+      "entity_type": "company",
+      "parent_company_name": "Petro-State Industrial Corp",
+      "sanction_program": "OFAC-SDN / EO 13846",
+      "risk_score": 9.8,
+      "country": "IR",
+      "notes": "Direct parent entity of Eurasia Pipeline Valves Ltd (Notify Party)"
+    },
+    {
+      "entity_id": "sanct-ent-002",
+      "lookup_name": "Eurasia Pipeline Valves Ltd",
+      "matched_name": "Eurasia Pipeline Valves Ltd",
+      "entity_type": "company",
+      "parent_company_name": "Northern Petrochemical Holdings Ltd",
+      "sanction_program": "OFAC-SDN / Secondary Sanctions Rule 50 Percent",
+      "risk_score": 9.5,
+      "country": "AE",
+      "notes": "Notify party controlled by sanctioned parent"
+    },
+    {
+      "entity_id": "sanct-ves-001",
+      "lookup_name": "Pacific Star",
+      "matched_name": "M/V PACIFIC STAR",
+      "entity_type": "vessel",
+      "parent_company_name": "Dark Maritime Fleets Co",
+      "sanction_program": "OFAC Maritime Advisory / Vessel Freeze",
+      "risk_score": 8.9,
+      "country": "PA",
+      "notes": "Carrying vessel flagged for illicit transshipment"
+    },
+    {
+      "entity_id": "sanct-ent-003",
+      "lookup_name": "Red Sea Logistics Corp",
+      "matched_name": "Red Sea Logistics Corporation",
+      "entity_type": "company",
+      "parent_company_name": "Horn Trading Conglomerate",
+      "sanction_program": "EU Restrictive Measures / Annex I",
+      "risk_score": 7.8,
+      "country": "YE",
+      "notes": "Designated freight forwarding front"
+    }
+  ]
+}

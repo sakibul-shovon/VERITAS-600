@@ -1,0 +1,67 @@
+{
+  "master": {
+    "lc_id": "LC-2026-8841",
+    "swift_mt700_raw": ":27: 1/1\n:40A: IRREVOCABLE\n:20: LC-2026-8841\n:31C: 260901\n:31D: 261115 SINGAPORE\n:50: PACIFIC HEAVY MACHINERY PTE LTD, 82 SHENTON WAY, SINGAPORE 079120\n:59: ROTOR DYNAMICS GMBH, INDUSTRIESTRASSE 45, 70565 STUTTGART GERMANY\n:32B: USD 240000,00\n:39A: 0/0\n:44A: HAMBURG, GERMANY\n:44B: SINGAPORE\n:44C: 261010\n:45A: 500 UNITS INDUSTRIAL AC SERVO MACHINE MODEL X-200 AT USD 480.00 PER UNIT CIF SINGAPORE\n:46A: 1. SIGNED COMMERCIAL INVOICE IN 3 COPIES\n2. FULL SET CLEAN ON BOARD OCEAN BILLS OF LADING CONSIGNED TO ORDER OF ISSUING BANK\n3. PACKING LIST IN 2 COPIES\n4. INSURANCE POLICY COVERING ALL RISKS FOR 110PCT CIF VALUE\n:47A: ALL DOCUMENTS MUST MENTION LC NUMBER\n:48: 21 DAYS AFTER SHIPMENT DATE\n:49: WITHOUT",
+    "issuing_bank": "Global Trade Bank Singapore",
+    "applicant_name": "Pacific Heavy Machinery Pte Ltd",
+    "applicant_address_strict": "82 Shenton Way, Singapore 079120",
+    "beneficiary_name": "Rotor Dynamics GmbH",
+    "currency": "USD",
+    "amount": 240000.0,
+    "tolerance_pct": 0.0,
+    "incoterm": "CIF",
+    "hs_code_6": "8501.10",
+    "goods_description_strict": "500 UNITS INDUSTRIAL AC SERVO MACHINE MODEL X-200 AT USD 480.00 PER UNIT CIF SINGAPORE",
+    "unit_price": 480.0,
+    "quantity": 500,
+    "port_of_loading": "Hamburg, Germany",
+    "port_of_discharge": "Singapore",
+    "latest_shipment_date": "2026-10-10",
+    "expiry_date": "2026-11-15",
+    "presentation_period_days": 21,
+    "insurance_min_pct": 110.0,
+    "daily_demurrage_usd": 1850.0
+  },
+  "amendments": [
+    {
+      "amendment_id": "AMD-8841-01",
+      "lc_id": "LC-2026-8841",
+      "sequence_no": 1,
+      "amended_field": "latest_shipment_date",
+      "old_value": "2026-10-10",
+      "new_value": "2026-10-18",
+      "beneficiary_acceptance_status": "ACCEPTED",
+      "effective_date": "2026-09-25"
+    },
+    {
+      "amendment_id": "AMD-8841-02",
+      "lc_id": "LC-2026-8841",
+      "sequence_no": 2,
+      "amended_field": "port_of_discharge",
+      "old_value": "Singapore",
+      "new_value": "Jurong Port, Singapore",
+      "beneficiary_acceptance_status": "UNACCEPTED_PENDING",
+      "effective_date": "2026-10-02"
+    }
+  ],
+  "presentation": {
+    "invoice_no": "INV-2026-771",
+    "invoice_amount": 240000.0,
+    "invoice_unit_price": 480.0,
+    "invoice_quantity": 500,
+    "invoice_goods_description": "500 UNITS INDUSTRIAL AC SERVO MASHINE MODEL X-200",
+    "bl_no": "MEDU987654321",
+    "bl_goods_description": "INDUSTRIAL SERVO MOTORS",
+    "bl_on_board_date": "2026-10-16",
+    "bl_vessel": "EVER GLORY",
+    "bl_notify_party": "Pacific Heavy Machinery Pte Ltd, 82 Shenton Way, Singapore 079120",
+    "packing_gross_weight_kg": 18450.0,
+    "bl_gross_weight_kg": 18450.0,
+    "insurance_doc_type": "Insurance Certificate",
+    "insurance_amount": 264000.0,
+    "insurance_effective_date": "2026-10-14",
+    "presentation_date": "2026-10-24"
+  },
+  "target_verdict": "APPROVE_HONOUR",
+  "primary_citation": "ISBP 745 Para A23 & UCP 600 Art. 14(e)"
+}

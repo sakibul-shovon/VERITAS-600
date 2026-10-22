@@ -1,0 +1,72 @@
+[
+  {
+    "lc_id": "LC-EVAL-0004",
+    "title": "Prohibited Cover Note Rejection",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "insurance_doc_type": "Cover Note",
+    "target_verdict": "ISSUE_MT734_REFUSAL",
+    "citation": "UCP 600 Art. 28(c)"
+  },
+  {
+    "lc_id": "LC-EVAL-0005",
+    "title": "Late Presentation (>21 Days After Shipment)",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "shipment_date": "2026-09-01",
+    "presentation_date": "2026-09-25",
+    "target_verdict": "ISSUE_MT734_REFUSAL",
+    "citation": "UCP 600 Art. 14(c)"
+  },
+  {
+    "lc_id": "LC-EVAL-0006",
+    "title": "Consignee Address Mismatch on B/L",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "consignee_box_address": "Wrong Address 99 Orchard Road, Singapore",
+    "target_verdict": "ISSUE_MT734_REFUSAL",
+    "citation": "UCP 600 Art. 14(j)"
+  },
+  {
+    "lc_id": "LC-EVAL-0007",
+    "title": "Partial Amendment Acceptance (Prohibited)",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "partial_amendment": true,
+    "target_verdict": "ISSUE_MT734_REFUSAL",
+    "citation": "UCP 600 Art. 10(e)"
+  },
+  {
+    "lc_id": "LC-EVAL-0008",
+    "title": "Valid Quantity Tolerance (+/- 5%)",
+    "hs_code": "5205.12",
+    "unit_price": 3.2,
+    "amount": 460800.0,
+    "quantity_actual": 144000,
+    "target_verdict": "APPROVE_HONOUR",
+    "citation": "UCP 600 Art. 30(b)"
+  },
+  {
+    "lc_id": "LC-EVAL-0009",
+    "title": "Invoice Missing Mandatory Model Spec",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "invoice_goods": "Industrial Machine (Model omitted)",
+    "target_verdict": "ISSUE_MT734_REFUSAL",
+    "citation": "UCP 600 Art. 18(c)"
+  },
+  {
+    "lc_id": "LC-EVAL-0010",
+    "title": "Clean Presentation with Implicit Art. 10(c) Acceptance",
+    "hs_code": "8501.10",
+    "unit_price": 480.0,
+    "amount": 240000.0,
+    "target_verdict": "APPROVE_HONOUR",
+    "citation": "UCP 600 Art. 10(c)"
+  }
+]

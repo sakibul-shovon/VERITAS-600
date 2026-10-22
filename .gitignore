@@ -52,6 +52,7 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
+*.duckdb
 data/pgdata/
 data/redis/
 

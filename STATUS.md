@@ -11,25 +11,29 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 1: Sponsor Preflight, Data Seeding & Zetaris Federation** |
-| **Overall Progress** | **20% Complete** (Phase 0 100% Complete & Verified, Phase 1 Underway) |
-| **Active Task** | Generate `hs_benchmarks.parquet`, `watchlist_entities.json`, and `seed_scenarios.py` |
+| **Current Phase** | **Phase 2: Stateful Amendment Memory & Deterministic UCP 600 Engine** |
+| **Overall Progress** | **35% Complete** (Phases 0 & 1 Complete & Verified, Phase 2 Underway) |
+| **Active Task** | Implement `apps/api/engines/ucp600_deterministic.py` and `apps/api/memory/amendment_memory.py` |
 | **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Seed Phase 1 data files and implement `apps/api/zetaris/client.py`** |
+| **Next Action Item** | **Implement UCP 600 deterministic engine & stateful amendment memory with 100% tests** |
 
 ```
-[████░░░░░░░░░░░░░░░░] 20% (Phase 0 Complete, Phase 1 Underway)
+[███████░░░░░░░░░░░░░] 35% (Phase 0 & 1 Complete, Phase 2 Underway)
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** Create `apps/api/db/seed_scenarios.py` to seed:
-   - Data files: `data/customs_parquet/hs_benchmarks.parquet` and `data/opensanctions/watchlist_entities.json`.
-   - The 3 Golden Scenarios (`LC-2026-8841`, `LC-2026-9104`, `LC-2026-9920`) and 7 eval cases into PostgreSQL/DuckDB.
-2. **Step 2:** Implement `apps/api/zetaris/client.py` with dual-mode execution (`LIVE_ZETARIS` vs. `LOCAL_DUCKDB_FALLBACK`).
-3. **Step 3:** Run Verification Gate 1: `.venv\Scripts\pytest.exe apps/api/tests/test_zetaris_sql.py -v`.
+1. **Step 1:** Implement [apps/api/memory/amendment_memory.py](file:///h:/Projects/VERITAS-600/apps/api/memory/amendment_memory.py):
+   - State tuple parser for MT700 clauses and MT707 amendments.
+   - Enforce UCP 600 Art. 10(c) & 10(e) rules (ACCEPTED merged, UNACCEPTED quarantined, partial acceptance blocked).
+2. **Step 2:** Implement [apps/api/engines/ucp600_deterministic.py](file:///h:/Projects/VERITAS-600/apps/api/engines/ucp600_deterministic.py):
+   - Python calendar math (Art. 6(d)(i), Art. 14(c), Art. 20(a)(ii)).
+   - Amount tolerances (+/-5% under Art. 30(b), limit under Art. 18(b)).
+   - Insurance math: >= 110% CIF/CIP under Art. 28(f)(ii), Cover Note check (Art. 28(c)).
+   - Weight cross-checks (Art. 14(d)).
+3. **Step 3:** Run Verification Gate 2: `.venv\Scripts\pytest.exe apps/api/tests/test_deterministic.py apps/api/tests/test_amendment_memory.py -v`.
 
 ---
 
@@ -49,20 +53,20 @@
 
 ---
 
-### Phase 1: Sponsor Preflight, Data Seeding & Join-Safe Zetaris Federation ⏳ [IN PROGRESS]
+### Phase 1: Sponsor Preflight, Data Seeding & Join-Safe Zetaris Federation ✅ [COMPLETED & VERIFIED]
 - [x] Create `docker-compose.yml` (Postgres 16 on port 5432, Redis 7 on port 6379).
-- [x] Create `apps/api/` FastAPI project skeleton (`requirements.txt`, `config.py`).
+- [x] Create `apps/api/` FastAPI project skeleton (`requirements.txt`, `config.py`, `pyproject.toml`).
 - [x] Implement `apps/api/db/schema.sql` (Tables: `lc_master`, `lc_amendments`, `examination_audit_log`).
 - [x] Write `apps/api/zetaris/sql/federated_check.sql` with CTE pre-aggregation.
-- [ ] Create synthetic benchmark dataset `data/customs_parquet/hs_benchmarks.parquet` (HS-8481.80, HS-8501.10, HS-5205.12).
-- [ ] Create watchlist dataset `data/opensanctions/watchlist_entities.json` (Sanctioned vessels, parent companies).
-- [ ] Implement `apps/api/db/seed_scenarios.py` with the 3 Golden Scenarios + 7 eval cases.
-- [ ] Implement `apps/api/zetaris/client.py` (Zetaris API client + DuckDB local standby).
-- [ ] **Verification Gate 1:** `pytest apps/api/tests/test_zetaris_sql.py` passes (guarantees exactly 1 row per LC, execution < 1.5s).
+- [x] Create synthetic benchmark dataset `data/customs_parquet/hs_benchmarks.parquet` (HS-8481.80, HS-8501.10, HS-5205.12).
+- [x] Create watchlist dataset `data/opensanctions/watchlist_entities.json` (Sanctioned vessels, parent companies).
+- [x] Implement `apps/api/db/seed_scenarios.py` with the 3 Golden Scenarios + 7 eval cases.
+- [x] Implement `apps/api/zetaris/client.py` (Zetaris API client + DuckDB local standby).
+- [x] **Verification Gate 1:** `pytest apps/api/tests/test_zetaris_sql.py` passes (guarantees exactly 1 row per LC, execution < 1.5s).
 
 ---
 
-### Phase 2: Stateful Amendment Memory & Deterministic UCP 600 Engine ⬜ [PENDING]
+### Phase 2: Stateful Amendment Memory & Deterministic UCP 600 Engine ⏳ [IN PROGRESS]
 - [ ] Implement `apps/api/memory/amendment_memory.py`:
   - Parses MT700 base terms and MT707 amendments.
   - Enforces **UCP 600 Art. 10(c) & 10(e)** state transitions:

@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS lc_master (
 
 CREATE TABLE IF NOT EXISTS lc_amendments (
     amendment_id VARCHAR(32) PRIMARY KEY,
-    lc_id VARCHAR(32) REFERENCES lc_master(lc_id) ON DELETE CASCADE,
+    lc_id VARCHAR(32) REFERENCES lc_master(lc_id),
     sequence_no INTEGER NOT NULL,
     amended_field VARCHAR(64) NOT NULL,
     old_value TEXT NOT NULL,
@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS examination_audit_log (
     active_terms_sha256 VARCHAR(64) NOT NULL,
     zetaris_execution_mode VARCHAR(32) NOT NULL, -- 'LIVE_ZETARIS' or 'LOCAL_DUCKDB_FALLBACK'
     zetaris_query_ms INTEGER NOT NULL,
-    deterministic_result JSONB NOT NULL,
-    neural_adjudication_result JSONB NOT NULL,
+    deterministic_result JSON NOT NULL,
+    neural_adjudication_result JSON NOT NULL,
     recommended_action VARCHAR(48) NOT NULL,     -- 'APPROVE_HONOUR', 'ISSUE_MT734_REFUSAL', 'COMPLIANCE_HOLD_AML'
     human_approved_by VARCHAR(128) NULL,
     human_approved_at TIMESTAMPTZ NULL,
