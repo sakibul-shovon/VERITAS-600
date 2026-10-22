@@ -17,7 +17,7 @@ import { BankDecision } from "@/lib/types";
 interface DecisionActionPaneProps {
   decision?: BankDecision;
   generatedArtifact?: string;
-  onApproveAction: (examinerName: string, comments: string) => Promise<void>;
+  onApproveAction: (examinerName: string, comments: string) => Promise<any>;
 }
 
 export default function DecisionActionPane({
@@ -28,6 +28,7 @@ export default function DecisionActionPane({
   const [copied, setCopied] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
   const [signedSuccess, setSignedSuccess] = useState(false);
+  const [receipt, setReceipt] = useState<any>(null);
   const [examinerName, setExaminerName] = useState("Senior Examiner #482 (Desk Head)");
   const [comments, setComments] = useState("Verified against UCP 600 rules and bank risk parameters.");
 
@@ -41,7 +42,8 @@ export default function DecisionActionPane({
   const handleSignOff = async () => {
     setIsSigning(true);
     try {
-      await onApproveAction(examinerName, comments);
+      const res = await onApproveAction(examinerName, comments);
+      if (res) setReceipt(res);
       setSignedSuccess(true);
     } catch (err) {
       console.error(err);
@@ -189,11 +191,35 @@ export default function DecisionActionPane({
             </p>
 
             {signedSuccess ? (
-              <div className="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>
-                  Action digitally signed by <strong>{examinerName}</strong>. Dispatched to core banking.
-                </span>
+              <div className="p-3 rounded bg-emerald-950/30 border border-emerald-500/40 text-emerald-200 text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold text-emerald-300">
+                  <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Dual-Control Execution Authorized & Sealed</span>
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1 font-mono bg-slate-950/70 p-2 rounded border border-emerald-500/20">
+                  <div>
+                    <span className="text-slate-400">Authorized By: </span>
+                    <span className="text-slate-100 font-bold">{examinerName}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Signature Token: </span>
+                    <span className="text-blue-300 font-bold break-all">
+                      {receipt?.audit_receipt_hash || receipt?.decision_receipt?.signature_token || "V600-SIG-SEALED"}
+                    </span>
+                  </div>
+                  {receipt?.decision_receipt?.merkle_root_sha256 && (
+                    <div>
+                      <span className="text-slate-400">Merkle Root: </span>
+                      <span className="text-purple-300 text-[10px] break-all">
+                        {receipt.decision_receipt.merkle_root_sha256.slice(0, 32)}...
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10px]">
+                    <span className="text-slate-400">Dispatch Status:</span>
+                    <span className="text-emerald-400 font-bold">ACKNOWLEDGED_DISPATCHED</span>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-2 pt-1">

@@ -84,15 +84,16 @@ export default function TerminalPage() {
   };
 
   const handleApproveAction = async (examinerName: string, comments: string) => {
-    await approveHumanAction(selectedLcId, examinerName, comments);
+    const res = await approveHumanAction(selectedLcId, examinerName, comments);
     if (decision) {
       setDecision({
         ...decision,
         action_status: "APPROVED",
         human_approved_by: examinerName,
-        human_approved_at: new Date().toISOString(),
+        human_approved_at: res.human_approved_at || new Date().toISOString(),
       });
     }
+    return res;
   };
 
   return (

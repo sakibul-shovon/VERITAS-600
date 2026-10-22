@@ -26,10 +26,21 @@ or other automated processes.</purpose><file_format>The content is organized as 
 - Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Files are sorted by Git change count (files with more changes are at the bottom)</notes></file_summary><directory_structure>apps/
   api/
+    audit/
+      __init__.py
+      canonical_json.py
+      hash_chain.py
+      merkle.py
+      verifier.py
     db/
       __init__.py
       schema.sql
       seed_scenarios.py
+    domain/
+      __init__.py
+      decisions.py
+      evidence.py
+      money.py
     engines/
       __init__.py
       artifact_generator.py
@@ -47,9 +58,13 @@ or other automated processes.</purpose><file_format>The content is organized as 
     memory/
       __init__.py
       amendment_memory.py
+    rulepacks/
+      __init__.py
+      ucp600_rules.py
     tests/
       __init__.py
       test_amendment_memory.py
+      test_audit_merkle.py
       test_deterministic.py
       test_end_to_end.py
       test_evals_baseline.py
@@ -82,7 +97,288 @@ docs/
   plan.md
 AGENTS.md
 README.md
-STATUS.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/api/db/__init__.py"></file><file path="apps/api/engines/__init__.py"></file><file path="apps/api/engines/artifact_generator.py">class ArtifactGenerator
+STATUS.md</directory_structure><files>This section contains the contents of the repository&apos;s files.<file path="apps/api/audit/__init__.py">__all__ = [</file><file path="apps/api/audit/canonical_json.py">def _canonical_default(o: Any) -&gt; Any
+⋮----
+def canonicalize_json(data: Any) -&gt; str
+⋮----
+def canonical_sha256(data: Any) -&gt; str
+⋮----
+raw = canonicalize_json(data).encode(&quot;utf-8&quot;)</file><file path="apps/api/audit/hash_chain.py">@dataclass
+class ChainEvent
+⋮----
+sequence_no: int
+event_type: str
+stage_id: Optional[str]
+payload: Dict[str, Any]
+prev_hash: str
+event_hash: str
+timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+⋮----
+canonical_p = canonicalize_json(payload)
+header = f&quot;{sequence_no}:{event_type}:{stage_id or &apos;&apos;}:{prev_hash}:{canonical_p}&quot;
+event_hash = hashlib.sha256(header.encode(&quot;utf-8&quot;)).hexdigest()
+⋮----
+class RunHashChain
+⋮----
+&quot;&quot;&quot;Maintains an append-only hash chain of examination events.&quot;&quot;&quot;
+⋮----
+GENESIS_HASH = &quot;0&quot; * 64
+⋮----
+def __init__(self, run_id: str)
+⋮----
+@property
+    def latest_hash(self) -&gt; str
+⋮----
+def append_event(self, event_type: str, payload: Dict[str, Any], stage_id: Optional[str] = None) -&gt; ChainEvent
+⋮----
+seq = len(self.events) + 1
+prev = self.latest_hash
+event = ChainEvent.create(
+⋮----
+def verify_integrity(self) -&gt; bool
+⋮----
+&quot;&quot;&quot;Verify that every event correctly links to its predecessor.&quot;&quot;&quot;
+expected_prev = self.GENESIS_HASH
+⋮----
+# Recompute hash
+canonical_p = canonicalize_json(event.payload)
+header = f&quot;{event.sequence_no}:{event.event_type}:{event.stage_id or &apos;&apos;}:{event.prev_hash}:{canonical_p}&quot;
+expected_hash = hashlib.sha256(header.encode(&quot;utf-8&quot;)).hexdigest()
+⋮----
+expected_prev = event.event_hash
+⋮----
+def to_list(self) -&gt; List[Dict[str, Any]]</file><file path="apps/api/audit/merkle.py">class MerkleTree
+⋮----
+def __init__(self, leaves: List[str])
+⋮----
+def _hash_leaf(self, hex_digest: str) -&gt; bytes
+⋮----
+def _hash_internal(self, left: bytes, right: bytes) -&gt; bytes
+⋮----
+def _build_tree(self) -&gt; None
+⋮----
+current = [self._hash_leaf(leaf) for leaf in self.raw_leaves]
+⋮----
+next_level: List[bytes] = []
+⋮----
+left = current[i]
+⋮----
+right = current[i + 1]
+⋮----
+right = left
+⋮----
+current = next_level
+⋮----
+@property
+    def root_hex(self) -&gt; str
+⋮----
+def get_proof(self, index: int) -&gt; List[Tuple[str, str]]
+⋮----
+proof: List[Tuple[str, str]] = []
+idx = index
+⋮----
+is_right = (idx % 2 == 1)
+sibling_idx = idx - 1 if is_right else idx + 1
+⋮----
+sibling = level[sibling_idx].hex()
+⋮----
+sibling = level[idx].hex()
+⋮----
+@staticmethod
+    def verify_proof(leaf_hex: str, proof: List[Tuple[str, str]], expected_root_hex: str) -&gt; bool
+⋮----
+current = hashlib.sha256(b&quot;\x00&quot; + bytes.fromhex(leaf_hex)).digest()
+⋮----
+sibling = bytes.fromhex(sibling_hex)
+⋮----
+current = hashlib.sha256(b&quot;\x01&quot; + sibling + current).digest()
+⋮----
+current = hashlib.sha256(b&quot;\x01&quot; + current + sibling).digest()</file><file path="apps/api/audit/verifier.py">class AuditVerifier
+⋮----
+sig_payload = f&quot;{run_id}:{lc_id}:{action}:{decision_sha256}:{merkle_root_sha256}:{signer_name}:{signed_at_utc}&quot;
+expected_token = f&quot;V600-SIG-{hashlib.sha256(sig_payload.encode(&apos;utf-8&apos;)).hexdigest()[:24].upper()}&quot;
+⋮----
+&quot;&quot;&quot;Verify that a specific evidence item is included in the Merkle tree.&quot;&quot;&quot;</file><file path="apps/api/domain/__init__.py">__all__ = [</file><file path="apps/api/domain/decisions.py">class ActionType(str, Enum)
+⋮----
+APPROVE_HONOUR = &quot;APPROVE_HONOUR&quot;
+ISSUE_MT734_REFUSAL = &quot;ISSUE_MT734_REFUSAL&quot;
+COMPLIANCE_HOLD_AML = &quot;COMPLIANCE_HOLD_AML&quot;
+⋮----
+class AuthorityLevel(str, Enum)
+⋮----
+MAKER = &quot;MAKER&quot;
+CHECKER = &quot;CHECKER&quot;
+DESK_HEAD = &quot;DESK_HEAD&quot;
+COMPLIANCE_OFFICER = &quot;COMPLIANCE_OFFICER&quot;
+⋮----
+class DispatchStatus(str, Enum)
+⋮----
+PENDING_APPROVAL = &quot;PENDING_APPROVAL&quot;
+APPROVED_QUEUED = &quot;APPROVED_QUEUED&quot;
+ACKNOWLEDGED_DISPATCHED = &quot;ACKNOWLEDGED_DISPATCHED&quot;
+⋮----
+@dataclass
+class DecisionReceipt
+⋮----
+run_id: str
+lc_id: str
+action: ActionType
+decision_sha256: str
+merkle_root_sha256: str
+signer_name: str
+signer_role: AuthorityLevel
+signed_at_utc: str
+dispatch_status: DispatchStatus
+outbox_receipt_id: str
+signature_token: str
+discrepancy_count: int
+regulatory_hold_active: bool
+⋮----
+signed_at = datetime.now(timezone.utc).isoformat()
+sig_payload = f&quot;{run_id}:{lc_id}:{action.value}:{decision_sha256}:{merkle_root_sha256}:{signer_name}:{signed_at}&quot;
+sig_token = f&quot;V600-SIG-{hashlib.sha256(sig_payload.encode(&apos;utf-8&apos;)).hexdigest()[:24].upper()}&quot;
+outbox_id = f&quot;OUTBOX-{lc_id}-{datetime.now(timezone.utc).strftime(&apos;%y%m%d%H%M%S&apos;)}&quot;
+⋮----
+def to_dict(self) -&gt; Dict[str, Any]</file><file path="apps/api/domain/evidence.py">@dataclass
+class BoundingBox
+⋮----
+ymin: int
+xmin: int
+ymax: int
+xmax: int
+⋮----
+def to_list(self) -&gt; List[int]
+⋮----
+@classmethod
+    def from_list(cls, coords: List[int]) -&gt; BoundingBox
+⋮----
+@dataclass
+class EvidenceRecord
+⋮----
+evidence_id: str
+field_key: str
+source_document: str
+raw_value: Any
+normalized_value: Any
+confidence: float
+bounding_box: List[int]
+source_digest_sha256: str
+timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+⋮----
+def compute_sha256(self) -&gt; str
+⋮----
+canonical_str = (
+⋮----
+def to_dict(self) -&gt; Dict[str, Any]
+⋮----
+@dataclass
+class EvidenceManifest
+⋮----
+run_id: str
+lc_id: str
+records: List[EvidenceRecord] = field(default_factory=list)
+⋮----
+def add_record(self, record: EvidenceRecord) -&gt; None
+⋮----
+def leaf_hashes(self) -&gt; List[str]</file><file path="apps/api/domain/money.py">@dataclass(frozen=True)
+class Money
+⋮----
+amount: Decimal
+currency: str = &quot;USD&quot;
+⋮----
+@classmethod
+    def from_value(cls, val: Union[float, int, str, Decimal], currency: str = &quot;USD&quot;) -&gt; Money
+⋮----
+d = val
+⋮----
+d = Decimal(str(val))
+⋮----
+def add_percentage(self, pct: Union[float, Decimal]) -&gt; Money
+⋮----
+factor = Decimal(&quot;1.0&quot;) + (Decimal(str(pct)) / Decimal(&quot;100.0&quot;))
+⋮----
+def multiply_percentage(self, pct: Union[float, Decimal]) -&gt; Money
+⋮----
+factor = Decimal(str(pct)) / Decimal(&quot;100.0&quot;)
+⋮----
+def to_float(self) -&gt; float
+⋮----
+def __str__(self) -&gt; str
+⋮----
+def __lt__(self, other: Money) -&gt; bool
+⋮----
+def __le__(self, other: Money) -&gt; bool
+⋮----
+def __gt__(self, other: Money) -&gt; bool
+⋮----
+def __ge__(self, other: Money) -&gt; bool
+⋮----
+def __eq__(self, other: object) -&gt; bool
+⋮----
+def _check_curr(self, other: Money) -&gt; None</file><file path="apps/api/rulepacks/__init__.py">__all__ = [</file><file path="apps/api/rulepacks/ucp600_rules.py">class RuleCategory(str, Enum)
+⋮----
+DETERMINISTIC_MATH = &quot;DETERMINISTIC_MATH&quot;
+DETERMINISTIC_TEMPORAL = &quot;DETERMINISTIC_TEMPORAL&quot;
+DETERMINISTIC_DOCUMENT = &quot;DETERMINISTIC_DOCUMENT&quot;
+STATEFUL_AMENDMENT = &quot;STATEFUL_AMENDMENT&quot;
+SEMANTIC_ADJUDICATION = &quot;SEMANTIC_ADJUDICATION&quot;
+REGULATORY_AML = &quot;REGULATORY_AML&quot;
+⋮----
+class RuleSeverity(str, Enum)
+⋮----
+FATAL_DISCREPANCY = &quot;FATAL_DISCREPANCY&quot;
+CURABLE_DISCREPANCY = &quot;CURABLE_DISCREPANCY&quot;
+PROTECTED_VARIANCE = &quot;PROTECTED_VARIANCE&quot;
+MANDATORY_REGULATORY_FREEZE = &quot;MANDATORY_REGULATORY_FREEZE&quot;
+⋮----
+@dataclass(frozen=True)
+class LegalRule
+⋮----
+rule_id: str
+citation: str
+title: str
+category: RuleCategory
+severity: RuleSeverity
+official_summary: str
+hard_invariant_locked: bool = True
+⋮----
+RULES_REGISTRY: Dict[str, LegalRule] = {
+⋮----
+def get_rule(rule_id: str) -&gt; Optional[LegalRule]</file><file path="apps/api/tests/test_audit_merkle.py">def test_canonical_json_determinism()
+⋮----
+d1 = {&quot;b&quot;: 2, &quot;a&quot;: 1, &quot;c&quot;: {&quot;y&quot;: &quot;test&quot;, &quot;x&quot;: Decimal(&quot;100.50&quot;)}}
+d2 = {&quot;a&quot;: 1, &quot;c&quot;: {&quot;x&quot;: 100.5, &quot;y&quot;: &quot;test&quot;}, &quot;b&quot;: 2}
+⋮----
+def test_merkle_tree_root_and_inclusion_proof()
+⋮----
+leaves = [
+⋮----
+tree = MerkleTree(leaves)
+⋮----
+proof = tree.get_proof(1)
+⋮----
+mutated_leaf = &quot;5555555555555555555555555555555555555555555555555555555555555555&quot;
+⋮----
+def test_event_hash_chain_tamper_detection()
+⋮----
+chain = RunHashChain(run_id=&quot;RUN-TEST-001&quot;)
+⋮----
+def test_decision_receipt_cryptographic_verification()
+⋮----
+receipt = DecisionReceipt.generate(
+⋮----
+is_valid = AuditVerifier.verify_decision_receipt(
+⋮----
+def test_money_decimal_operations()
+⋮----
+m = Money.from_value(&quot;240000.00&quot;, &quot;USD&quot;)
+ins_req = m.multiply_percentage(110.0)
+⋮----
+with_tolerance = m.add_percentage(5.0)
+⋮----
+def test_rules_registry_lookup()
+⋮----
+rule = get_rule(&quot;UCP600-ART-28F2&quot;)</file><file path="apps/api/db/__init__.py"></file><file path="apps/api/engines/__init__.py"></file><file path="apps/api/engines/artifact_generator.py">class ArtifactGenerator
 ⋮----
 today_swift = datetime.now(timezone.utc).strftime(&quot;%y%m%d&quot;)
 lc_id = decision.lc_id
@@ -168,7 +464,10 @@ title = &quot;ISSUE SWIFT MT734 NOTICE OF REFUSAL&quot;
 action = &quot;APPROVE_HONOUR&quot;
 title = &quot;APPROVE &amp; HONOUR SETTLEMENT&quot;
 ⋮----
-telemetry = {</file><file path="apps/api/engines/document_extractor.py">@dataclass
+telemetry = {</file><file path="apps/api/engines/document_extractor.py">ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
+PRESENTATIONS_DIR = ROOT_DIR / &quot;data&quot; / &quot;presentations&quot;
+⋮----
+@dataclass
 class ExtractedField
 ⋮----
 field_key: str
@@ -176,6 +475,7 @@ value: Any
 confidence: float
 bounding_box: List[int]
 source_document: str
+source_digest_sha256: str = &quot;&quot;
 ⋮----
 @dataclass
 class DocumentExtractionResult
@@ -184,27 +484,50 @@ document_type: str
 document_id: str
 fields: Dict[str, ExtractedField]
 raw_text: str
-extraction_mode: str
+extraction_mode: str  # &apos;LIVE_NEMOTRON_VLM&apos;, &apos;CACHED_REPLAY&apos;, or &apos;STRUCTURED_FIXTURE&apos;
 ⋮----
 class DocumentExtractor
 ⋮----
+&quot;&quot;&quot;Multimodal document extractor utilizing Nemotron Vision with honest telemetry and fallbacks.&quot;&quot;&quot;
+⋮----
 def __init__(self, nim_client: Optional[NvidiaNimClient] = None)
 ⋮----
-doc_type_upper = document_type.upper()
+def _load_presentation_context(self, lc_id: str) -&gt; Dict[str, Any]
 ⋮----
-def _extract_commercial_invoice(self, lc_id: str) -&gt; DocumentExtractionResult
+&quot;&quot;&quot;Load document context for an LC if available.&quot;&quot;&quot;
+file_path = PRESENTATIONS_DIR / f&quot;{lc_id}.json&quot;
+⋮----
+context = presentation_data or self._load_presentation_context(lc_id)
+master = context.get(&quot;master&quot;, {})
+presentation = context.get(&quot;presentation&quot;, {})
+⋮----
+doc_type_upper = document_type.upper()
+raw_source = f&quot;{document_type}:{lc_id}:{json.dumps(context, sort_keys=True)}&quot;
+source_digest = hashlib.sha256(raw_source.encode(&quot;utf-8&quot;)).hexdigest()
+⋮----
+extraction_mode = &quot;STRUCTURED_FIXTURE&quot;
+⋮----
+inv_no = presentation.get(&quot;invoice_no&quot;, f&quot;INV-{lc_id[3:]}-01&quot;)
+inv_date = presentation.get(&quot;invoice_date&quot;, master.get(&quot;latest_shipment_date&quot;, &quot;2026-10-14&quot;))
+applicant = master.get(&quot;applicant_name&quot;, &quot;Pacific Heavy Machinery Pte Ltd&quot;)
+goods_desc = presentation.get(
+unit_price = float(presentation.get(&quot;invoice_unit_price&quot;, master.get(&quot;unit_price&quot;, 480.00)))
+total_amount = float(presentation.get(&quot;invoice_amount&quot;, master.get(&quot;amount&quot;, 240000.00)))
 ⋮----
 fields = {
 ⋮----
-def _extract_ocean_bill_of_lading(self, lc_id: str) -&gt; DocumentExtractionResult
+bl_no = presentation.get(&quot;bl_no&quot;, f&quot;MEDU-{lc_id[3:]}&quot;)
+vessel = presentation.get(&quot;bl_vessel&quot;, &quot;EVER GLORY&quot;)
+goods_desc = presentation.get(&quot;bl_goods_description&quot;, master.get(&quot;goods_description_strict&quot;, &quot;INDUSTRIAL EQUIPMENT&quot;))
+on_board_date = presentation.get(&quot;bl_on_board_date&quot;, master.get(&quot;latest_shipment_date&quot;, &quot;2026-10-16&quot;))
+gross_weight = float(presentation.get(&quot;bl_gross_weight_kg&quot;, 18450.00))
+notify_party = presentation.get(&quot;bl_notify_party&quot;, master.get(&quot;applicant_name&quot;, &quot;&quot;))
 ⋮----
-def _extract_packing_list(self, lc_id: str) -&gt; DocumentExtractionResult
+gross_weight = float(presentation.get(&quot;packing_gross_weight_kg&quot;, 18450.00))
 ⋮----
-weight = 24500.00 if lc_id == &quot;LC-2026-9104&quot; else (18450.00 if lc_id == &quot;LC-2026-8841&quot; else 12500.00)
-⋮----
-def _extract_insurance_document(self, lc_id: str) -&gt; DocumentExtractionResult
-⋮----
-amount = 518400.00 if lc_id == &quot;LC-2026-9104&quot; else (264000.00 if lc_id == &quot;LC-2026-8841&quot; else 742500.00)</file><file path="apps/api/engines/ucp600_deterministic.py">@dataclass
+doc_type = presentation.get(&quot;insurance_doc_type&quot;, &quot;Insurance Certificate&quot;)
+amount = float(presentation.get(&quot;insurance_amount&quot;, 264000.00))
+effective_date = presentation.get(&quot;insurance_effective_date&quot;, &quot;2026-10-14&quot;)</file><file path="apps/api/engines/ucp600_deterministic.py">@dataclass
 class DeterministicCheckResult
 ⋮----
 check_id: str
@@ -405,17 +728,51 @@ qty_act = ec[&quot;quantity_actual&quot;]
 def evaluate_regex_baseline(self, scenario: Dict[str, Any]) -&gt; ArchitectureResult
 ⋮----
 start = time.perf_counter()
-lc_id = scenario[&quot;master&quot;][&quot;lc_id&quot;]
+master = scenario[&quot;master&quot;]
+presentation = scenario[&quot;presentation&quot;]
+amendments = scenario.get(&quot;amendments&quot;, [])
 target = scenario.get(&quot;target_verdict&quot;, &quot;APPROVE_HONOUR&quot;)
+⋮----
+req_goods = master.get(&quot;goods_description_strict&quot;, &quot;&quot;).strip()
+inv_goods = presentation.get(&quot;invoice_goods_description&quot;, &quot;&quot;).strip()
+# If invoice goods is missing or has a typo not matching credit core description
+⋮----
+# Check if core description matches (or if typo like &apos;Mashine&apos; or &apos;(Model omitted)&apos;)
+⋮----
+bl_goods = presentation.get(&quot;bl_goods_description&quot;, &quot;&quot;).strip()
+# If B/L goods description is different general term (like SERVO MOTORS vs SERVO MACHINE)
+⋮----
+ins_amt = float(presentation.get(&quot;insurance_amount&quot;, 0.0))
+cif_val = float(presentation.get(&quot;invoice_amount&quot;, master.get(&quot;amount&quot;, 0.0)))
+⋮----
+pct = (ins_amt / cif_val) * 100.0
+⋮----
+# 4. Strict quantity comparison without tolerance (Art. 30(b) blindspot)
+base_qty = float(master.get(&quot;quantity&quot;, 0))
+actual_qty = float(presentation.get(&quot;invoice_quantity&quot;, base_qty))
+⋮----
+req_addr = master.get(&quot;applicant_address_strict&quot;, &quot;&quot;)
+bl_notify = presentation.get(&quot;bl_notify_party&quot;, &quot;&quot;)
+⋮----
+ship_str = presentation.get(&quot;bl_on_board_date&quot;)
+pres_str = presentation.get(&quot;presentation_date&quot;)
+⋮----
+d_ship = date.fromisoformat(ship_str)
+d_pres = date.fromisoformat(pres_str)
+days = (d_pres - d_ship).days
+⋮----
+# 7. Stateless amendment blindspot (Accepts partial amendments or misses implicit acceptances)
 ⋮----
 def evaluate_single_prompt_llm(self, scenario: Dict[str, Any]) -&gt; ArchitectureResult
 ⋮----
+inv_goods = presentation.get(&quot;invoice_goods_description&quot;, &quot;&quot;)
+req_goods = master.get(&quot;goods_description_strict&quot;, &quot;&quot;)
+⋮----
+# 4. Presentation date arithmetic hallucination across month boundaries
+⋮----
 def evaluate_veritas_600(self, scenario: Dict[str, Any]) -&gt; ArchitectureResult
 ⋮----
-master = scenario[&quot;master&quot;]
 lc_id = master[&quot;lc_id&quot;]
-amendments = scenario.get(&quot;amendments&quot;, [])
-presentation = scenario[&quot;presentation&quot;]
 ⋮----
 resolution = self.amendment_memory.build_active_state(master, amendments, presentation)
 ⋮----
@@ -506,7 +863,14 @@ routed_tokens = sum(self.estimate_tokens(p.context_data) + self.estimate_tokens(
 ⋮----
 tokens_saved = max(0, flat_monolithic_tokens - routed_tokens)
 reduction_pct = round((tokens_saved / flat_monolithic_tokens) * 100.0, 1) if flat_monolithic_tokens &gt; 0 else 0.0
-latency_ms = max(1, int((time.perf_counter() - start_time_sec) * 1000))</file><file path="apps/api/inference/nim_client.py">SETTINGS = get_settings()
+latency_ms = max(1, int((time.perf_counter() - start_time_sec) * 1000))
+⋮----
+def get_stage_manifest(self, packets: List[MeterlessContextPacket]) -&gt; List[Dict[str, Any]]
+⋮----
+manifest = []
+⋮----
+field_keys = list(p.context_data.keys())
+token_count = self.estimate_tokens(p.context_data) + self.estimate_tokens(p.prompt_snippet)</file><file path="apps/api/inference/nim_client.py">SETTINGS = get_settings()
 ⋮----
 class TokenBucketRateLimiter
 ⋮----
@@ -937,7 +1301,9 @@ columns = [desc[0] for desc in rel.description]
 results = rel.fetchall()
 query_ms = max(1, int((time.perf_counter() - start_t) * 1000))
 ⋮----
-row_dict = dict(zip(columns, results[0]))</file><file path="apps/api/__init__.py"></file><file path="apps/api/config.py">class Settings(BaseSettings)
+row_dict = dict(zip(columns, results[0]))
+⋮----
+receipt = {</file><file path="apps/api/__init__.py"></file><file path="apps/api/config.py">class Settings(BaseSettings)
 ⋮----
 model_config = SettingsConfigDict(
 ⋮----
@@ -1079,7 +1445,7 @@ import { BankDecision } from &quot;@/lib/types&quot;;
 interface DecisionActionPaneProps {
   decision?: BankDecision;
   generatedArtifact?: string;
-  onApproveAction: (examinerName: string, comments: string) =&gt; Promise&lt;void&gt;;
+  onApproveAction: (examinerName: string, comments: string) =&gt; Promise&lt;any&gt;;
 }
 ⋮----
 const handleCopyArtifact = () =&gt;
@@ -1836,7 +2202,163 @@ interface DocumentViewerPaneProps {
 ⋮----
 const handleRunLiveExtraction = async () =&gt;
 ⋮----
-onClick=</file><file path="AGENTS.md"># AGENTS.md: Operational Instructions for Coding Agents
+onClick=</file><file path="apps/api/main.py">SETTINGS = get_settings()
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+PRESENTATIONS_DIR = ROOT_DIR / &quot;data&quot; / &quot;presentations&quot;
+⋮----
+app = FastAPI(
+⋮----
+amendment_memory = AmendmentMemoryEngine()
+det_engine = UCP600DeterministicEngine()
+nim_client = NvidiaNimClient()
+adjudicator = UCP600LegalAdjudicator(nim_client)
+extractor = DocumentExtractor(nim_client)
+meterless_router = MeterlessRouter()
+zetaris_client = ZetarisFederationClient()
+decision_engine = BankDecisionEngine()
+artifact_gen = ArtifactGenerator()
+⋮----
+class HumanSignOffRequest(BaseModel)
+⋮----
+examiner_name: str = &quot;Senior Examiner #482 (Desk Head)&quot;
+comments: Optional[str] = &quot;Verified against UCP 600 articles and bank risk mandates.&quot;
+⋮----
+def load_presentation_data(lc_id: str) -&gt; Dict[str, Any]
+⋮----
+filepath = PRESENTATIONS_DIR / f&quot;{lc_id}.json&quot;
+⋮----
+@app.get(&quot;/api/v1/health&quot;)
+async def health_check()
+⋮----
+@app.get(&quot;/api/v1/scenarios&quot;)
+async def list_scenarios()
+⋮----
+scenarios = []
+⋮----
+data = load_presentation_data(sc_id)
+⋮----
+@app.get(&quot;/api/v1/scenarios/{lc_id}&quot;)
+async def get_scenario_details(lc_id: str)
+⋮----
+data = load_presentation_data(lc_id)
+⋮----
+@app.post(&quot;/api/v1/extract/{lc_id}&quot;)
+async def extract_documents(lc_id: str)
+⋮----
+inv = extractor.extract_document(&quot;Commercial Invoice&quot;, &quot;...&quot;, lc_id)
+bl = extractor.extract_document(&quot;Ocean Bill of Lading&quot;, &quot;...&quot;, lc_id)
+ins = extractor.extract_document(&quot;Insurance Certificate&quot;, &quot;...&quot;, lc_id)
+⋮----
+_RUN_STORE: Dict[str, Dict[str, Any]] = {}
+⋮----
+@app.get(&quot;/api/v1/examine/{lc_id}&quot;)
+@app.post(&quot;/api/v1/examine/{lc_id}&quot;)
+async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = True)
+⋮----
+master = data[&quot;master&quot;]
+amendments = data.get(&quot;amendments&quot;, [])
+presentation = data[&quot;presentation&quot;]
+⋮----
+async def event_generator()
+⋮----
+start_time = datetime.now(timezone.utc)
+run_id = f&quot;RUN-{lc_id}-{int(datetime.now(timezone.utc).timestamp())}&quot;
+⋮----
+# ----------------------------------------------------------------------
+# Stage 1: Meterless Context Routing &amp; Amendment Memory
+⋮----
+resolution = amendment_memory.build_active_state(master, amendments, presentation)
+chunks = meterless_router.route_markovian_chunks(resolution.active_terms, amendments, presentation)
+telemetry = meterless_router.compute_telemetry(data, chunks, start_time_sec=1.0)
+stage_manifest = meterless_router.get_stage_manifest(chunks)
+⋮----
+fed_risk = zetaris_client.execute_federated_check(
+⋮----
+det_eval = det_engine.evaluate_presentation(resolution.active_terms, presentation)
+⋮----
+legal_eval = adjudicator.adjudicate_presentation(
+inv_extraction = extractor.extract_document(&quot;Commercial Invoice&quot;, &quot;...&quot;, lc_id)
+bl_extraction = extractor.extract_document(&quot;Ocean Bill of Lading&quot;, &quot;...&quot;, lc_id)
+⋮----
+decision = decision_engine.evaluate(
+artifact_text = artifact_gen.generate_artifact(decision, resolution.active_terms, presentation)
+⋮----
+leaves = [
+⋮----
+tree = MerkleTree(leaves)
+merkle_root = tree.root_hex
+decision_hash = canonical_sha256(asdict(decision))
+⋮----
+@app.post(&quot;/api/v1/examine/{lc_id}/approve-action&quot;)
+async def approve_human_action(lc_id: str, body: HumanSignOffRequest)
+⋮----
+now_iso = datetime.now(timezone.utc).isoformat()
+run_info = _RUN_STORE.get(lc_id, {})
+⋮----
+decision_obj = run_info.get(&quot;decision&quot;)
+action_str = decision_obj.recommended_action if decision_obj else &quot;APPROVE_HONOUR&quot;
+merkle_root = run_info.get(&quot;merkle_root&quot;, &quot;0&quot; * 64)
+decision_hash = run_info.get(&quot;decision_hash&quot;, f&quot;DEC-{lc_id}&quot;)
+run_id = run_info.get(&quot;run_id&quot;, f&quot;RUN-{lc_id}-MANUAL&quot;)
+⋮----
+receipt = DecisionReceipt.generate(
+⋮----
+@app.get(&quot;/api/v1/evidence/sponsors/{lc_id}&quot;)
+async def get_sponsor_evidence(lc_id: str)
+⋮----
+&quot;&quot;&quot;Retrieve inspectable multi-sponsor execution receipts for an LC.&quot;&quot;&quot;
+⋮----
+_cached_benchmark_results: Optional[Dict[str, Any]] = None
+⋮----
+@app.post(&quot;/api/v1/evals/run&quot;)
+async def run_evals_benchmark()
+⋮----
+suite = BaselineComparisonSuite()
+results = suite.run_benchmark()
+_cached_benchmark_results = results
+⋮----
+@app.get(&quot;/api/v1/evals/results&quot;)
+async def get_evals_results()
+⋮----
+_cached_benchmark_results = suite.run_benchmark()</file><file path="apps/web/src/app/evals/page.tsx">import React, { useState } from &quot;react&quot;;
+import Link from &quot;next/link&quot;;
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ShieldCheck,
+  Zap,
+  BarChart2,
+  Cpu,
+  Database,
+  Scale,
+  Play,
+  RefreshCw,
+  Info,
+} from &quot;lucide-react&quot;;
+⋮----
+interface EvaluationRow {
+  lc_id: string;
+  name: string;
+  difficulty: &quot;Golden&quot; | &quot;Edge Case&quot;;
+  ground_truth: &quot;APPROVE_HONOUR&quot; | &quot;ISSUE_MT734_REFUSAL&quot; | &quot;COMPLIANCE_HOLD_AML&quot;;
+  primary_rule: string;
+  regex_verdict: string;
+  regex_correct: boolean;
+  regex_failure_mode: string;
+  llm_verdict: string;
+  llm_correct: boolean;
+  llm_failure_mode: string;
+  veritas_verdict: string;
+  veritas_correct: boolean;
+  veritas_rationale: string;
+}
+⋮----
+import { useEffect } from &quot;react&quot;;
+import { fetchEvalsResults, runEvalsBenchmark } from &quot;@/lib/api&quot;;
+⋮----
+const handleRunBenchmark = async () =&gt;</file><file path="AGENTS.md"># AGENTS.md: Operational Instructions for Coding Agents
 
 &gt; **Audience:** Cursor Agent, Claude Code, OpenAI Codex, Antigravity, and any automated AI coding assistant.
 &gt; **Repository:** VERITAS-600 (Lean Autonomous Trade Finance &amp; UCP 600 Adjudication Engine)
@@ -1993,136 +2515,16 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.</file><file path="apps/api/main.py">SETTINGS = get_settings()
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-PRESENTATIONS_DIR = ROOT_DIR / &quot;data&quot; / &quot;presentations&quot;
-⋮----
-app = FastAPI(
-⋮----
-amendment_memory = AmendmentMemoryEngine()
-det_engine = UCP600DeterministicEngine()
-nim_client = NvidiaNimClient()
-adjudicator = UCP600LegalAdjudicator(nim_client)
-extractor = DocumentExtractor(nim_client)
-meterless_router = MeterlessRouter()
-zetaris_client = ZetarisFederationClient()
-decision_engine = BankDecisionEngine()
-artifact_gen = ArtifactGenerator()
-⋮----
-class HumanSignOffRequest(BaseModel)
-⋮----
-examiner_name: str = &quot;Senior Examiner #482 (Desk Head)&quot;
-comments: Optional[str] = &quot;Verified against UCP 600 articles and bank risk mandates.&quot;
-⋮----
-def load_presentation_data(lc_id: str) -&gt; Dict[str, Any]
-⋮----
-filepath = PRESENTATIONS_DIR / f&quot;{lc_id}.json&quot;
-⋮----
-@app.get(&quot;/api/v1/health&quot;)
-async def health_check()
-⋮----
-@app.get(&quot;/api/v1/scenarios&quot;)
-async def list_scenarios()
-⋮----
-scenarios = []
-⋮----
-data = load_presentation_data(sc_id)
-⋮----
-@app.get(&quot;/api/v1/scenarios/{lc_id}&quot;)
-async def get_scenario_details(lc_id: str)
-⋮----
-data = load_presentation_data(lc_id)
-⋮----
-@app.post(&quot;/api/v1/extract/{lc_id}&quot;)
-async def extract_documents(lc_id: str)
-⋮----
-inv = extractor.extract_document(&quot;Commercial Invoice&quot;, &quot;...&quot;, lc_id)
-bl = extractor.extract_document(&quot;Ocean Bill of Lading&quot;, &quot;...&quot;, lc_id)
-ins = extractor.extract_document(&quot;Insurance Certificate&quot;, &quot;...&quot;, lc_id)
-⋮----
-@app.post(&quot;/api/v1/examine/{lc_id}&quot;)
-async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = True)
-⋮----
-master = data[&quot;master&quot;]
-amendments = data.get(&quot;amendments&quot;, [])
-presentation = data[&quot;presentation&quot;]
-⋮----
-async def event_generator()
-⋮----
-start_time = datetime.now(timezone.utc)
-⋮----
-resolution = amendment_memory.build_active_state(master, amendments, presentation)
-chunks = meterless_router.route_markovian_chunks(resolution.active_terms, amendments, presentation)
-telemetry = meterless_router.compute_telemetry(data, chunks, start_time_sec=1.0)
-⋮----
-fed_risk = zetaris_client.execute_federated_check(
-⋮----
-det_eval = det_engine.evaluate_presentation(resolution.active_terms, presentation)
-⋮----
-legal_eval = adjudicator.adjudicate_presentation(
-inv_extraction = extractor.extract_document(&quot;Commercial Invoice&quot;, &quot;...&quot;, lc_id)
-bl_extraction = extractor.extract_document(&quot;Ocean Bill of Lading&quot;, &quot;...&quot;, lc_id)
-⋮----
-decision = decision_engine.evaluate(
-artifact_text = artifact_gen.generate_artifact(decision, resolution.active_terms, presentation)
-⋮----
-@app.post(&quot;/api/v1/examine/{lc_id}/approve-action&quot;)
-async def approve_human_action(lc_id: str, body: HumanSignOffRequest)
-⋮----
-now_iso = datetime.now(timezone.utc).isoformat()
-⋮----
-# Evaluation benchmark suite state cache
-_cached_benchmark_results: Optional[Dict[str, Any]] = None
-⋮----
-@app.post(&quot;/api/v1/evals/run&quot;)
-async def run_evals_benchmark()
-⋮----
-suite = BaselineComparisonSuite()
-results = suite.run_benchmark()
-_cached_benchmark_results = results
-⋮----
-@app.get(&quot;/api/v1/evals/results&quot;)
-async def get_evals_results()
-⋮----
-_cached_benchmark_results = suite.run_benchmark()</file><file path="apps/web/src/app/evals/page.tsx">import React, { useState } from &quot;react&quot;;
-import Link from &quot;next/link&quot;;
-import {
-  ArrowLeft,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  ShieldCheck,
-  Zap,
-  BarChart2,
-  Cpu,
-  Database,
-  Scale,
-  Play,
-  RefreshCw,
-  Info,
-} from &quot;lucide-react&quot;;
-⋮----
-interface EvaluationRow {
-  lc_id: string;
-  name: string;
-  difficulty: &quot;Golden&quot; | &quot;Edge Case&quot;;
-  ground_truth: &quot;APPROVE_HONOUR&quot; | &quot;ISSUE_MT734_REFUSAL&quot; | &quot;COMPLIANCE_HOLD_AML&quot;;
-  primary_rule: string;
-  regex_verdict: string;
-  regex_correct: boolean;
-  regex_failure_mode: string;
-  llm_verdict: string;
-  llm_correct: boolean;
-  llm_failure_mode: string;
-  veritas_verdict: string;
-  veritas_correct: boolean;
-  veritas_rationale: string;
-}
-⋮----
-import { useEffect } from &quot;react&quot;;
-import { fetchEvalsResults, runEvalsBenchmark } from &quot;@/lib/api&quot;;
-⋮----
-const handleRunBenchmark = async () =&gt;</file><file path="STATUS.md"># VERITAS-600: Project Execution &amp; Agent Continuity Tracker
+- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+
+---
+
+## 6. Repomix Whole-Repository Context Compression
+
+This repository is configured with Repomix (`repomix.config.json`).
+- Whenever a holistic repository overview or cross-cutting architecture context is required, check `repomix-output.xml` or run `npx repomix`.
+- Repomix extracts essential code structures (functions, classes, interfaces) with Tree-sitter compression, stripping comments and redundant whitespace, compressing all 43 source files into ~32k tokens.
+- Codex / Claude Code / Cursor: Use `repomix-output.xml` to avoid reading dozens of individual files when planning broad architectural changes.</file><file path="STATUS.md"># VERITAS-600: Project Execution &amp; Agent Continuity Tracker
 
 &gt; **Notice to All Coding Agents (Cursor, Claude Code, Codex, Antigravity, etc.):**
 &gt; This file is the **Single Source of Truth** for current project state.
@@ -2135,25 +2537,27 @@ const handleRunBenchmark = async () =&gt;</file><file path="STATUS.md"># VERITAS
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **All Phases Complete &amp; Verified (Phases 0 - 6)** |
-| **Overall Progress** | **100% Complete** (Production-Grade Hackathon Ready) |
-| **Active Task** | Continuous integration and live presentation ready |
+| **Current Phase** | **Phase 7 Planned — World-Class Elevation &amp; Demo Integrity** |
+| **Overall Progress** | **Core Phases 0–6 verified; architecture elevation blueprint complete** |
+| **Active Task** | P0 runtime truthfulness and end-to-end demo repair |
 | **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Demo presentation, live examiner testing, and hackathon submission** |
+| **Next Action Item** | **Implement Phase 7 P0 from `HACKATHON_ARCHITECTURE_ELEVATION.md`** |
 
 ```
-[████████████████████] 100% (All 7 Phases Complete &amp; Verified)
+[CORE PHASES 0–6: COMPLETE &amp; VERIFIED] [PHASE 7: PLANNED]
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** All 7 phases (Phase 0 through Phase 6) are 100% complete, fully implemented, and passing automated tests.
-2. **Backend Server Launch:** Run `uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload`
-3. **Web Terminal Launch:** Run `cd apps/web &amp;&amp; npm run dev` (Access terminal at `http://localhost:3000` and evals at `http://localhost:3000/evals`)
-4. **Complete Test Suite:** Run `pytest apps/api/tests/ -v` (27/27 tests passing in &lt; 3s)
-5. **Run Live Benchmark:** Run `python apps/api/evals/compare_baselines.py` (10/10 100% accuracy)
+1. **Read the completed audit:** `HACKATHON_ARCHITECTURE_ELEVATION.md`.
+2. **Repair the P0 browser path:** Align the frontend `EventSource` transport with the API examination route and add a Playwright test for the complete judge workflow.
+3. **Make extraction truthful:** Replace scenario-keyed extraction with real input-derived VLM extraction and fix the frontend response contract.
+4. **Make sponsor telemetry observed:** Implement real Meterless primitives, distinguish real NIM cache from deterministic fallback, and report per-run Zetaris/NIM/Meterless receipts.
+5. **Make evaluation empirical:** Replace scenario-ID baseline outcomes and synthetic latency with actual reproducible runs on a frozen blind dataset.
+6. **Make sign-off enforceable:** Persist the decision, bind authenticated approval to its hashes, and use an outbox/acknowledgment before reporting dispatch.
+7. **Verification baseline:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` currently passes 27/27; `cd apps/web &amp;&amp; npm run build` currently succeeds.
 
 ---
 
@@ -2264,6 +2668,22 @@ const handleRunBenchmark = async () =&gt;</file><file path="STATUS.md"># VERITAS
 - [x] Create automated evaluation test suite `apps/api/tests/test_evals_baseline.py` (5/5 tests passing).
 - [x] Complete backend test suite passes: 27/27 tests green in 2.92s.
 - [x] Production Next.js build passes with 0 errors (`npm run build`).
+
+---
+
+### Phase 7: World-Class Elevation &amp; Demo Integrity [PLANNED]
+- [x] Complete evidence-backed Track 03, sponsor, architecture, reasoning, UX, and implementation audit in `HACKATHON_ARCHITECTURE_ELEVATION.md`.
+- [ ] **P0:** Repair browser SSE method mismatch and cover the real examiner flow with Playwright.
+- [ ] **P0:** Replace scenario-keyed extraction and mismatched frontend extraction types with input-derived, schema-validated evidence.
+- [ ] **P0:** Replace configuration-derived sponsor badges with observed per-run execution telemetry.
+- [ ] **P0:** Integrate official Meterless engine primitives/conformance and measure token usage rather than displaying a hardcoded result.
+- [ ] **P0:** Replace scripted baseline outcomes and synthetic latency with actual reproducible baseline runs.
+- [ ] **P0:** Persist examination runs and implement authenticated, hash-bound maker-checker approval plus truthful dispatch state.
+- [ ] **P1:** Add typed domain models, append-only evidence events, canonical hashes, Merkle proofs, and formal amendment-state verification.
+- [ ] **P2:** Expand legal rule coverage and fail closed to manual review on uncertain or invalid neural output.
+- [ ] **P3:** Harden live federation, anomaly intelligence, source freshness, and sponsor proof receipts.
+- [ ] **P4:** Implement the linked-evidence examiner UX and accessible authorization ceremony.
+- [ ] **P5:** Run independent blind evaluation, security, resilience, accessibility, and examiner usability validation.
 
 ---
 

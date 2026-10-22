@@ -168,3 +168,19 @@ class MeterlessRouter:
             latency_ms=latency_ms,
             routing_mode="MARKOVIAN_6_CHUNK",
         )
+
+    def get_stage_manifest(self, packets: List[MeterlessContextPacket]) -> List[Dict[str, Any]]:
+        """Return inspectable context manifest per stage proving context boundaries."""
+        manifest = []
+        for p in packets:
+            field_keys = list(p.context_data.keys())
+            token_count = self.estimate_tokens(p.context_data) + self.estimate_tokens(p.prompt_snippet)
+            manifest.append({
+                "stage_id": p.stage_id,
+                "chunk_index": p.chunk_index,
+                "total_chunks": p.total_chunks,
+                "field_keys": field_keys,
+                "token_count": token_count,
+                "prompt_snippet": p.prompt_snippet,
+            })
+        return manifest

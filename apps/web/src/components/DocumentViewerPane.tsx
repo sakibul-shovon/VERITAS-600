@@ -29,12 +29,15 @@ export default function DocumentViewerPane({
     setIsExtracting(true);
     try {
       const res = await extractDocuments(master.lc_id);
-      const invFields: any[] = res.documents?.invoice?.fields || [];
-      const blFields: any[] = res.documents?.bill_of_lading?.fields || [];
-      const insFields: any[] = res.documents?.insurance?.fields || [];
+      const invFields = Object.values(res.documents?.invoice?.fields || {});
+      const blFields = Object.values(res.documents?.bill_of_lading?.fields || {});
+      const insFields = Object.values(res.documents?.insurance?.fields || {});
       const fieldMap: Record<string, any> = {};
-      [...invFields, ...blFields, ...insFields].forEach((f) => {
-        fieldMap[f.field_name] = f.extracted_value;
+      [...invFields, ...blFields, ...insFields].forEach((f: any) => {
+        const key = f.field_key || f.field_name;
+        if (key) {
+          fieldMap[key] = f.value !== undefined ? f.value : f.extracted_value;
+        }
       });
       setExtractedFields(fieldMap);
     } catch (err) {
