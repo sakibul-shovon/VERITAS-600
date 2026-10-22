@@ -1,0 +1,24 @@
+# VERITAS-600 Cursor Rules
+
+You are working on VERITAS-600, a high-reliability Neuro-Symbolic Trade Finance & UCP 600 Adjudication Engine.
+
+## Prime Directives
+1. Always check STATUS.md before and after your tasks.
+2. Maintain strict separation between deterministic math and neural legal judgment.
+3. Hard Invariant Rule: A neural LLM verdict can NEVER override a failed deterministic check.
+4. Python deterministic engines handle:
+   - Calendar math & date checks (UCP 600 Art. 6(d)(i), 14(c), 20(a)(ii)).
+   - 5-banking-day examination clock (Art. 14(b) & Art. 16).
+   - Tolerances & amounts (+/- 5% under Art. 30(b), invoice limit under Art. 18(b)).
+   - Insurance calculations: >= 110% of CIF/CIP (Art. 28(f)(ii)) and Cover Note rejection (Art. 28(c)).
+   - Physical weight reconciliations across documents (Art. 14(d)).
+5. Neural LLMs (NVIDIA Nemotron) handle ONLY:
+   - Lexical & semantic judgment of typographical errors (ISBP 745 Para A23).
+   - General vs specific goods descriptions (UCP 600 Art. 14(e) vs 18(c)).
+   - Address variations on transport documents (UCP 600 Art. 14(j)).
+6. Database Federation (Zetaris):
+   - Always pre-aggregate amendments and watchlist hits into CTEs before joining lc_master.
+   - Exactly 1 row per LC must be returned (no row multiplication).
+7. Final Actions:
+   - Distinguish documentary refusal (SWIFT MT734) from regulatory freeze (AML/Sanctions Compliance Hold).
+   - Always gate final bank action behind the Human Examiner Sign-Off button.
