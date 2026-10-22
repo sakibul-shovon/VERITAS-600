@@ -156,3 +156,12 @@ Rules:
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 - A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+
+---
+
+## 6. Repomix Whole-Repository Context Compression
+
+This repository is configured with Repomix (`repomix.config.json`).
+- Whenever a holistic repository overview or cross-cutting architecture context is required, check `repomix-output.xml` or run `npx repomix`.
+- Repomix extracts essential code structures (functions, classes, interfaces) with Tree-sitter compression, stripping comments and redundant whitespace, compressing all 43 source files into ~32k tokens.
+- Codex / Claude Code / Cursor: Use `repomix-output.xml` to avoid reading dozens of individual files when planning broad architectural changes.

@@ -1,8 +1,6 @@
 {
   "0": "AmendmentMemoryEngine",
   "1": "app/page.tsx",
-  "2": "main.py",
-  "3": "test_legal_adjudicator.py",
   "4": "package.json",
   "5": "BaselineComparisonSuite",
   "6": "ZetarisFederationClient",
@@ -12,7 +10,6 @@
   "10": "test_end_to_end.py",
   "11": "MeterlessRouter",
   "12": "seed_scenarios.py",
-  "13": "BankDecision",
   "14": "TokenBucketRateLimiter",
   "15": "next.config.js",
   "16": "next-env.d.ts",
