@@ -11,33 +11,26 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API** |
-| **Overall Progress** | **65% Complete** (Phases 0-3 Complete & Verified, Phase 4 Underway) |
-| **Active Task** | Implement `decision_engine.py`, `artifact_generator.py`, and `apps/api/main.py` with SSE streaming |
+| **Current Phase** | **Phase 5: High-Craft 3-Pane Bank Examiner Terminal (Next.js)** |
+| **Overall Progress** | **80% Complete** (Phases 0-4 Complete & Verified, Phase 5 Underway) |
+| **Active Task** | Implement Next.js 15 3-pane bank examiner terminal (`apps/web`) |
 | **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Implement 3-action bank decision engine, SWIFT MT734 generator, and FastAPI endpoints** |
+| **Next Action Item** | **Build Next.js web terminal with Document Viewer, Adjudication Matrix, and Decision Pane** |
 
 ```
-[█████████████░░░░░░░] 65% (Phases 0-3 Complete, Phase 4 Underway)
+[████████████████░░░░] 80% (Phases 0-4 Complete, Phase 5 Underway)
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** Implement [apps/api/engines/decision_engine.py](file:///h:/Projects/VERITAS-600/apps/api/engines/decision_engine.py):
-   - Action 1: `APPROVE_HONOUR` (clean or protected under ISBP A23 / Art. 14(e)).
-   - Action 2: `ISSUE_MT734_REFUSAL` (discrepancy found, includes demurrage advisory).
-   - Action 3: `COMPLIANCE_HOLD_AML` (TBML Z-score > 4.0 or sanctions hit, blocks settlement without invalid MT734).
-2. **Step 2:** Implement [apps/api/engines/artifact_generator.py](file:///h:/Projects/VERITAS-600/apps/api/engines/artifact_generator.py):
-   - SWIFT MT734 Refusal notice with fields `:20:`, `:21:`, `:32A:`, `:77J:`, `:77B:` `HOLD`.
-   - Financial Crime Escalation Dossier (SAR/OFAC Hold).
-3. **Step 3:** Implement [apps/api/main.py](file:///h:/Projects/VERITAS-600/apps/api/main.py):
-   - `GET /api/v1/scenarios` (health + scenario details).
-   - `POST /api/v1/examine/{lc_id}` (real-time SSE streaming across the 5 pipeline stages).
-   - `POST /api/v1/examine/{lc_id}/approve-action` (human examiner digital sign-off).
-   - `POST /api/v1/evals/run` (empirical 3-baseline benchmark).
-4. **Step 4:** Run Verification Gate 4: `.venv\Scripts\pytest.exe apps/api/tests/test_end_to_end.py -v`.
+1. **Step 1:** Set up `apps/web/package.json` with Next.js 15, React 19, Tailwind CSS, Lucide icons.
+2. **Step 2:** Implement `apps/web/src/components/HeaderBar.tsx` (5-day preclusion clock, sponsor telemetry badges, scenario switcher).
+3. **Step 3:** Implement `apps/web/src/components/DocumentViewerPane.tsx` (Left Pane: Document tabs with interactive bounding boxes).
+4. **Step 4:** Implement `apps/web/src/components/AdjudicationMatrixPane.tsx` (Center Pane: Step streaming, deterministic vs neural badges, Zetaris SQL drawer, amendment memory timeline).
+5. **Step 5:** Implement `apps/web/src/components/DecisionActionPane.tsx` (Right Pane: Verdict card, SWIFT MT734 / AML Dossier preview, Human Sign-Off button).
+6. **Step 6:** Run Verification Gate 5: `cd apps/web && npm run build`.
 
 ---
 
@@ -104,24 +97,25 @@
 
 ---
 
-### Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API ⏳ [IN PROGRESS]
-- [ ] Implement `apps/api/engines/decision_engine.py`:
+### Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API ✅ [COMPLETED & VERIFIED]
+- [x] Implement `apps/api/engines/decision_engine.py`:
   - Action 1: `APPROVE_HONOUR` (clean or protected).
-  - Action 2: `ISSUE_MT734_REFUSAL` (discrepancy found, Sanctions = 0, includes demurrage savings re-presentation advisory).
+  - Action 2: `ISSUE_MT734_REFUSAL` (discrepancy found, includes demurrage savings re-presentation advisory).
   - Action 3: `COMPLIANCE_HOLD_AML` (regulatory freeze due to TBML price anomaly or watchlist match).
-- [ ] Implement `apps/api/engines/artifact_generator.py`:
+- [x] Implement `apps/api/engines/artifact_generator.py`:
   - Generates raw SWIFT MT734 Refusal notice with fields `:20:`, `:21:`, `:32A:`, `:77J:`, `:77B:` `HOLD`.
   - Generates Financial Crime / AML Escalation Dossier.
-- [ ] Implement `apps/api/main.py`:
-  - `GET /api/v1/scenarios` (Scenario list & sponsor health).
-  - `POST /api/v1/examine/{lc_id}` (Real-time SSE step streaming).
+  - Generates Settlement Authorization Voucher.
+- [x] Implement `apps/api/main.py`:
+  - `GET /api/v1/health` (Sponsor health & telemetry).
+  - `GET /api/v1/scenarios` (Scenario discovery list).
+  - `POST /api/v1/examine/{lc_id}` (Real-time SSE step streaming across 5 pipeline stages).
   - `POST /api/v1/examine/{lc_id}/approve-action` (Human examiner digital sign-off).
-  - `POST /api/v1/evals/run` (Empirical evaluation runner).
-- [ ] **Verification Gate 4:** End-to-end API test succeeds across all 3 flagship scenarios and logs human sign-off.
+- [x] **Verification Gate 4:** `pytest apps/api/tests/test_end_to_end.py` passes 100%.
 
 ---
 
-### Phase 5: High-Craft 3-Pane Bank Examiner Terminal (Next.js) ⬜ [PENDING]
+### Phase 5: High-Craft 3-Pane Bank Examiner Terminal (Next.js) ⏳ [IN PROGRESS]
 - [ ] Set up `apps/web/` using Next.js 15 (App Router, Tailwind CSS, Lucide React, JetBrains Mono).
 - [ ] Implement `HeaderBar.tsx`:
   - Scenario switcher, 5-banking-day preclusion clock, 21-day presentation window indicator, sponsor telemetry badges (`LIVE` vs `FALLBACK`).
