@@ -42,13 +42,13 @@ export default function AdjudicationMatrixPane({
   const findings: LegalFinding[] = stage4?.findings || [];
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
+    <div className={`exam-pane exam-matrix-pane ${isExamining ? "examining" : ""} flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden`}>
       {/* Pane Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-900/60 border-b border-card-border">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-emerald-400" />
           <span className="font-semibold text-xs tracking-wide text-slate-200 uppercase">
-            Adjudication Reasoning Matrix
+            Agentic Decision Trace
           </span>
         </div>
         <div className="flex items-center gap-2">

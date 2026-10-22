@@ -37,11 +37,11 @@ export default function HeaderBar({
   const currentScenario = scenarios.find((s) => s.lc_id === selectedLcId);
 
   return (
-    <header className="border-b border-card-border bg-[#0B0F19]/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
+    <header className="exam-header border-b border-card-border bg-[#0B0F19]/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Left: Brand & Navigation */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2" aria-label="Return to VERITAS-600 product overview">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <ShieldAlert className="h-4 w-4 text-white" />
             </div>
@@ -54,7 +54,7 @@ export default function HeaderBar({
               </div>
               <p className="text-[11px] text-slate-400">Examining Bank Trade Finance Terminal</p>
             </div>
-          </div>
+          </Link>
 
           <div className="h-5 w-px bg-card-border hidden sm:block" />
 
@@ -63,11 +63,10 @@ export default function HeaderBar({
             <select
               value={selectedLcId}
               onChange={(e) => onSelectScenario(e.target.value)}
+              disabled={scenarios.length === 0}
               className="bg-card hover:bg-slate-800 text-slate-200 text-xs font-mono font-medium rounded-md px-3 py-1.5 pr-8 border border-card-border focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
             >
-              <option value="LC-2026-8841">LC-2026-8841: Wrongful Dishonor Trap ($240k)</option>
-              <option value="LC-2026-9104">LC-2026-9104: Curable Shortfall & Demurrage ($480k)</option>
-              <option value="LC-2026-9920">LC-2026-9920: TBML Anomaly & Sanctions Freeze ($675k)</option>
+              {scenarios.length === 0 ? <option value={selectedLcId}>Loading available cases…</option> : scenarios.map((scenario) => <option key={scenario.lc_id} value={scenario.lc_id}>{scenario.lc_id}: {scenario.applicant} → {scenario.beneficiary} ({scenario.currency} {scenario.amount.toLocaleString()})</option>)}
             </select>
             <ChevronDown className="h-3.5 w-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
           </div>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VERITAS-600 | Autonomous Trade Finance & UCP 600 Adjudication Terminal",
-  description: "Lean Autonomous Trade Finance & UCP 600 Adjudication Engine (Track 03: Reasoning Architecture)",
+  title: "VERITAS-600 | Evidence-led UCP 600 examination",
+  description: "Traceable documentary-credit decisions with locked deterministic checks, bounded semantic review, and human authorization.",
 };
 
 export default function RootLayout({
@@ -12,8 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-background text-slate-100 antialiased min-h-screen">
+    <html lang="en">
+      <body className="antialiased min-h-screen">
+        <a className="skip-link" href="#main-content">Skip to main content</a>
         {children}
       </body>
     </html>

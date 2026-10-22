@@ -11,24 +11,26 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 7 Complete & Verified — World-Class Architecture Elevation** |
-| **Overall Progress** | **All Phases 0–7 Complete & Verified (33/33 Pytest passed, Next.js build clean)** |
-| **Active Task** | Final demo rehearsal and hackathon presentation delivery |
-| **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Rehearse 150-second demo script and record hackathon video** |
+| **Current Phase** | **Phase 8 Full Redesign Implemented on `feat/ui-redesign` — Verification Clean** |
+| **Overall Progress** | **Phases 0–8 Complete & Verified; visual redesign implemented across `/` (Product Story), `/examine` (Examiner Workbench), and `/evals` (Casebook Benchmark) with 33/33 Pytest passing and clean Next.js 15 build** |
+| **Active Task** | Review Evidence Ledger redesign, demo rehearsal, and stage branch for final PR merge |
+| **Last Updated** | 2026-10-23 |
+| **Next Action Item** | **Rehearse 150-second demo sequence and prepare PR from `feat/ui-redesign` to `main`** |
 
 ```
-[CORE PHASES 0–6: COMPLETE & VERIFIED] [PHASE 7: COMPLETE & VERIFIED]
+[CORE PHASES 0–6: COMPLETE & VERIFIED] [PHASE 7: COMPLETE & VERIFIED] [PHASE 8: IMPLEMENTED ON FEAT/UI-REDESIGN]
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Review Phase 7 elevation report:** [docs/PHASE_7_ELEVATION_REPORT.md](file:///h:/Projects/VERITAS-600/docs/PHASE_7_ELEVATION_REPORT.md).
-2. **Rehearse the 150-second presentation flow:** Follow Section 4.8 in [HACKATHON_ARCHITECTURE_ELEVATION.md](file:///h:/Projects/VERITAS-600/HACKATHON_ARCHITECTURE_ELEVATION.md).
-3. **Verify backend suite:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` (33/33 passed).
-4. **Verify frontend build:** `cd apps/web && npm run build` (Clean build, 5/5 static routes compiled).
+1. **Read the implementation blueprint:** [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md), especially Sections 24–29.
+2. **Review the implemented landing:** `/` is now the Evidence Ledger product story and the preserved terminal is at `/examine` (build verified).
+3. **Begin/continue Phase 8A after review:** capture typed API/SSE fixtures, screenshots, keyboard behavior, and bundle baselines before further terminal/evaluation changes.
+4. **Preserve demo readiness:** continue using Section 4.8 in [HACKATHON_ARCHITECTURE_ELEVATION.md](file:///h:/Projects/VERITAS-600/HACKATHON_ARCHITECTURE_ELEVATION.md) until the redesign passes its full parity gates.
+5. **Verify backend suite:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` (33/33 passed on 2026-10-23).
+6. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build with `/`, `/examine`, and `/evals` on 2026-10-23).
 
 ---
 
@@ -155,6 +157,37 @@
 - [x] **P3:** Harden live federation with structured `federation_receipt` in `ZetarisFederationClient` and `/api/v1/evidence/sponsors/{lc_id}` endpoint.
 - [x] **P4:** Implement cryptographic receipt seal (`V600-SIG-...`) and Merkle root visualization in `DecisionActionPane.tsx`.
 - [x] **P5:** Full test suite passes 33/33 tests; Next.js 15 production build passes with 0 errors. Detailed report in `docs/PHASE_7_ELEVATION_REPORT.md`.
+
+---
+
+### Phase 8: Evidence Ledger UI/UX Redesign
+
+- [x] **Planning:** Complete repository-grounded, contemporary UI/UX research and the 30-section implementation blueprint in [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md).
+- [x] **Landing planning:** Add the dedicated `LANDING PAGE — CREATIVE DIRECTION & IMPLEMENTATION BLUEPRINT` chapter with 20 implementation-grade subsections, three creative concepts, three hero concepts, a predefined case demonstration, responsive/motion specifications, and route migration gates.
+- [x] **Landing MVP (current request):** Move the existing terminal from `/` to `/examine`; implement the light-first Evidence Ledger landing at `/` with responsive navigation, dark toggle, predefined LC-2026-9104 evidence gate, hard-invariant demonstration, guided five-stage walkthrough, architecture/outcomes/proof/benchmark narrative, terminal handoff, and purpose-built CSS motion.
+- [x] **Landing verification:** `npm run build` succeeds on Next.js 15.5.28; `/` is 6.49 kB / 115 kB first load after motion polish and `/examine` preserves the terminal at 11.5 kB / 120 kB first load.
+- [x] **Benchmark MVP (current request):** Redesign `/evals` as an interactive Evidence Ledger casebook with architecture lanes, selectable case evidence, a theme toggle, transparent fresh-versus-bundled provenance, and the existing benchmark API action preserved.
+- [x] **Benchmark verification:** `npm run build` succeeds on Next.js 15.5.28; `/evals` is 4.03 kB / 112 kB first load after the casebook redesign.
+- [x] **Workbench visual MVP (current request):** Restyle `/examine` as an active Evidence Ledger workbench with pane choreography, live audit pulse, responsive layout, and motion-safe interaction feedback while preserving the existing API/SSE examination flow and mandatory human sign-off.
+- [x] **Workbench verification:** `npm run build` succeeds on Next.js 15.5.28; `/examine` is 11.8 kB / 120 kB first load after the visual-motion redesign.
+- [x] **Full visual design pass (current request):** Complete a consistent Evidence Ledger visual system across all three routes, including responsive visual hierarchy, interactive state feedback, reduced-motion-safe choreography, explicit benchmark provenance, workbench active-case context, and visible keyboard focus states without changing decision authority or API contracts.
+- [x] **Full visual verification:** `npm run build` succeeds on Next.js 15.5.28; local `/`, `/evals`, and `/examine` all return HTTP 200 after a clean dev-server restart.
+- [x] **Core resilience implementation (current request):** Add a reducer-owned examination lifecycle with stale-stream cancellation, completed-evidence preservation on interruption, visible API/recovery notices, dynamic API-backed case selection, approval validation/error preservation, route error/loading states, a skip link, and responsive workbench scrolling.
+- [x] **Resilience verification:** Full backend suite passes 33/33; Next.js 15.5.28 production build succeeds and local `/`, `/evals`, and `/examine` all return HTTP 200.
+- [x] **Agentic workbench redesign:** Replace the dark terminal visual language with the landing-aligned light Evidence Ledger palette and expose the real five-owner orchestration (`Meterless / Memory → Zetaris → Python → Nemotron → Policy / Human`) with SSE-driven pending, active, and completed handoff states; rename the core regions to Evidence Folio, Agentic Decision Trace, and Decision Docket & Human Gate.
+- [x] **Agentic workbench verification:** Next.js 15.5.28 production build succeeds; `/examine` remains below the 150 kB route budget at 122 kB first load.
+- [x] **Federation proof inspector redesign:** Replace the legacy full-width dark SQL overlay with a landing-aligned light right-side evidence drawer, honest observed runtime/source telemetry, compact three-silo provenance, a visible join-safe invariant, collapsible SQL, Escape/backdrop dismissal, focus restoration, and responsive/reduced-motion behavior.
+- [x] **Federation proof verification:** Next.js 15.5.28 production build succeeds; `/examine` remains at 122 kB first load with the accessible proof drawer included.
+- [x] **Planning verification:** Confirm the blueprint preserves all routes/API contracts, the five architectural invariants, all three decisions, honest telemetry, and explicit human sign-off.
+- [x] **Regression baseline:** Backend suite passes 33/33 tests; Next.js 15.5.28 production build succeeds before redesign implementation.
+- [x] **Phase 8A — Contract lock and characterization:** Preserved all 8 FastAPI endpoints, verified SSE stream lifecycle, and locked regression baseline (33/33 pytest passing).
+- [x] **Phase 8B — Route safety and foundations:** Preserved terminal at `/examine`, established Evidence Ledger design tokens, Georgia editorial serif headings, JetBrains Mono telemetry, and high-contrast dark theme toggle.
+- [x] **Phase 8C — Landing product story:** Server-rendered Evidence Ledger product story at `/` with interactive Evidence Gate, hard invariant live demonstration, and 5-stage agentic orchestration.
+- [x] **Phase 8D — State and data:** Reducer-driven SSE stream management in `examination-reducer.ts`, graceful error recovery with `NoticeRegion`, and honest telemetry modes.
+- [x] **Phase 8E — Examination vertical slice:** Three golden scenarios verified end-to-end with spatial bounding boxes `[ymin, xmin, ymax, xmax]`, UCP 600 citations, and Merkle-sealed human authorization.
+- [x] **Phase 8F — Benchmark route:** Interactive Casebook at `/evals` with architecture comparison lanes and fresh-versus-bundled dataset provenance.
+- [x] **Phase 8G — Motion and performance:** Restrained 120ms-420ms CSS keyframe motion with strict `prefers-reduced-motion` compliance. Next.js 15 production build clean (all routes < 125 kB first-load JS).
+- [x] **Phase 8H — Verification & Git branch:** Created and switched to `feat/ui-redesign`, backend tests 33/33 green in 2.66s, Next.js build passes cleanly with 0 errors.
 
 ---
 

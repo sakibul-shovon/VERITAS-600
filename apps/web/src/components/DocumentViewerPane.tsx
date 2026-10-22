@@ -19,6 +19,9 @@ export default function DocumentViewerPane({
   const [activeTab, setActiveTab] = useState<"mt700" | "invoice" | "bl" | "packing" | "insurance">("invoice");
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractedFields, setExtractedFields] = useState<Record<string, any>>({});
+  const [extractedDocs, setExtractedDocs] = useState<Record<string, any> | null>(null);
+  const [extractionMode, setExtractionMode] = useState<string | null>(null);
+  const [extractionNotice, setExtractionNotice] = useState<string | undefined>(undefined);
 
   const master = scenarioData?.master || {};
   const amendments = scenarioData?.amendments || [];
@@ -27,8 +30,13 @@ export default function DocumentViewerPane({
   const handleRunLiveExtraction = async () => {
     if (!master?.lc_id) return;
     setIsExtracting(true);
+    setExtractionNotice(undefined);
     try {
       const res = await extractDocuments(master.lc_id);
+      setExtractedDocs(res.documents || null);
+      const mode = res.documents?.invoice?.extraction_mode || "STRUCTURED_FIXTURE";
+      setExtractionMode(mode);
+
       const invFields = Object.values(res.documents?.invoice?.fields || {});
       const blFields = Object.values(res.documents?.bill_of_lading?.fields || {});
       const insFields = Object.values(res.documents?.insurance?.fields || {});
@@ -49,35 +57,95 @@ export default function DocumentViewerPane({
         on_board_date: presentation.bl_on_board_date,
         insurance_amount: presentation.insurance_amount,
       });
+      setExtractionNotice("Extraction endpoint unavailable. Displaying existing scenario presentation fields, not a fresh OCR result.");
     } finally {
       setIsExtracting(false);
     }
   };
 
+  const renderExtractedSection = (docKey: string) => {
+    const docData = extractedDocs?.[docKey];
+    if (!docData?.fields || Object.keys(docData.fields).length === 0) return null;
+    return (
+      <div className="mt-2.5 pt-2 border-t border-slate-800 space-y-1.5">
+        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+          <span className="font-bold text-copper flex items-center gap-1">
+            <Scan className="h-3 w-3" />
+            SPATIAL ANCHORS ({Object.keys(docData.fields).length} FIELDS)
+          </span>
+          <span className="text-[9px] text-slate-500 font-mono">
+            {docData.source_digest_sha256 ? `sha256:${docData.source_digest_sha256.slice(0, 10)}...` : ""}
+          </span>
+        </div>
+        <div className="space-y-1">
+          {Object.entries(docData.fields).map(([k, f]: [string, any]) => (
+            <div
+              key={k}
+              onClick={() => onHighlightField?.(f.field_key || k)}
+              className={`flex items-center justify-between p-1.5 rounded text-[10px] border cursor-pointer transition ${
+                highlightedField === (f.field_key || k)
+                  ? "bg-amber-500/20 border-amber-500 text-amber-100"
+                  : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+              }`}
+            >
+              <div>
+                <span className="font-semibold text-slate-200">{f.field_key || k}: </span>
+                <span className="font-mono text-slate-300">{String(f.value)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {f.bounding_box && (
+                  <span className="px-1 rounded bg-slate-800 text-[9px] font-mono text-cyan-300" title="Normalized spatial coordinates [ymin, xmin, ymax, xmax]">
+                    [{f.bounding_box.join(", ")}]
+                  </span>
+                )}
+                {f.confidence !== undefined && (
+                  <span className="text-[9px] font-mono text-emerald-400">
+                    {(f.confidence * 100).toFixed(0)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
+    <div className="exam-pane exam-document-pane flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
       {/* Pane Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-900/60 border-b border-card-border">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-blue-400" />
           <span className="font-semibold text-xs tracking-wide text-slate-200 uppercase">
-            Documentary Presentation Viewer
+            Evidence Folio
           </span>
+          {extractionMode && (
+            <span className="hidden sm:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              {extractionMode}
+            </span>
+          )}
         </div>
         <button
           onClick={handleRunLiveExtraction}
           disabled={isExtracting}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-[11px] font-mono text-blue-300 transition disabled:opacity-50"
+          title="Extract typed fields and spatial coordinates from presentation documents"
         >
           {isExtracting ? (
             <>
               <Scan className="h-3 w-3 animate-spin text-blue-400" />
-              <span>Extracting VLM...</span>
+              <span>Extracting fields...</span>
+            </>
+          ) : extractedDocs ? (
+            <>
+              <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+              <span>Fields Extracted</span>
             </>
           ) : (
             <>
-              <Sparkles className="h-3 w-3 text-amber-400" />
-              <span>Live Nemotron OCR</span>
+              <Scan className="h-3 w-3 text-amber-400" />
+              <span>Extract document fields</span>
             </>
           )}
         </button>
@@ -136,6 +204,8 @@ export default function DocumentViewerPane({
           Insurance Cert
         </button>
       </div>
+
+      {extractionNotice && <p className="pane-notice" role="status">{extractionNotice}</p>}
 
       {/* Document Content Display */}
       <div className="flex-1 p-3 overflow-y-auto space-y-3 font-mono text-xs">
@@ -213,6 +283,7 @@ export default function DocumentViewerPane({
                 )}
               </div>
             </div>
+            {renderExtractedSection("invoice")}
           </div>
         )}
 
@@ -248,6 +319,7 @@ export default function DocumentViewerPane({
                 {presentation.bl_goods_description}
               </div>
             </div>
+            {renderExtractedSection("bill_of_lading")}
           </div>
         )}
 
@@ -302,6 +374,7 @@ export default function DocumentViewerPane({
                 {presentation.insurance_effective_date}
               </div>
             </div>
+            {renderExtractedSection("insurance")}
           </div>
         )}
       </div>

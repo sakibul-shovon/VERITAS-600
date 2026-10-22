@@ -29,6 +29,7 @@ export default function DecisionActionPane({
   const [isSigning, setIsSigning] = useState(false);
   const [signedSuccess, setSignedSuccess] = useState(false);
   const [receipt, setReceipt] = useState<any>(null);
+  const [signError, setSignError] = useState<string | undefined>(undefined);
   const [examinerName, setExaminerName] = useState("Senior Examiner #482 (Desk Head)");
   const [comments, setComments] = useState("Verified against UCP 600 rules and bank risk parameters.");
 
@@ -40,6 +41,8 @@ export default function DecisionActionPane({
   };
 
   const handleSignOff = async () => {
+    setSignError(undefined);
+    if (!examinerName.trim()) { setSignError("Enter the examining officer’s name before authorizing this action."); return; }
     setIsSigning(true);
     try {
       const res = await onApproveAction(examinerName, comments);
@@ -47,6 +50,7 @@ export default function DecisionActionPane({
       setSignedSuccess(true);
     } catch (err) {
       console.error(err);
+      setSignError("Authorization was not accepted by the server. Your entered details have been kept; review and try again.");
     } finally {
       setIsSigning(false);
     }
@@ -89,13 +93,13 @@ export default function DecisionActionPane({
   const Icon = theme.icon;
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
+    <div className="exam-pane exam-decision-pane flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
       {/* Pane Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-900/60 border-b border-card-border">
         <div className="flex items-center gap-2">
           <UserCheck className="h-4 w-4 text-purple-400" />
           <span className="font-semibold text-xs tracking-wide text-slate-200 uppercase">
-            Bank Examiner Decision & Actions
+            Decision Docket & Human Gate
           </span>
         </div>
       </div>
@@ -223,6 +227,7 @@ export default function DecisionActionPane({
               </div>
             ) : (
               <div className="space-y-2 pt-1">
+                {signError && <p className="text-[11px] text-rose-300 border border-rose-500/40 bg-rose-950/30 rounded p-2" role="alert">{signError}</p>}
                 <input
                   type="text"
                   value={examinerName}
