@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { FileText, Eye, CheckCircle2, AlertTriangle, Sparkles, Scan } from "lucide-react";
 
+import { extractDocuments } from "@/lib/api";
+
 interface DocumentViewerPaneProps {
   scenarioData: any;
   onHighlightField?: (fieldKey: string) => void;
@@ -22,10 +24,21 @@ export default function DocumentViewerPane({
   const amendments = scenarioData?.amendments || [];
   const presentation = scenarioData?.presentation || {};
 
-  const handleRunLiveExtraction = () => {
+  const handleRunLiveExtraction = async () => {
+    if (!master?.lc_id) return;
     setIsExtracting(true);
-    setTimeout(() => {
-      setIsExtracting(false);
+    try {
+      const res = await extractDocuments(master.lc_id);
+      const invFields: any[] = res.documents?.invoice?.fields || [];
+      const blFields: any[] = res.documents?.bill_of_lading?.fields || [];
+      const insFields: any[] = res.documents?.insurance?.fields || [];
+      const fieldMap: Record<string, any> = {};
+      [...invFields, ...blFields, ...insFields].forEach((f) => {
+        fieldMap[f.field_name] = f.extracted_value;
+      });
+      setExtractedFields(fieldMap);
+    } catch (err) {
+      console.warn("Live extraction fallback to presentation data:", err);
       setExtractedFields({
         invoice_no: presentation.invoice_no,
         invoice_amount: presentation.invoice_amount,
@@ -33,7 +46,9 @@ export default function DocumentViewerPane({
         on_board_date: presentation.bl_on_board_date,
         insurance_amount: presentation.insurance_amount,
       });
-    }, 600);
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   return (

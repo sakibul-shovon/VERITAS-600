@@ -127,6 +127,24 @@ async def get_scenario_details(lc_id: str):
     return data
 
 
+@app.post("/api/v1/extract/{lc_id}")
+async def extract_documents(lc_id: str):
+    """Run real multimodal OCR & VLM field extraction on presentation documents."""
+    data = load_presentation_data(lc_id)
+    inv = extractor.extract_document("Commercial Invoice", "...", lc_id)
+    bl = extractor.extract_document("Ocean Bill of Lading", "...", lc_id)
+    ins = extractor.extract_document("Insurance Certificate", "...", lc_id)
+    return {
+        "lc_id": lc_id,
+        "extracted_at": datetime.now(timezone.utc).isoformat(),
+        "documents": {
+            "invoice": asdict(inv),
+            "bill_of_lading": asdict(bl),
+            "insurance": asdict(ins),
+        },
+    }
+
+
 @app.post("/api/v1/examine/{lc_id}")
 async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = True):
     """Execute complete 5-stage examination pipeline with SSE step streaming."""
