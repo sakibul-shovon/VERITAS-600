@@ -12,50 +12,52 @@
 | Attribute | Current Value |
 | :--- | :--- |
 | **Current Phase** | **Phase 1: Sponsor Preflight, Data Seeding & Zetaris Federation** |
-| **Overall Progress** | **15% Complete** (Phase 0 Foundation Initialized) |
-| **Active Task** | Set up repository layout (`apps/api`, `apps/web`, `data/`, `docker-compose.yml`) |
-| **Last Updated** | 2026-10-22 (Phase 0 Foundation Completed) |
-| **Next Action Item** | **Implement `docker-compose.yml`, `data/` seed files, and `apps/api/zetaris/client.py`** |
+| **Overall Progress** | **20% Complete** (Phase 0 100% Complete & Verified, Phase 1 Underway) |
+| **Active Task** | Generate `hs_benchmarks.parquet`, `watchlist_entities.json`, and `seed_scenarios.py` |
+| **Last Updated** | 2026-10-22 |
+| **Next Action Item** | **Seed Phase 1 data files and implement `apps/api/zetaris/client.py`** |
 
 ```
-[███░░░░░░░░░░░░░░░░░] 15% (Phase 0 Complete, Phase 1 In Progress)
+[████░░░░░░░░░░░░░░░░] 20% (Phase 0 Complete, Phase 1 Underway)
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** Review [plan.md](file:///h:/Projects/VERITAS-600/docs/plan.md) Section 5 (Repository Structure) and Section 7 (Phase 1).
-2. **Step 2:** Create [docker-compose.yml](file:///h:/Projects/VERITAS-600/docker-compose.yml) (PostgreSQL 16 + Redis 7 under lightweight footprint <500MB).
-3. **Step 3:** Create the data directory files:
-   - `data/customs_parquet/hs_benchmarks.parquet` (or seed script generating 6-digit HS code benchmarks).
-   - `data/opensanctions/watchlist_entities.json` (Sanctioned vessels, companies, notify parties).
-4. **Step 4:** Implement `apps/api/db/schema.sql` and `apps/api/db/seed_scenarios.py` to seed the 3 Golden Scenarios (`LC-2026-8841`, `LC-2026-9104`, `LC-2026-9920`) and 7 eval cases.
-5. **Step 5:** Implement `apps/api/zetaris/client.py` with dual-mode telemetry (`LIVE_ZETARIS` vs. `LOCAL_DUCKDB_FALLBACK`) and verify using `pytest apps/api/tests/test_zetaris_sql.py`.
+1. **Step 1:** Create `apps/api/db/seed_scenarios.py` to seed:
+   - Data files: `data/customs_parquet/hs_benchmarks.parquet` and `data/opensanctions/watchlist_entities.json`.
+   - The 3 Golden Scenarios (`LC-2026-8841`, `LC-2026-9104`, `LC-2026-9920`) and 7 eval cases into PostgreSQL/DuckDB.
+2. **Step 2:** Implement `apps/api/zetaris/client.py` with dual-mode execution (`LIVE_ZETARIS` vs. `LOCAL_DUCKDB_FALLBACK`).
+3. **Step 3:** Run Verification Gate 1: `.venv\Scripts\pytest.exe apps/api/tests/test_zetaris_sql.py -v`.
 
 ---
 
 ## 📋 Comprehensive Phase Roadmap & Task Checklist
 
-### Phase 0: Repository Foundation & Standards ✅ [COMPLETED]
+### Phase 0: Repository Foundation & Standards ✅ [COMPLETED & VERIFIED]
 - [x] Initialize Git repository (`main` branch) and configure remote `https://github.com/sakibul-shovon/VERITAS-600.git`.
 - [x] Relocate and structure master architecture in [docs/plan.md](file:///h:/Projects/VERITAS-600/docs/plan.md) and [doc/plan.md](file:///h:/Projects/VERITAS-600/doc/plan.md).
 - [x] Create comprehensive `.gitignore`, `.env.example`, and `LICENSE` (Apache-2.0).
 - [x] Create [AGENTS.md](file:///h:/Projects/VERITAS-600/AGENTS.md) and [.cursorrules](file:///h:/Projects/VERITAS-600/.cursorrules) defining domain boundaries & agent handoff protocols.
 - [x] Configure automated CI workflow in [.github/workflows/ci.yml](file:///h:/Projects/VERITAS-600/.github/workflows/ci.yml) and PR template.
 - [x] Create master [README.md](file:///h:/Projects/VERITAS-600/README.md) with architecture diagram, sponsor badges, and quickstart instructions.
+- [x] Setup Python 3.11 environment via `uv`, configure `.venv`, and install all 56 backend dependencies.
+- [x] Configure application settings in [apps/api/config.py](file:///h:/Projects/VERITAS-600/apps/api/config.py) (Pydantic v2).
+- [x] Create lightweight [docker-compose.yml](file:///h:/Projects/VERITAS-600/docker-compose.yml) (PostgreSQL 16 + Redis 7).
+- [x] Push clean initialization to GitHub `origin/main`.
 
 ---
 
-### Phase 1: Sponsor Preflight, Data Seeding & Join-Safe Zetaris Federation ⏳ [READY TO EXECUTE]
-- [ ] Create `docker-compose.yml` (Postgres 16 on port 5432, Redis 7 on port 6379).
-- [ ] Create `apps/api/` FastAPI project skeleton (`requirements.txt`, `main.py`, `config.py`).
-- [ ] Implement `apps/api/db/schema.sql` (Tables: `lc_master`, `lc_amendments`, `examination_audit_log`).
+### Phase 1: Sponsor Preflight, Data Seeding & Join-Safe Zetaris Federation ⏳ [IN PROGRESS]
+- [x] Create `docker-compose.yml` (Postgres 16 on port 5432, Redis 7 on port 6379).
+- [x] Create `apps/api/` FastAPI project skeleton (`requirements.txt`, `config.py`).
+- [x] Implement `apps/api/db/schema.sql` (Tables: `lc_master`, `lc_amendments`, `examination_audit_log`).
+- [x] Write `apps/api/zetaris/sql/federated_check.sql` with CTE pre-aggregation.
 - [ ] Create synthetic benchmark dataset `data/customs_parquet/hs_benchmarks.parquet` (HS-8481.80, HS-8501.10, HS-5205.12).
 - [ ] Create watchlist dataset `data/opensanctions/watchlist_entities.json` (Sanctioned vessels, parent companies).
 - [ ] Implement `apps/api/db/seed_scenarios.py` with the 3 Golden Scenarios + 7 eval cases.
 - [ ] Implement `apps/api/zetaris/client.py` (Zetaris API client + DuckDB local standby).
-- [ ] Write `apps/api/zetaris/sql/federated_check.sql` with CTE pre-aggregation.
 - [ ] **Verification Gate 1:** `pytest apps/api/tests/test_zetaris_sql.py` passes (guarantees exactly 1 row per LC, execution < 1.5s).
 
 ---
