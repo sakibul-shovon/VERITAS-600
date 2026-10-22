@@ -318,3 +318,31 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
         "audit_receipt_hash": f"AUDIT-SIG-{lc_id}-{datetime.now(timezone.utc).strftime('%y%m%d%H%M%S')}",
         "message": f"Action successfully signed off by {body.examiner_name}. Funds release or notice dispatched.",
     }
+
+
+# Evaluation benchmark suite state cache
+_cached_benchmark_results: Optional[Dict[str, Any]] = None
+
+
+@app.post("/api/v1/evals/run")
+async def run_evals_benchmark():
+    """Execute live 3-baseline benchmark across all 10 scenarios."""
+    global _cached_benchmark_results
+    from apps.api.evals.compare_baselines import BaselineComparisonSuite
+
+    suite = BaselineComparisonSuite()
+    results = suite.run_benchmark()
+    _cached_benchmark_results = results
+    return results
+
+
+@app.get("/api/v1/evals/results")
+async def get_evals_results():
+    """Retrieve benchmark results from cache or trigger fresh run."""
+    global _cached_benchmark_results
+    if _cached_benchmark_results is None:
+        from apps.api.evals.compare_baselines import BaselineComparisonSuite
+
+        suite = BaselineComparisonSuite()
+        _cached_benchmark_results = suite.run_benchmark()
+    return _cached_benchmark_results

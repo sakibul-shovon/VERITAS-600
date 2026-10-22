@@ -408,6 +408,65 @@ def seed_duckdb_standby() -> Path:
                 ],
             )
 
+    # Insert Evaluation Cases into lc_master
+    for ec in EVAL_CASES:
+        lc_id = ec["lc_id"]
+        con.execute(
+            """
+            INSERT OR REPLACE INTO lc_master (
+                lc_id, swift_mt700_raw, issuing_bank, applicant_name,
+                applicant_address_strict, beneficiary_name, currency, amount,
+                tolerance_pct, incoterm, hs_code_6, goods_description_strict,
+                unit_price, quantity, port_of_loading, port_of_discharge,
+                latest_shipment_date, expiry_date, presentation_period_days,
+                insurance_min_pct, daily_demurrage_usd
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                lc_id,
+                f":20: {lc_id}\n:31D: 261115 SINGAPORE\n:32B: USD {ec.get('amount', 240000.0)}\n:45A: {ec.get('title', 'Goods')}",
+                "Global Trade Bank Singapore",
+                "Pacific Heavy Machinery Pte Ltd",
+                "82 Shenton Way, Singapore 079120",
+                "Rotor Dynamics GmbH",
+                "USD",
+                float(ec.get("amount", 240000.0)),
+                5.0 if ec.get("quantity_actual") else 0.0,
+                "CIF",
+                ec.get("hs_code", "8501.10"),
+                "500 UNITS INDUSTRIAL AC SERVO MACHINE MODEL X-200 AT USD 480.00 PER UNIT CIF SINGAPORE",
+                float(ec.get("unit_price", 480.0)),
+                500 if not ec.get("quantity_actual") else 150000,
+                "Hamburg, Germany",
+                "Singapore",
+                "2026-10-10",
+                "2026-11-15",
+                21,
+                110.0,
+                1850.0,
+            ],
+        )
+
+        if ec.get("partial_amendment"):
+            con.execute(
+                """
+                INSERT OR REPLACE INTO lc_amendments (
+                    amendment_id, lc_id, sequence_no, amended_field,
+                    old_value, new_value, beneficiary_acceptance_status, effective_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    f"AMD-{lc_id}-01",
+                    lc_id,
+                    1,
+                    "amount",
+                    "240000.0",
+                    "220000.0",
+                    "UNACCEPTED_PENDING",
+                    "2026-10-01",
+                ],
+            )
+
     con.close()
     print(f"Seeded DuckDB standby database at {duckdb_path}")
     return duckdb_path

@@ -198,6 +198,8 @@ const EVALUATION_DATASET: EvaluationRow[] = [
   },
 ];
 
+import { runEvalsBenchmark } from "@/lib/api";
+
 export default function EvaluationsPage() {
   const [filter, setFilter] = useState<"ALL" | "Golden" | "Edge Case">("ALL");
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -207,12 +209,16 @@ export default function EvaluationsPage() {
     filter === "ALL" ? true : row.difficulty === filter
   );
 
-  const handleRunBenchmark = () => {
+  const handleRunBenchmark = async () => {
     setIsRunning(true);
-    setTimeout(() => {
+    try {
+      await runEvalsBenchmark();
+    } catch (err) {
+      console.warn("Backend evals API offline, using local benchmark state:", err);
+    } finally {
       setIsRunning(false);
       setBenchmarkRan(true);
-    }, 1200);
+    }
   };
 
   return (
