@@ -1,11 +1,19 @@
 {
-  "2": "main.py",
+  "2": "ucp600_legal_adjudicator.py",
   "3": "output",
-  "13": "Settings",
+  "7": "DocumentExtractor",
+  "13": "main.py",
   "28": "VERITAS-600",
   "29": "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)",
   "30": "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)",
   "31": "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)",
   "32": "AGENTS.md: Operational Instructions for Coding Agents",
-  "33": "pull_request_template.md"
+  "33": "pull_request_template.md",
+  "34": "5. Concrete Implementation Plan",
+  "35": "3. The Frontier Reasoning Upgrade",
+  "36": "NvidiaNimClient",
+  "37": "4. The Palantir-Grade Visual Blueprint",
+  "38": "compare_baselines.py",
+  "39": "BankDecision",
+  "40": ".complete"
 }

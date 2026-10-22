@@ -1,17 +1,17 @@
 # Graph Report - VERITAS-600  (2026-10-22)
 
 ## Corpus Check
-- 58 files · ~40,765 words
+- 59 files · ~40,905 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 9 file(s) not represented in the graph (top: (none) 6, .example 1, .css 1)
+- Unclassified: 10 file(s) not represented in the graph (top: (none) 6, .example 1, .css 1)
 
 ## Summary
-- 521 nodes · 832 edges · 34 communities (18 shown, 16 thin omitted)
+- 541 nodes · 851 edges · 34 communities (18 shown, 16 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 83 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0e9ac83a`
+- Built from commit: `bddcd971`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,7 +19,7 @@
 - AmendmentMemoryEngine
 - app/page.tsx
 - main.py
-- test_legal_adjudicator.py
+- output
 - package.json
 - BaselineComparisonSuite
 - ZetarisFederationClient
@@ -29,7 +29,7 @@
 - test_end_to_end.py
 - MeterlessRouter
 - seed_scenarios.py
-- BankDecision
+- Settings
 - TokenBucketRateLimiter
 - next.config.js
 - VERITAS-600
@@ -70,26 +70,26 @@
 
 ### Community 0 - "AmendmentMemoryEngine"
 Cohesion: 0.08
-Nodes (14): parse_date(), UCP600DeterministicEngine, AmendmentMemoryEngine, AmendmentResolution, memory_engine(), test_art_10_c_full_implicit_acceptance(), test_art_10_e_partial_acceptance_prohibition(), det_engine() (+6 more)
+Nodes (15): parse_date(), UCP600DeterministicEngine, AmendmentMemoryEngine, AmendmentResolution, memory_engine(), test_art_10_c_full_implicit_acceptance(), test_art_10_e_partial_acceptance_prohibition(), test_scenario_1_amendment_lifecycle() (+7 more)
 
 ### Community 1 - "app/page.tsx"
 Cohesion: 0.08
 Nodes (17): EVALUATION_DATASET, EvaluationRow, metadata, TerminalPage(), AdjudicationMatrixPane(), AdjudicationMatrixPaneProps, DecisionActionPane(), DecisionActionPaneProps (+9 more)
 
 ### Community 2 - "main.py"
-Cohesion: 0.10
-Nodes (4): get_settings(), Settings, TermRecord, test_scenario_1_amendment_lifecycle()
+Cohesion: 0.06
+Nodes (16): get_settings(), ArtifactGenerator, BankDecision, BankDecisionEngine, DeterministicCheckResult, DeterministicEvaluation, LegalAdjudicationResult, LegalFinding (+8 more)
 
-### Community 3 - "test_legal_adjudicator.py"
+### Community 3 - "output"
 Cohesion: 0.11
-Nodes (12): BankDecisionEngine, DeterministicCheckResult, DeterministicEvaluation, LegalAdjudicationResult, LegalFinding, UCP600LegalAdjudicator, adjudicator(), extractor() (+4 more)
+Nodes (18): ignore, customPatterns, useGitignore, include, output, compress, filePath, parsableStyle (+10 more)
 
 ### Community 4 - "package.json"
 Cohesion: 0.06
 Nodes (33): dependencies, clsx, lucide-react, next, react, react-dom, tailwind-merge, devDependencies (+25 more)
 
 ### Community 5 - "BaselineComparisonSuite"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (10): ArchitectureResult, BaselineComparisonSuite, main(), ScenarioBenchmarkRow, get_evals_results(), run_evals_benchmark(), test_baseline_suite_loads_all_10_scenarios(), test_regex_baseline_failure_modes() (+2 more)
 
 ### Community 6 - "ZetarisFederationClient"
@@ -137,27 +137,27 @@ Cohesion: 0.08
 Nodes (24): 1.1 Target User & The High-Stakes Problem, 1. System Vision & Operational Problem, 2.1 Zetaris: In-Situ Federated Data Layer, 2.2 Meterless: Context Routing, Stateful Memory & Inference Control, 2.3 NVIDIA Nemotron: Multimodal Extraction & Legal Adjudication, 2.4 Cursor: AI-Native Development Workflow, 2. Mandatory Sponsor Stack (Transparent, Load-Bearing Integration), 3. Core Technical Differentiation (The 3 Pillars) (+16 more)
 
 ### Community 32 - "AGENTS.md: Operational Instructions for Coding Agents"
-Cohesion: 0.25
-Nodes (7): 1. Prime Directive & Ground Truth, 2. Inviolable Architectural Invariants, 3. Repository Structure, 4. Verification & Testing Commands, 5. Sponsor Integration Standards, AGENTS.md: Operational Instructions for Coding Agents, graphify
+Cohesion: 0.22
+Nodes (8): 1. Prime Directive & Ground Truth, 2. Inviolable Architectural Invariants, 3. Repository Structure, 4. Verification & Testing Commands, 5. Sponsor Integration Standards, 6. Repomix Whole-Repository Context Compression, AGENTS.md: Operational Instructions for Coding Agents, graphify
 
 ## Knowledge Gaps
 - **10 isolated node(s):** `clsx`, `react-dom`, `tailwind-merge`, `@types/node`, `@types/react` (+5 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 303 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 318 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ZetarisFederationClient` connect `ZetarisFederationClient` to `AmendmentMemoryEngine`, `main.py`, `BaselineComparisonSuite`, `VERITAS-600`, `VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)`, `VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)`, `VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)`?**
-  _High betweenness centrality (0.326) - this node is a cross-community bridge._
+  _High betweenness centrality (0.303) - this node is a cross-community bridge._
 - **Are the 9 inferred relationships involving `BaselineComparisonSuite` (e.g. with `BankDecisionEngine` and `UCP600DeterministicEngine`) actually correct?**
   _`BaselineComparisonSuite` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `clsx`, `react-dom`, `tailwind-merge` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AmendmentMemoryEngine` be split into smaller, more focused modules?**
-  _Cohesion score 0.08367071524966262 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08292682926829269 - nodes in this community are weakly interconnected._
 - **Why does `2.1 Zetaris: In-Situ Federated Data Layer` connect `VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)` to `ZetarisFederationClient`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `ZetarisFederationClient` (e.g. with `BaselineComparisonSuite` and `test_join_safe_single_row_guarantee()`) actually correct?**
   _`ZetarisFederationClient` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Should `app/page.tsx` be split into smaller, more focused modules?**

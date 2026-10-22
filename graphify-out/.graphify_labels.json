@@ -4,7 +4,6 @@
   "4": "package.json",
   "5": "BaselineComparisonSuite",
   "6": "ZetarisFederationClient",
-  "7": "NvidiaNimClient",
   "8": "examine_presentation_sse",
   "9": "compilerOptions",
   "10": "test_end_to_end.py",

@@ -11,25 +11,27 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **All Phases Complete & Verified (Phases 0 - 6)** |
-| **Overall Progress** | **100% Complete** (Production-Grade Hackathon Ready) |
-| **Active Task** | Continuous integration and live presentation ready |
+| **Current Phase** | **Phase 7 Planned — World-Class Elevation & Demo Integrity** |
+| **Overall Progress** | **Core Phases 0–6 verified; architecture elevation blueprint complete** |
+| **Active Task** | P0 runtime truthfulness and end-to-end demo repair |
 | **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Demo presentation, live examiner testing, and hackathon submission** |
+| **Next Action Item** | **Implement Phase 7 P0 from `HACKATHON_ARCHITECTURE_ELEVATION.md`** |
 
 ```
-[████████████████████] 100% (All 7 Phases Complete & Verified)
+[CORE PHASES 0–6: COMPLETE & VERIFIED] [PHASE 7: PLANNED]
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** All 7 phases (Phase 0 through Phase 6) are 100% complete, fully implemented, and passing automated tests.
-2. **Backend Server Launch:** Run `uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload`
-3. **Web Terminal Launch:** Run `cd apps/web && npm run dev` (Access terminal at `http://localhost:3000` and evals at `http://localhost:3000/evals`)
-4. **Complete Test Suite:** Run `pytest apps/api/tests/ -v` (27/27 tests passing in < 3s)
-5. **Run Live Benchmark:** Run `python apps/api/evals/compare_baselines.py` (10/10 100% accuracy)
+1. **Read the completed audit:** `HACKATHON_ARCHITECTURE_ELEVATION.md`.
+2. **Repair the P0 browser path:** Align the frontend `EventSource` transport with the API examination route and add a Playwright test for the complete judge workflow.
+3. **Make extraction truthful:** Replace scenario-keyed extraction with real input-derived VLM extraction and fix the frontend response contract.
+4. **Make sponsor telemetry observed:** Implement real Meterless primitives, distinguish real NIM cache from deterministic fallback, and report per-run Zetaris/NIM/Meterless receipts.
+5. **Make evaluation empirical:** Replace scenario-ID baseline outcomes and synthetic latency with actual reproducible runs on a frozen blind dataset.
+6. **Make sign-off enforceable:** Persist the decision, bind authenticated approval to its hashes, and use an outbox/acknowledgment before reporting dispatch.
+7. **Verification baseline:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` currently passes 27/27; `cd apps/web && npm run build` currently succeeds.
 
 ---
 
@@ -140,6 +142,22 @@
 - [x] Create automated evaluation test suite `apps/api/tests/test_evals_baseline.py` (5/5 tests passing).
 - [x] Complete backend test suite passes: 27/27 tests green in 2.92s.
 - [x] Production Next.js build passes with 0 errors (`npm run build`).
+
+---
+
+### Phase 7: World-Class Elevation & Demo Integrity [PLANNED]
+- [x] Complete evidence-backed Track 03, sponsor, architecture, reasoning, UX, and implementation audit in `HACKATHON_ARCHITECTURE_ELEVATION.md`.
+- [ ] **P0:** Repair browser SSE method mismatch and cover the real examiner flow with Playwright.
+- [ ] **P0:** Replace scenario-keyed extraction and mismatched frontend extraction types with input-derived, schema-validated evidence.
+- [ ] **P0:** Replace configuration-derived sponsor badges with observed per-run execution telemetry.
+- [ ] **P0:** Integrate official Meterless engine primitives/conformance and measure token usage rather than displaying a hardcoded result.
+- [ ] **P0:** Replace scripted baseline outcomes and synthetic latency with actual reproducible baseline runs.
+- [ ] **P0:** Persist examination runs and implement authenticated, hash-bound maker-checker approval plus truthful dispatch state.
+- [ ] **P1:** Add typed domain models, append-only evidence events, canonical hashes, Merkle proofs, and formal amendment-state verification.
+- [ ] **P2:** Expand legal rule coverage and fail closed to manual review on uncertain or invalid neural output.
+- [ ] **P3:** Harden live federation, anomaly intelligence, source freshness, and sponsor proof receipts.
+- [ ] **P4:** Implement the linked-evidence examiner UX and accessible authorization ceremony.
+- [ ] **P5:** Run independent blind evaluation, security, resilience, accessibility, and examiner usability validation.
 
 ---
 
