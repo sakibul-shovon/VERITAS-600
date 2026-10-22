@@ -11,25 +11,33 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 3: Meterless Integration, Nemotron Extraction & Legal Adjudicator** |
-| **Overall Progress** | **50% Complete** (Phases 0, 1 & 2 Complete & Verified, Phase 3 Underway) |
-| **Active Task** | Implement `nim_client.py`, `meterless_router.py`, `document_extractor.py`, and `ucp600_legal_adjudicator.py` |
+| **Current Phase** | **Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API** |
+| **Overall Progress** | **65% Complete** (Phases 0-3 Complete & Verified, Phase 4 Underway) |
+| **Active Task** | Implement `decision_engine.py`, `artifact_generator.py`, and `apps/api/main.py` with SSE streaming |
 | **Last Updated** | 2026-10-22 |
-| **Next Action Item** | **Implement NVIDIA NIM client, document extractor, and Nemotron legal adjudicator** |
+| **Next Action Item** | **Implement 3-action bank decision engine, SWIFT MT734 generator, and FastAPI endpoints** |
 
 ```
-[██████████░░░░░░░░░░] 50% (Phases 0-2 Complete, Phase 3 Underway)
+[█████████████░░░░░░░] 65% (Phases 0-3 Complete, Phase 4 Underway)
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Step 1:** Implement [apps/api/inference/meterless_router.py](file:///h:/Projects/VERITAS-600/apps/api/inference/meterless_router.py) for context routing and token telemetry.
-2. **Step 2:** Implement [apps/api/inference/nim_client.py](file:///h:/Projects/VERITAS-600/apps/api/inference/nim_client.py) with 25 RPM token-bucket rate limiter, fallback cache, and dynamic model checks.
-3. **Step 3:** Implement [apps/api/engines/document_extractor.py](file:///h:/Projects/VERITAS-600/apps/api/engines/document_extractor.py) for multimodal field extraction with bounding boxes.
-4. **Step 4:** Implement [apps/api/engines/ucp600_legal_adjudicator.py](file:///h:/Projects/VERITAS-600/apps/api/engines/ucp600_legal_adjudicator.py) enforcing the **Hard Invariant Rule** and citing ISBP 745 A23 / Art. 14(e).
-5. **Step 5:** Run Verification Gate 3: `.venv\Scripts\pytest.exe apps/api/tests/test_legal_adjudicator.py -v`.
+1. **Step 1:** Implement [apps/api/engines/decision_engine.py](file:///h:/Projects/VERITAS-600/apps/api/engines/decision_engine.py):
+   - Action 1: `APPROVE_HONOUR` (clean or protected under ISBP A23 / Art. 14(e)).
+   - Action 2: `ISSUE_MT734_REFUSAL` (discrepancy found, includes demurrage advisory).
+   - Action 3: `COMPLIANCE_HOLD_AML` (TBML Z-score > 4.0 or sanctions hit, blocks settlement without invalid MT734).
+2. **Step 2:** Implement [apps/api/engines/artifact_generator.py](file:///h:/Projects/VERITAS-600/apps/api/engines/artifact_generator.py):
+   - SWIFT MT734 Refusal notice with fields `:20:`, `:21:`, `:32A:`, `:77J:`, `:77B:` `HOLD`.
+   - Financial Crime Escalation Dossier (SAR/OFAC Hold).
+3. **Step 3:** Implement [apps/api/main.py](file:///h:/Projects/VERITAS-600/apps/api/main.py):
+   - `GET /api/v1/scenarios` (health + scenario details).
+   - `POST /api/v1/examine/{lc_id}` (real-time SSE streaming across the 5 pipeline stages).
+   - `POST /api/v1/examine/{lc_id}/approve-action` (human examiner digital sign-off).
+   - `POST /api/v1/evals/run` (empirical 3-baseline benchmark).
+4. **Step 4:** Run Verification Gate 4: `.venv\Scripts\pytest.exe apps/api/tests/test_end_to_end.py -v`.
 
 ---
 
@@ -80,26 +88,23 @@
 
 ---
 
----
-
-### Phase 3: Meterless Integration, Nemotron Extraction & Legal Adjudicator ⏳ [IN PROGRESS]
-- [ ] Implement `apps/api/inference/meterless_router.py`:
-  - Context routing, token usage telemetry, and stateful memory ledger.
-- [ ] Implement `apps/api/inference/nim_client.py`:
-  - Connect to NVIDIA NIM (`https://integrate.api.nvidia.com/v1`).
-  - Dynamic model slug verification, 25 RPM token-bucket rate limiter, SHA-256 response cache.
-- [ ] Implement `apps/api/engines/document_extractor.py`:
-  - Live Nemotron VLM / OCR extraction from rendered invoice/BL images into structured JSON with bounding boxes.
-- [ ] Implement `apps/api/engines/ucp600_legal_adjudicator.py`:
-  - Adjudicates lexical differences using structured JSON schema.
-  - Cites **ISBP 745 Para A23** for harmless typos.
-  - Cites **UCP 600 Art. 14(e)** for general B/L descriptions.
-  - Enforces **Hard Invariant Rule** (neural verdict never overrides a failed deterministic check).
-- [ ] **Verification Gate 3:** Verify `"Mashine"` returns `COMPLIANT_PROTECTED` (A23) and `"Industrial Servo Motors"` on B/L returns `COMPLIANT_PROTECTED` (14(e)).
+### Phase 3: Meterless Integration, Nemotron Extraction & Legal Adjudicator ✅ [COMPLETED & VERIFIED]
+- [x] Implement `apps/api/inference/meterless_router.py`:
+  - Context routing across 6 Markovian stages, token telemetry tracking, ~86% token savings estimation.
+- [x] Implement `apps/api/inference/nim_client.py`:
+  - Connect to NVIDIA NIM (`https://integrate.api.nvidia.com/v1`), 25 RPM token bucket rate limiter, SHA-256 response cache with fallback toggle.
+- [x] Implement `apps/api/engines/document_extractor.py`:
+  - Multimodal VLM field extraction with spatial bounding boxes [ymin, xmin, ymax, xmax] for Commercial Invoice, Ocean B/L, Packing List, and Insurance Certificate.
+- [x] Implement `apps/api/engines/ucp600_legal_adjudicator.py`:
+  - Resolves harmless typographical errors under **ISBP 745 Para A23** (`"Mashine"` protected).
+  - Resolves general non-conflicting goods descriptions on B/L under **UCP 600 Art. 14(e)** (`"Servo Motors"` protected).
+  - Catches address mutations in transport document Consignee/Notify box under **UCP 600 Art. 14(j)**.
+  - Strictly enforces the **Hard Invariant Rule** in code (deterministic failure blocks compliant verdict).
+- [x] **Verification Gate 3:** `pytest apps/api/tests/test_legal_adjudicator.py` passes 100%.
 
 ---
 
-### Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API ⬜ [PENDING]
+### Phase 4: Bank Decision Engine, SWIFT MT734 & AML Generator + SSE API ⏳ [IN PROGRESS]
 - [ ] Implement `apps/api/engines/decision_engine.py`:
   - Action 1: `APPROVE_HONOUR` (clean or protected).
   - Action 2: `ISSUE_MT734_REFUSAL` (discrepancy found, Sanctions = 0, includes demurrage savings re-presentation advisory).
