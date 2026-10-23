@@ -1,13 +1,9 @@
 {
   "0": "AmendmentMemoryEngine",
-  "1": "app/page.tsx",
   "4": "package.json",
-  "5": "BaselineComparisonSuite",
   "6": "ZetarisFederationClient",
-  "8": "examine_presentation_sse",
   "9": "compilerOptions",
   "10": "test_end_to_end.py",
-  "11": "MeterlessRouter",
   "12": "seed_scenarios.py",
   "14": "TokenBucketRateLimiter",
   "15": "next.config.js",

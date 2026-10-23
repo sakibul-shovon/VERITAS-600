@@ -11,11 +11,11 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 8 Full Redesign Implemented on `feat/ui-redesign` — Verification Clean** |
-| **Overall Progress** | **Phases 0–8 Complete & Verified; visual redesign implemented across `/` (Product Story), `/examine` (Examiner Workbench), and `/evals` (Casebook Benchmark) with 33/33 Pytest passing and clean Next.js 15 build** |
-| **Active Task** | Review Evidence Ledger redesign, demo rehearsal, and stage branch for final PR merge |
+| **Current Phase** | **Phase 8 A+C Agentic Mission Control implemented on `feat/ui-redesign` — frontend verification clean** |
+| **Overall Progress** | **Phases 0–8 complete; `/examine` now uses a modular Mission Control plus Evidence Knowledge Graph with seven clickable workspaces, SSE-driven agent motion, calculation proof, federation provenance, and a human-gated audit seal** |
+| **Active Task** | Rehearse the new Mission Control demo path and stage branch for final PR merge |
 | **Last Updated** | 2026-10-23 |
-| **Next Action Item** | **Rehearse 150-second demo sequence and prepare PR from `feat/ui-redesign` to `main`** |
+| **Next Action Item** | **Rehearse the 150-second path: Overview → Agent Run → Rule Analysis → Decision Studio → Audit Receipt, then prepare PR from `feat/ui-redesign` to `main`** |
 
 ```
 [CORE PHASES 0–6: COMPLETE & VERIFIED] [PHASE 7: COMPLETE & VERIFIED] [PHASE 8: IMPLEMENTED ON FEAT/UI-REDESIGN]
@@ -178,6 +178,9 @@
 - [x] **Agentic workbench verification:** Next.js 15.5.28 production build succeeds; `/examine` remains below the 150 kB route budget at 122 kB first load.
 - [x] **Federation proof inspector redesign:** Replace the legacy full-width dark SQL overlay with a landing-aligned light right-side evidence drawer, honest observed runtime/source telemetry, compact three-silo provenance, a visible join-safe invariant, collapsible SQL, Escape/backdrop dismissal, focus restoration, and responsive/reduced-motion behavior.
 - [x] **Federation proof verification:** Next.js 15.5.28 production build succeeds; `/examine` remains at 122 kB first load with the accessible proof drawer included.
+- [x] **A+C hybrid Mission Control redesign:** Replace the single-page three-pane composition with seven explicit clickable workspaces (Overview, Evidence Room, Agent Run, Rule Analysis, Federation, Decision Studio, Audit Receipt), a persistent application navigation rail, and a dominant run command while preserving the existing API/SSE lifecycle.
+- [x] **Agentic knowledge graph and motion:** Add SSE-state-driven five-agent nodes, animated evidence packets, active-stage orbit/pulse feedback, structured event ledger, backend-computed calculation cards, three-silo federation map, immutable hard-invariant lock, and cryptographic audit-seal transition with reduced-motion parity.
+- [x] **A+C responsive verification:** Next.js 15.5.28 production build succeeds with `/examine` at 128 kB first-load JS (below the 150 kB budget); desktop 1440×1000 and mobile 390×844 visual QA completed.
 - [x] **Planning verification:** Confirm the blueprint preserves all routes/API contracts, the five architectural invariants, all three decisions, honest telemetry, and explicit human sign-off.
 - [x] **Regression baseline:** Backend suite passes 33/33 tests; Next.js 15.5.28 production build succeeds before redesign implementation.
 - [x] **Phase 8A — Contract lock and characterization:** Preserved all 8 FastAPI endpoints, verified SSE stream lifecycle, and locked regression baseline (33/33 pytest passing).

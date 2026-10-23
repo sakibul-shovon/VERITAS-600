@@ -18,12 +18,14 @@ interface DecisionActionPaneProps {
   decision?: BankDecision;
   generatedArtifact?: string;
   onApproveAction: (examinerName: string, comments: string) => Promise<any>;
+  approvalReceipt?: any;
 }
 
 export default function DecisionActionPane({
   decision,
   generatedArtifact,
   onApproveAction,
+  approvalReceipt,
 }: DecisionActionPaneProps) {
   const [copied, setCopied] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
@@ -91,6 +93,8 @@ export default function DecisionActionPane({
 
   const theme = getActionTheme();
   const Icon = theme.icon;
+  const isAuthorized = signedSuccess || decision?.action_status === "APPROVED";
+  const effectiveReceipt = receipt || approvalReceipt;
 
   return (
     <div className="exam-pane exam-decision-pane flex flex-col h-full bg-card rounded-lg border border-card-border overflow-hidden">
@@ -119,7 +123,7 @@ export default function DecisionActionPane({
                 </div>
               </div>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${theme.badge}`}>
-                {signedSuccess ? "EXECUTED" : "AWAITING SIGN-OFF"}
+                {isAuthorized ? "EXECUTED" : "AWAITING SIGN-OFF"}
               </span>
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed border-t border-slate-800/80 pt-2">
@@ -194,7 +198,7 @@ export default function DecisionActionPane({
               before settlement release, MT734 dispatch, or AML filing.
             </p>
 
-            {signedSuccess ? (
+            {isAuthorized ? (
               <div className="p-3 rounded bg-emerald-950/30 border border-emerald-500/40 text-emerald-200 text-xs space-y-2">
                 <div className="flex items-center gap-2 font-bold text-emerald-300">
                   <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -208,14 +212,14 @@ export default function DecisionActionPane({
                   <div>
                     <span className="text-slate-400">Signature Token: </span>
                     <span className="text-blue-300 font-bold break-all">
-                      {receipt?.audit_receipt_hash || receipt?.decision_receipt?.signature_token || "V600-SIG-SEALED"}
+                      {effectiveReceipt?.audit_receipt_hash || effectiveReceipt?.decision_receipt?.signature_token || "V600-SIG-SEALED"}
                     </span>
                   </div>
-                  {receipt?.decision_receipt?.merkle_root_sha256 && (
+                  {effectiveReceipt?.decision_receipt?.merkle_root_sha256 && (
                     <div>
                       <span className="text-slate-400">Merkle Root: </span>
                       <span className="text-purple-300 text-[10px] break-all">
-                        {receipt.decision_receipt.merkle_root_sha256.slice(0, 32)}...
+                        {effectiveReceipt.decision_receipt.merkle_root_sha256.slice(0, 32)}...
                       </span>
                     </div>
                   )}
