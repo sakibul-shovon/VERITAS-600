@@ -66,11 +66,18 @@ def test_e2e_scenario_1_wrongful_dishonor_prevention(client: TestClient):
     # Human Sign-Off Gate
     sig_res = client.post(
         "/api/v1/examine/LC-2026-8841/approve-action",
-        json={"examiner_name": "Sarah Chen, Trade Officer", "comments": "Checked and approved"},
+        json={
+            "examiner_name": "Sarah Chen, Trade Officer",
+            "comments": "Checked and approved",
+            "run_id": data["run_id"],
+            "decision_sha256": data["decision_sha256"],
+            "expected_action": decision["recommended_action"],
+        },
     )
     assert sig_res.status_code == 200
     sig_data = sig_res.json()
-    assert sig_data["status"] == "APPROVED_AND_EXECUTED"
+    assert sig_data["status"] == "AUTHORIZED_NOT_DISPATCHED"
+    assert sig_data["dispatch_status"] == "NOT_CONNECTED"
     assert sig_data["human_approved_by"] == "Sarah Chen, Trade Officer"
 
 

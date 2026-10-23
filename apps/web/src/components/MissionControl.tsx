@@ -30,6 +30,7 @@ import {
 import DocumentViewerPane from "@/components/DocumentViewerPane";
 import AdjudicationMatrixPane from "@/components/AdjudicationMatrixPane";
 import DecisionActionPane from "@/components/DecisionActionPane";
+import EvidenceIntake from "@/components/EvidenceIntake";
 import { ExaminationPhase } from "@/lib/examination-reducer";
 import { BankDecision, DeterministicCheck, PipelineStageUpdate } from "@/lib/types";
 
@@ -46,6 +47,9 @@ type MissionControlProps = {
   onStartExamination: () => void;
   onApproveAction: (examinerName: string, comments: string) => Promise<any>;
   onOpenFederationProof: () => void;
+  onEvidenceAccepted: (updated: any) => void;
+  canRun: boolean;
+  openEvidenceSignal: number;
 };
 
 const NAV_ITEMS: Array<{ id: WorkspaceId; label: string; eyebrow: string; icon: React.ElementType }> = [
@@ -83,11 +87,12 @@ function getCurrentStage(stages: Record<number, PipelineStageUpdate>) {
 
 function stageSummary(stageNumber: number, stage?: PipelineStageUpdate, decision?: BankDecision) {
   if (!stage) return "Waiting for structured input";
-  if (stageNumber === 1) return stage.active_terms ? `${stage.token_savings_pct ?? 0}% context reduction` : "Resolving amendment state";
-  if (stageNumber === 2) return stage.execution_mode ? `${stage.execution_mode} · ${stage.query_ms ?? "—"} ms` : "Querying data silos";
-  if (stageNumber === 3) return stage.checks ? `${stage.checks.length} checks · ${stage.failed_count ?? 0} locked failures` : "Executing deterministic rules";
-  if (stageNumber === 4) return stage.final_locked_verdict || stage.overall_legal_status || "Adjudicating legal semantics";
-  return decision?.recommended_action || "Human gate remains locked";
+  const duration = stage.duration_ms ? ` · ${stage.duration_ms} ms` : "";
+  if (stageNumber === 1) return stage.active_terms ? `${stage.token_savings_pct ?? 0}% saved: ${stage.routed_tokens_actual ?? "—"} routed vs ${stage.raw_prompt_tokens_est ?? "—"} baseline tokens${duration}` : "Resolving amendment state";
+  if (stageNumber === 2) return stage.execution_mode ? `${stage.execution_mode} · ${stage.query_ms ?? "—"} ms${duration}` : "Querying data silos";
+  if (stageNumber === 3) return stage.checks ? `${stage.checks.length} checks · ${stage.failed_count ?? 0} locked failures${duration}` : "Executing deterministic rules";
+  if (stageNumber === 4) return `${stage.final_locked_verdict || stage.overall_legal_status || "Adjudicating legal semantics"}${duration}`;
+  return `${decision?.recommended_action || "Human gate remains locked"}${duration}`;
 }
 
 function formatValue(value: unknown) {
@@ -194,7 +199,7 @@ function FederationWorkspace({ stage, onOpenProof }: { stage?: PipelineStageUpda
       <div className="federation-map" aria-label="Three-silo federation map">
         <article><span>01 / OLTP</span><Database /><h3>PostgreSQL</h3><p>LC master, amendments and examination state.</p><b>{hasResult ? "SOURCE RESOLVED" : "WAITING"}</b></article>
         <div className="federation-join"><span /><i>JOIN-SAFE CTE</i><span /></div>
-        <article className={anomaly ? "risk" : ""}><span>02 / PARQUET</span><Activity /><h3>Customs HS-6</h3><p>Historical unit-price distribution and TBML signal.</p><b>{hasResult ? `Z-SCORE ${Number(stage?.tbml_price_zscore || 0).toFixed(2)}` : "WAITING"}</b></article>
+        <article className={anomaly ? "risk" : ""}><span>02 / PARQUET</span><Activity /><h3>Customs HS-6</h3><p>{hasResult ? "Z-score = (invoice unit price − HS-6 market mean) ÷ market standard deviation. Above 4 is flagged for review." : "Historical unit-price distribution will explain the TBML signal."}</p><b>{hasResult ? `Z-SCORE ${Number(stage?.tbml_price_zscore || 0).toFixed(2)} · ${anomaly ? "ABOVE 4 THRESHOLD" : "WITHIN THRESHOLD"}` : "WAITING"}</b></article>
         <div className="federation-join"><span /><i>ONE ROW / LC</i><span /></div>
         <article className={sanctions ? "risk" : ""}><span>03 / API DATA</span><BadgeCheck /><h3>OpenSanctions</h3><p>Entity, party and vessel watchlist screening.</p><b>{hasResult ? `${stage?.sanction_hit_count || 0} MATCHES` : "WAITING"}</b></article>
       </div>
@@ -253,6 +258,9 @@ export default function MissionControl({
   onStartExamination,
   onApproveAction,
   onOpenFederationProof,
+  onEvidenceAccepted,
+  canRun,
+  openEvidenceSignal,
 }: MissionControlProps) {
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>("overview");
   const currentStage = getCurrentStage(stages);
@@ -260,12 +268,22 @@ export default function MissionControl({
   const completedStages = AGENTS.filter((agent) => isStageComplete(agent.stage, stages, decision)).length;
   const master = scenarioData?.master || {};
   const isRunning = phase === "streaming";
+  const evidenceStatus = scenarioData?.evidence_status || (scenarioData && !scenarioData.case_source ? "SAMPLE_READY" : "AWAITING_DOCUMENTS");
+  const evidenceCount = scenarioData?.evidence_documents?.length || (scenarioData?.case_source === "SAMPLE_CASE" ? 5 : 0);
+  const ready = ["SAMPLE_READY", "ACCEPTED"].includes(evidenceStatus);
 
   useEffect(() => {
     if (phase === "authorized") setActiveWorkspace("audit");
   }, [phase]);
 
-  useEffect(() => setActiveWorkspace("overview"), [selectedLcId]);
+  useEffect(() => {
+    const requestedWorkspace = new URLSearchParams(window.location.search).get("workspace") as WorkspaceId | null;
+    setActiveWorkspace(requestedWorkspace && NAV_ITEMS.some((item) => item.id === requestedWorkspace) ? requestedWorkspace : "overview");
+  }, [selectedLcId]);
+
+  useEffect(() => {
+    if (openEvidenceSignal > 0) setActiveWorkspace("evidence");
+  }, [openEvidenceSignal]);
 
   const workspaceMeta = useMemo(() => NAV_ITEMS.find((item) => item.id === activeWorkspace) || NAV_ITEMS[0], [activeWorkspace]);
 
@@ -280,7 +298,7 @@ export default function MissionControl({
   };
 
   const runAndOpenAgents = () => {
-    setActiveWorkspace("agents");
+    setActiveWorkspace(canRun ? "agents" : "evidence");
     onStartExamination();
   };
 
@@ -302,7 +320,7 @@ export default function MissionControl({
               >
                 <span className="nav-index">{String(index + 1).padStart(2, "0")}</span>
                 <Icon />
-                <span className="nav-copy"><b>{item.label}</b><small>{item.eyebrow}</small></span>
+                <span className="nav-copy"><b>{item.label}</b><small>{status === "locked" ? "Run required" : item.eyebrow}</small></span>
                 <span className="nav-status" aria-label={status}>{status === "ready" ? <Check /> : status === "active" ? <Activity /> : status === "locked" ? <LockKeyhole /> : <CircleDot />}</span>
               </button>
             );
@@ -325,9 +343,9 @@ export default function MissionControl({
             <span><small>CREDIT</small><b>{master.credit_amount || master.amount ? `$${Number(master.credit_amount || master.amount).toLocaleString()}` : "—"}</b></span>
             <span><small>WORKFLOW</small><b>{phase.replaceAll("_", " ").toUpperCase()}</b></span>
           </div>
-          <button type="button" onClick={runAndOpenAgents} disabled={isRunning} className="primary-audit-action">
+          <button type="button" onClick={runAndOpenAgents} disabled={isRunning || !canRun} className="primary-audit-action" title={!canRun ? "Upload and accept reviewed evidence before running the audit" : undefined}>
             {isRunning ? <RotateCcw /> : <Play />}
-            <span><small>{isRunning ? "FIVE AGENTS EXECUTING" : completedStages ? "RUN AGAIN" : "START AUTONOMOUS AUDIT"}</small><b>{isRunning ? `Agent ${currentStage} is analyzing` : "Run examination"}</b></span>
+            <span><small>{!canRun ? "EVIDENCE REVIEW REQUIRED" : isRunning ? "FIVE AGENTS EXECUTING" : completedStages ? "RUN AGAIN" : "START BOUNDED AUDIT"}</small><b>{!canRun ? "Complete document review" : isRunning ? `Stage ${currentStage} is analyzing` : "Run examination"}</b></span>
             <ChevronRight />
           </button>
         </header>
@@ -341,23 +359,30 @@ export default function MissionControl({
         <div className="mission-workspace" key={activeWorkspace}>
           {activeWorkspace === "overview" && (
             <div className="overview-workspace">
+              <ol className="examiner-journey" aria-label="How to complete an examination">
+                <li className={scenarioData ? "complete" : "active"}><span>1</span><div><b>Create or select a case</b><small>Confirm the credit baseline</small></div></li>
+                <li className={canRun ? "complete" : "active"}><span>2</span><div><b>Add and review documents</b><small>Accept OCR evidence</small></div></li>
+                <li className={completedStages === 5 ? "complete" : canRun ? "active" : "pending"}><span>3</span><div><b>Run the bounded audit</b><small>Watch five accountable stages</small></div></li>
+                <li className={phase === "authorized" ? "complete" : decision ? "active" : "pending"}><span>4</span><div><b>Review and authorize</b><small>Human sign-off stays final</small></div></li>
+              </ol>
               <section className="overview-hero">
                 <div className="overview-hero-copy">
                   <span>AGENTIC TRADE FINANCE / LIVE CASE</span>
                   <h2>One presentation.<br />Five bounded agents.<br /><em>One accountable decision.</em></h2>
                   <p>Follow evidence from source documents through federation, deterministic validation, legal interpretation and a mandatory human authority gate.</p>
-                  <div><button type="button" onClick={runAndOpenAgents}><Play /> Run five-agent audit</button><button type="button" onClick={() => setActiveWorkspace("evidence")}>Inspect evidence <ArrowRight /></button></div>
+                  <div><button type="button" onClick={runAndOpenAgents} disabled={!canRun}><Play /> {canRun ? "Run bounded audit" : "Review evidence first"}</button><button type="button" onClick={() => setActiveWorkspace("evidence")}>Open evidence room <ArrowRight /></button></div>
                 </div>
                 <div className="overview-scorecard">
                   <span>CASE READINESS</span>
-                  <strong>{scenarioData ? "READY" : "LOADING"}</strong>
-                  <div><i style={{ width: scenarioData ? "100%" : "34%" }} /></div>
+                  <strong>{ready ? "READY" : evidenceStatus.replaceAll("_", " ")}</strong>
+                  <div><i style={{ width: ready ? "100%" : evidenceCount ? "50%" : "15%" }} /></div>
                   <dl>
                     <div><dt>Agents complete</dt><dd>{completedStages} / 5</dd></div>
-                    <div><dt>Evidence documents</dt><dd>5</dd></div>
+                    <div><dt>Evidence documents</dt><dd>{evidenceCount}</dd></div>
                     <div><dt>Rules evaluated</dt><dd>{checks.length || "—"}</dd></div>
                     <div><dt>Human authority</dt><dd>{phase === "authorized" ? "SEALED" : "LOCKED"}</dd></div>
                   </dl>
+                  <p className="readiness-reason">{ready ? "Required evidence is available for a bounded run." : "Readiness stays locked until required documents are extracted and examiner-accepted."}</p>
                 </div>
               </section>
               <AgentNetwork stages={stages} phase={phase} decision={decision} />
@@ -374,6 +399,7 @@ export default function MissionControl({
           {activeWorkspace === "evidence" && (
             <section className="dedicated-workspace">
               <div className="workspace-intro"><div><span>SOURCE EVIDENCE</span><h2>Evidence room</h2></div><p>Open each instrument, run extraction, and inspect spatial anchors without leaving the case.</p></div>
+              <EvidenceIntake lcId={selectedLcId} scenarioData={scenarioData} onEvidenceAccepted={onEvidenceAccepted} />
               <div className="workspace-component document-workspace"><DocumentViewerPane scenarioData={scenarioData} /></div>
             </section>
           )}

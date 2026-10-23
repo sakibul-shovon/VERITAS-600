@@ -9,6 +9,7 @@ Provides:
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 import hashlib
 import json
@@ -60,6 +61,12 @@ class NvidiaNimClient:
         # In-memory SHA-256 response cache for instant replay
         self._cache: Dict[str, Dict[str, Any]] = {}
 
+    @property
+    def live_configured(self) -> bool:
+        """Return true only for a plausible configured API key, not example placeholders."""
+        key = (self.api_key or "").strip()
+        return bool(key and key.startswith("nvapi-") and "your_" not in key.lower())
+
     def _cache_key(self, model: str, prompt: str) -> str:
         content = f"{model}:{prompt}"
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
@@ -82,7 +89,7 @@ class NvidiaNimClient:
             return cached_entry
 
         # Try Live NIM call if API key is configured and not forced to cache
-        if self.api_key and not force_cache:
+        if self.live_configured and not force_cache:
             NIM_RATE_LIMITER.acquire()
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
@@ -130,6 +137,84 @@ class NvidiaNimClient:
         }
         self._cache[key] = result
         return result
+
+    def complete_multimodal(
+        self,
+        prompt: str,
+        images: List[tuple[str, bytes]],
+        model: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Send PNG/JPEG evidence to a vision-capable NIM using content parts.
+
+        Unlike legal-text replay, document OCR never fabricates a deterministic
+        response. If a live vision endpoint is unavailable the caller receives an
+        explicit ``OCR_UNAVAILABLE`` result and must keep the review gate closed.
+        """
+        model_name = model or self.settings.NEMOTRON_VISION_MODEL
+        digest = hashlib.sha256(prompt.encode("utf-8"))
+        for mime_type, image_bytes in images:
+            digest.update(mime_type.encode("utf-8"))
+            digest.update(image_bytes)
+        key = f"vision:{model_name}:{digest.hexdigest()}"
+
+        if self.cache_enabled and key in self._cache:
+            cached_entry = dict(self._cache[key])
+            cached_entry["telemetry"] = "CACHED_REPLAY"
+            return cached_entry
+
+        if not self.live_configured:
+            return {
+                "content": "",
+                "model": model_name,
+                "latency_ms": 0,
+                "telemetry": "OCR_UNAVAILABLE",
+                "error": "NVIDIA vision credentials are not configured.",
+            }
+
+        content: List[Dict[str, Any]] = [{"type": "text", "text": prompt}]
+        for mime_type, image_bytes in images:
+            encoded = base64.b64encode(image_bytes).decode("ascii")
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:{mime_type};base64,{encoded}"},
+            })
+
+        NIM_RATE_LIMITER.acquire()
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        payload = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": content}],
+            "temperature": 0,
+            "max_tokens": 3500,
+            "stream": False,
+        }
+
+        try:
+            start_t = time.perf_counter()
+            with httpx.Client(timeout=45.0) as client:
+                response = client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
+            response.raise_for_status()
+            body = response.json()
+            result = {
+                "content": body["choices"][0]["message"]["content"],
+                "model": model_name,
+                "latency_ms": int((time.perf_counter() - start_t) * 1000),
+                "telemetry": "LIVE_UNCACHED",
+            }
+            self._cache[key] = result
+            return result
+        except Exception as exc:
+            return {
+                "content": "",
+                "model": model_name,
+                "latency_ms": 0,
+                "telemetry": "OCR_UNAVAILABLE",
+                "error": f"Vision extraction failed: {type(exc).__name__}",
+            }
 
     def _generate_deterministic_nemotron_replay(self, prompt: str) -> str:
         """High-craft legal adjudication fallback mimicking Nemotron structured output."""

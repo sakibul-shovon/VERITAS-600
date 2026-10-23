@@ -11,14 +11,14 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 8 A+C Agentic Mission Control implemented on `feat/ui-redesign` — frontend verification clean** |
-| **Overall Progress** | **Phases 0–8 complete; `/examine` now uses a modular Mission Control plus Evidence Knowledge Graph with seven clickable workspaces, SSE-driven agent motion, calculation proof, federation provenance, and a human-gated audit seal** |
-| **Active Task** | Rehearse the new Mission Control demo path and stage branch for final PR merge |
+| **Current Phase** | **Phase 9 real examiner intake and usability hardening implemented on `feat/ui-redesign` — full verification clean** |
+| **Overall Progress** | **Phases 0–9 complete; `/examine` now starts clean, accepts real PDF/image evidence, persists examiner-reviewed extraction, runs new user-created cases end-to-end, explains metrics, and binds human authorization to an immutable run** |
+| **Active Task** | Configure live NVIDIA vision credentials and rehearse a scanned-document OCR run before final PR merge |
 | **Last Updated** | 2026-10-23 |
-| **Next Action Item** | **Rehearse the 150-second path: Overview → Agent Run → Rule Analysis → Decision Studio → Audit Receipt, then prepare PR from `feat/ui-redesign` to `main`** |
+| **Next Action Item** | **Set `NVIDIA_API_KEY`, restart the API, verify one scanned PDF/image returns `LIVE_NEMOTRON_VLM`, then rehearse New case → Upload → Verify → Run → Explain → Authorize and prepare the PR** |
 
 ```
-[CORE PHASES 0–6: COMPLETE & VERIFIED] [PHASE 7: COMPLETE & VERIFIED] [PHASE 8: IMPLEMENTED ON FEAT/UI-REDESIGN]
+[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: IMPLEMENTED AND VERIFIED ON FEAT/UI-REDESIGN]
 ```
 
 ---
@@ -27,10 +27,10 @@
 
 1. **Read the implementation blueprint:** [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md), especially Sections 24–29.
 2. **Review the implemented landing:** `/` is now the Evidence Ledger product story and the preserved terminal is at `/examine` (build verified).
-3. **Begin/continue Phase 8A after review:** capture typed API/SSE fixtures, screenshots, keyboard behavior, and bundle baselines before further terminal/evaluation changes.
-4. **Preserve demo readiness:** continue using Section 4.8 in [HACKATHON_ARCHITECTURE_ELEVATION.md](file:///h:/Projects/VERITAS-600/HACKATHON_ARCHITECTURE_ELEVATION.md) until the redesign passes its full parity gates.
-5. **Verify backend suite:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` (33/33 passed on 2026-10-23).
-6. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build with `/`, `/examine`, and `/evals` on 2026-10-23).
+3. **Verify live OCR credentials:** current local test environment has no configured NVIDIA vision key, so image/scanned-PDF intake correctly reports `OCR_UNAVAILABLE`; set `NVIDIA_API_KEY` before the live OCR rehearsal.
+4. **Rehearse the production path:** New case → upload four required documents → review/accept fields → run five stages → inspect explanations → authorize (not dispatch).
+5. **Verify backend suite:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` (38/38 passed on 2026-10-23).
+6. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build; `/examine` 134 kB first-load JS on 2026-10-23).
 
 ---
 
@@ -191,6 +191,22 @@
 - [x] **Phase 8F — Benchmark route:** Interactive Casebook at `/evals` with architecture comparison lanes and fresh-versus-bundled dataset provenance.
 - [x] **Phase 8G — Motion and performance:** Restrained 120ms-420ms CSS keyframe motion with strict `prefers-reduced-motion` compliance. Next.js 15 production build clean (all routes < 125 kB first-load JS).
 - [x] **Phase 8H — Verification & Git branch:** Created and switched to `feat/ui-redesign`, backend tests 33/33 green in 2.66s, Next.js build passes cleanly with 0 errors.
+
+---
+
+### Phase 9: Real Examiner Intake, OCR Truthfulness & Explainable UX ✅ [COMPLETED & VERIFIED]
+
+- [x] Replace the preselected sample-first experience with a clean start screen offering a primary real-case flow and a separately labelled sample sandbox.
+- [x] Add durable user-created cases and real multipart PDF/PNG/JPEG/WebP evidence storage under ignored runtime data.
+- [x] Parse text-layer PDFs directly; render scanned PDFs through PyMuPDF or PDFium and route scans/images to NVIDIA vision when credentials are configured.
+- [x] Never substitute fixture evidence for failed OCR; expose `PDF_TEXT_LAYER`, `LIVE_NEMOTRON_VLM`, `CACHED_REPLAY`, or `OCR_UNAVAILABLE` truthfully.
+- [x] Add editable extraction review, required-document completeness, examiner acceptance, evidence versioning, source SHA-256 digests, and examination gating.
+- [x] Feed accepted PDF values into the real presentation object and enable new LC IDs in the join-safe local three-silo federation through a non-mutating runtime master overlay.
+- [x] Remove fake countdown/token-savings UI, expose observed stage duration and routing inputs, explain extraction confidence and TBML Z-score thresholds, and show deterministic calculation details.
+- [x] Add persistent light/dark mode, larger readable controls, explicit clickable states, four-step examiner guidance, responsive layout, and mobile overflow hardening.
+- [x] Bind human authorization to the exact run ID, decision digest, and expected action; explicitly report `AUTHORIZED_NOT_DISPATCHED` because external dispatch is not connected.
+- [x] **Real-PDF verification:** generated and uploaded four actual PDF documents; extracted/persisted invoice `$240,000`, insurance `$264,000`, shipment `2026-11-12`, and weight `12,500`; downstream deterministic coverage computed `110.0%`.
+- [x] **Regression verification:** backend suite 38/38 passes; Next.js 15.5.28 production build succeeds with `/examine` at 134 kB first-load JS.
 
 ---
 

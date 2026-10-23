@@ -32,8 +32,8 @@ export default function DecisionActionPane({
   const [signedSuccess, setSignedSuccess] = useState(false);
   const [receipt, setReceipt] = useState<any>(null);
   const [signError, setSignError] = useState<string | undefined>(undefined);
-  const [examinerName, setExaminerName] = useState("Senior Examiner #482 (Desk Head)");
-  const [comments, setComments] = useState("Verified against UCP 600 rules and bank risk parameters.");
+  const [examinerName, setExaminerName] = useState("");
+  const [comments, setComments] = useState("");
 
   const handleCopyArtifact = () => {
     if (!generatedArtifact) return;
@@ -225,28 +225,36 @@ export default function DecisionActionPane({
                   )}
                   <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10px]">
                     <span className="text-slate-400">Dispatch Status:</span>
-                    <span className="text-emerald-400 font-bold">ACKNOWLEDGED_DISPATCHED</span>
+                    <span className="text-emerald-400 font-bold">AUTHORIZED — NOT DISPATCHED</span>
                   </div>
+                  <div className="text-[10px] text-slate-400">External SWIFT / AML dispatch is not connected in this runtime.</div>
                 </div>
               </div>
             ) : (
               <div className="space-y-2 pt-1">
                 {signError && <p className="text-[11px] text-rose-300 border border-rose-500/40 bg-rose-950/30 rounded p-2" role="alert">{signError}</p>}
-                <input
-                  type="text"
-                  value={examinerName}
-                  onChange={(e) => setExaminerName(e.target.value)}
-                  placeholder="Examiner Name & ID"
-                  className="w-full bg-slate-950 border border-card-border rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                <label className="signoff-field"><span>Examiner name and officer ID</span><input
+                    type="text"
+                    value={examinerName}
+                    onChange={(e) => setExaminerName(e.target.value)}
+                    placeholder="e.g. Sarah Chen · TF-482"
+                    autoComplete="name"
+                  /></label>
+                <label className="signoff-field"><span>Review comments</span><textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    placeholder="Record what you verified, any escalation, and why this action is authorized."
+                    rows={4}
+                  /></label>
                 <button
                   onClick={handleSignOff}
                   disabled={isSigning}
                   className="w-full py-2 rounded bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" />
-                  <span>{isSigning ? "Signing & Dispatching..." : "Approve Action & Dispatch"}</span>
+                  <span>{isSigning ? "Authorizing & sealing…" : "Authorize action & seal receipt"}</span>
                 </button>
+                <p className="signoff-disclaimer">This records authorization only. It does not transmit SWIFT, release settlement, or file an AML report.</p>
               </div>
             )}
           </div>

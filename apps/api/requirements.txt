@@ -18,6 +18,10 @@ pandas>=2.2.0
 # AI & Multimodal SDKs
 openai>=1.14.0
 requests>=2.31.0
+PyMuPDF==1.26.7
+pypdfium2==4.30.0
+Pillow>=11.0.0
+pypdf>=5.0.0
 
 # Security & Verification
 cryptography>=42.0.0

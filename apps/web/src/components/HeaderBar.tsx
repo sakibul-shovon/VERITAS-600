@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { ShieldAlert, Database, Zap, Clock, Cpu, FileText, BarChart3, ChevronDown } from "lucide-react";
+import { ShieldAlert, Database, Zap, Clock, Cpu, BarChart3, ChevronDown, FilePlus2, Moon, Sun } from "lucide-react";
 import { LCScenarioSummary } from "@/lib/types";
 
 interface HeaderBarProps {
@@ -12,6 +12,9 @@ interface HeaderBarProps {
   sponsorHealth: any;
   onToggleSqlDrawer: () => void;
   sqlDrawerOpen: boolean;
+  darkMode: boolean;
+  onToggleTheme: () => void;
+  onNewCase: () => void;
 }
 
 export default function HeaderBar({
@@ -21,21 +24,10 @@ export default function HeaderBar({
   sponsorHealth,
   onToggleSqlDrawer,
   sqlDrawerOpen,
+  darkMode,
+  onToggleTheme,
+  onNewCase,
 }: HeaderBarProps) {
-  // 5-Banking-Day Countdown (UCP 600 Art. 14(b) / Art. 16(f))
-  const [bankingDaysLeft, setBankingDaysLeft] = useState(3);
-  const [hoursLeft, setHoursLeft] = useState(14);
-  const [minsLeft, setMinsLeft] = useState(42);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setMinsLeft((m) => (m > 0 ? m - 1 : 59));
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const currentScenario = scenarios.find((s) => s.lc_id === selectedLcId);
-
   return (
     <header className="exam-header border-b border-card-border bg-[#0B0F19]/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -66,7 +58,8 @@ export default function HeaderBar({
               disabled={scenarios.length === 0}
               className="bg-card hover:bg-slate-800 text-slate-200 text-xs font-mono font-medium rounded-md px-3 py-1.5 pr-8 border border-card-border focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
             >
-              {scenarios.length === 0 ? <option value={selectedLcId}>Loading available cases…</option> : scenarios.map((scenario) => <option key={scenario.lc_id} value={scenario.lc_id}>{scenario.lc_id}: {scenario.applicant} → {scenario.beneficiary} ({scenario.currency} {scenario.amount.toLocaleString()})</option>)}
+              <option value="">Choose an existing case…</option>
+              {scenarios.map((scenario) => <option key={scenario.lc_id} value={scenario.lc_id}>{scenario.case_source === "SAMPLE_CASE" ? "SAMPLE · " : ""}{scenario.lc_id}: {scenario.applicant} → {scenario.beneficiary} ({scenario.currency} {scenario.amount.toLocaleString()})</option>)}
             </select>
             <ChevronDown className="h-3.5 w-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
           </div>
@@ -75,14 +68,22 @@ export default function HeaderBar({
         {/* Center: 5-Day Preclusion Clock */}
         <div className="hidden lg:flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-1 text-xs">
           <Clock className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-          <span className="text-amber-300 font-medium">UCP 600 Art. 14(b) Preclusion Clock:</span>
-          <span className="font-mono font-bold text-amber-200">
-            {bankingDaysLeft}d {hoursLeft}h {minsLeft}m remaining
-          </span>
+          <span className="text-amber-300 font-medium">UCP 600 Art. 14(b) examination clock:</span>
+          <span className="font-mono font-bold text-amber-200">starts from recorded presentation receipt</span>
         </div>
 
         {/* Right: Telemetry Badges & Links */}
         <div className="flex items-center gap-2">
+          <button type="button" className="header-action header-new-case" onClick={onNewCase}>
+            <FilePlus2 aria-hidden="true" />
+            <span>New case</span>
+          </button>
+
+          <button type="button" className="header-action header-theme" onClick={onToggleTheme} aria-label={darkMode ? "Switch examination to light theme" : "Switch examination to dark theme"}>
+            {darkMode ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            <span>{darkMode ? "Light" : "Dark"}</span>
+          </button>
+
           {/* Zetaris Badge */}
           <button
             onClick={onToggleSqlDrawer}
@@ -104,7 +105,7 @@ export default function HeaderBar({
           <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-card-border text-[11px] font-mono text-slate-300">
             <Zap className="h-3 w-3 text-amber-400" />
             <span>Meterless:</span>
-            <span className="text-amber-300 font-semibold">86% TOKENS SAVED</span>
+            <span className="text-amber-300 font-semibold">MEASURED PER RUN</span>
           </div>
 
           {/* NVIDIA NIM Badge */}

@@ -150,6 +150,7 @@ class ZetarisFederationClient:
         vessel_name: str,
         notify_party_name: str,
         invoice_unit_price: float,
+        runtime_master: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Execute the 3-silo join-safe federated check query for an LC.
 
@@ -167,7 +168,7 @@ class ZetarisFederationClient:
         }
 
         # Try live Zetaris if requested and configured
-        if self.requested_mode in ("AUTO", "FORCE_LIVE"):
+        if runtime_master is None and self.requested_mode in ("AUTO", "FORCE_LIVE"):
             live_result = self._execute_live_zetaris(query, params)
             if live_result is not None:
                 return live_result
@@ -177,15 +178,18 @@ class ZetarisFederationClient:
         # Local DuckDB Standby Fallback execution
         start_t = time.perf_counter()
         con = self._init_duckdb_fallback()
+        if runtime_master is not None:
+            self._upsert_runtime_master(con, runtime_master)
 
         # Bind parameters cleanly for DuckDB
         # In DuckDB, named parameters can be bound using positional $1, $2 or string replacement for literals
         # To preserve exact SQL syntax, we prepare the query with parameter injection
         formatted_query = query
-        formatted_query = formatted_query.replace(":lc_id", f"'{lc_id}'")
-        formatted_query = formatted_query.replace(":beneficiary_name", f"'{beneficiary_name}'")
-        formatted_query = formatted_query.replace(":vessel_name", f"'{vessel_name}'")
-        formatted_query = formatted_query.replace(":notify_party_name", f"'{notify_party_name}'")
+        quote = lambda value: "'" + str(value).replace("'", "''") + "'"
+        formatted_query = formatted_query.replace(":lc_id", quote(lc_id))
+        formatted_query = formatted_query.replace(":beneficiary_name", quote(beneficiary_name))
+        formatted_query = formatted_query.replace(":vessel_name", quote(vessel_name))
+        formatted_query = formatted_query.replace(":notify_party_name", quote(notify_party_name))
         formatted_query = formatted_query.replace(":invoice_unit_price", f"{invoice_unit_price}")
 
         # Execute query
@@ -224,3 +228,22 @@ class ZetarisFederationClient:
             "raw_sql": query,
             "federation_receipt": receipt,
         }
+
+    def _upsert_runtime_master(self, con: duckdb.DuckDBPyConnection, master: Dict[str, Any]) -> None:
+        """Expose a user-created LC to the local federation without mutating seed data."""
+        con.execute(
+            "CREATE TABLE IF NOT EXISTS runtime_lc_master AS "
+            "SELECT * FROM standby.lc_master WHERE FALSE"
+        )
+        lc_id = str(master["lc_id"])
+        con.execute("DELETE FROM runtime_lc_master WHERE lc_id = ?", [lc_id])
+        columns = [row[0] for row in con.execute("DESCRIBE runtime_lc_master").fetchall()]
+        record = {column: master.get(column) for column in columns}
+        frame = pd.DataFrame([record])
+        con.register("runtime_lc_master_row", frame)
+        con.execute("INSERT INTO runtime_lc_master BY NAME SELECT * FROM runtime_lc_master_row")
+        con.execute(
+            "CREATE OR REPLACE VIEW postgres_trade.lc_master AS "
+            "SELECT * FROM standby.lc_master "
+            "UNION ALL BY NAME SELECT * FROM runtime_lc_master"
+        )

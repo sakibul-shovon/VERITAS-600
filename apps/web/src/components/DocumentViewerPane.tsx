@@ -79,10 +79,12 @@ export default function DocumentViewerPane({
         </div>
         <div className="space-y-1">
           {Object.entries(docData.fields).map(([k, f]: [string, any]) => (
-            <div
+            <button
+              type="button"
               key={k}
               onClick={() => onHighlightField?.(f.field_key || k)}
-              className={`flex items-center justify-between p-1.5 rounded text-[10px] border cursor-pointer transition ${
+              disabled={!onHighlightField}
+              className={`w-full flex items-center justify-between p-1.5 rounded text-[10px] border text-left transition ${onHighlightField ? "cursor-pointer" : "cursor-default"} ${
                 highlightedField === (f.field_key || k)
                   ? "bg-amber-500/20 border-amber-500 text-amber-100"
                   : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
@@ -104,7 +106,7 @@ export default function DocumentViewerPane({
                   </span>
                 )}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -126,29 +128,31 @@ export default function DocumentViewerPane({
             </span>
           )}
         </div>
-        <button
-          onClick={handleRunLiveExtraction}
-          disabled={isExtracting}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-[11px] font-mono text-blue-300 transition disabled:opacity-50"
-          title="Extract typed fields and spatial coordinates from presentation documents"
-        >
+        {!scenarioData?.evidence_documents?.length && (
+          <button
+            onClick={handleRunLiveExtraction}
+            disabled={isExtracting}
+            className="sample-field-button"
+            title="Inspect the pre-structured sample field map. This is not live OCR."
+          >
           {isExtracting ? (
             <>
               <Scan className="h-3 w-3 animate-spin text-blue-400" />
-              <span>Extracting fields...</span>
+              <span>Loading sample fields…</span>
             </>
           ) : extractedDocs ? (
             <>
               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span>Fields Extracted</span>
+              <span>Sample fields loaded</span>
             </>
           ) : (
             <>
               <Scan className="h-3 w-3 text-amber-400" />
-              <span>Extract document fields</span>
+              <span>Inspect sample field map</span>
             </>
           )}
-        </button>
+          </button>
+        )}
       </div>
 
       {/* Document Tabs */}
