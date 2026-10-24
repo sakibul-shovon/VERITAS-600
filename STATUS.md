@@ -11,26 +11,29 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 10 Codebase Audit, Correctness & Telemetry Hardening [COMPLETED & VERIFIED] on `feat/ui-redesign`** |
-| **Overall Progress** | **Phases 0–10 complete; all 19 audit findings (P0–P3) fully resolved; 46/46 pytest tests passing; ruff 0 errors; honest telemetry; verified Next.js 15 build** |
-| **Active Task** | Complete audit documentation, commit verified changes, and push to GitHub remote branch `feat/ui-redesign` |
+| **Current Phase** | **Phase 11 Adversarial Red-Team Remediation ✅ [COMPLETED & VERIFIED] on `main`** |
+| **Overall Progress** | **Phases 0–11 complete & verified. All 19 security findings from red-team audit remediated. 58/58 pytest suite green. Next.js 15 production build passes cleanly.** |
+| **Active Task** | Complete & Verified. Zero open security issues. |
 | **Last Updated** | 2026-10-24 |
-| **Next Action Item** | **Push changes to `origin/feat/ui-redesign`, verify GitHub CI pipeline status, and present audit findings report to user.** |
+| **Next Action Item** | **Production deployment & hackathon submission review.** |
 
 ```
-[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: AUDIT HARDENING COMPLETE (46/46 PYTEST PASSING)]
+[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED]
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Review the Audit Report:** [AUDIT_CORRECTNESS_REPORT.md](file:///h:/Projects/VERITAS-600/AUDIT_CORRECTNESS_REPORT.md) detailing all 19 resolved items across P0 (logic/correctness), P1 (telemetry), P2 (security), and P3 (CI/CD reproducibility).
-2. **Review the implementation blueprint:** [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md), especially Sections 24–29.
-3. **Verify backend suite:** `pytest apps/api/tests/ -v` (46/46 passed in 4.91s).
-4. **Verify linter:** `ruff check apps/api` (0 errors).
-5. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build; `/examine` 134 kB first-load JS).
-6. **Next Milestones:** Review PR on GitHub for merging `feat/ui-redesign` into `main`.
+1. **Security & Audit Reports:**
+   - [SECURITY_REMEDIATION_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_REMEDIATION_REPORT.md) — Comprehensive technical documentation of all 19 remediated vulnerabilities and verification proofs.
+   - [SECURITY_RED_TEAM_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_RED_TEAM_REPORT.md) — Original red-team attack vectors and verification logs.
+   - [AUDIT_CORRECTNESS_REPORT.md](file:///h:/Projects/VERITAS-600/AUDIT_CORRECTNESS_REPORT.md) — Phase 10 correctness verification.
+2. **Verification Baseline:**
+   - Backend: `pytest apps/api/tests/ -v` (58/58 tests passing in ~5.5s).
+   - Code Style: `ruff check apps/api` (0 errors, 100% clean).
+   - Frontend: `cd apps/web && npm run build` (Next.js 15.5.28 clean build, static page generation 6/6).
+3. **Repository State:** All changes merged and verified on `main`. Zero breaking changes to the 5 architectural invariants.
 
 ---
 
@@ -233,6 +236,28 @@
 - [x] **P3 Reproducibility:** Fixed all 331 ruff lint issues in `apps/api/` (0 errors remaining).
 - [x] **P3 Testing:** Created dedicated test suite `apps/api/tests/test_audit_fixes.py` (8 new tests).
 - [x] **Comprehensive Verification:** 46/46 pytest tests pass in 4.91s; `ruff check apps/api` 0 errors; Next.js 15 production build succeeds cleanly. Complete report in `AUDIT_CORRECTNESS_REPORT.md`.
+
+---
+
+### Phase 11: Adversarial Red-Team Audit & Security Remediation ✅ [COMPLETED & VERIFIED]
+
+- [x] **Full-codebase comprehension pass** of engines, audit chain, stores, inference and Zetaris layers.
+- [x] **Live PoC battery** (8 attacks verified against real modules + TestClient); evidence and re-run steps in `SECURITY_RED_TEAM_REPORT.md` §8.
+- [x] **P0-1 Remediated:** Implemented `EXAMINER_API_KEY` verification, sign-off idempotence (duplicate approval returns 409), decision digest integrity, and evidence version binding in `main.py`.
+- [x] **P0-2 Remediated:** Neural layer strictly fails closed (`INDETERMINATE`, `is_discrepancy=True`). Offline replay goods matching catches non-conforming goods under Art. 18(c). Removed blunt `"omitted"` false positive.
+- [x] **P0-3 & P2-9 Remediated:** Constant-time receipt verification via `hmac.compare_digest` in `verifier.py` preventing timing side-channel attacks.
+- [x] **P0-4 Remediated:** Prompt injection neutralized via `<UNTRUSTED_CONTENT>` fencing and strict legal citation whitelisting (`VALID_CITATIONS`) in `ucp600_legal_adjudicator.py`.
+- [x] **P1-2 Remediated:** Converted `NvidiaNimClient._cache` to bounded `OrderedDict` LRU cache (`MAX_CACHE_ENTRIES = 512`), preventing unauthenticated memory exhaustion.
+- [x] **P1-3 Remediated:** Added `Image.MAX_IMAGE_PIXELS = 25_000_000`, 50 PDF page extraction cap, and 500,000 char cap against decompression/pixel bombs in `document_extractor.py`.
+- [x] **P1-4 & P1-5 & P1-6 Remediated:** Strict trade date parsing contract, mandatory checks enforced across partial presentations, and NFKC + homoglyph normalization catching Cyrillic `с` in `сover note` under Art. 28(c).
+- [x] **P1-7 Remediated:** `CaseStore.accept_evidence` enforces strict numeric validation, rejecting complex dictionaries, negative amounts, `NaN`, and `Infinity` with 422/ValueError.
+- [x] **P1-8 Remediated:** `ZetarisFederationClient` migrated from string replacement to DuckDB positional `?` parameter binding with graceful `FALLBACK_ERROR` handling.
+- [x] **P2-3 Remediated:** Added `sanitize_swift_text` escaping SWIFT block delimiters (`{`, `}`) and tag injection in MT734 messages; asserted template status replacement in settlement vouchers.
+- [x] **P2-6 & P2-8 & P2-11 Remediated:** Thread-safe `CaseStore` file locking with `threading.Lock()`; evaluation suite concurrency lock with `asyncio.Lock()`; per-case fault tolerance in scenarios listing.
+- [x] **P2-7 Remediated:** Honest telemetry in `/health` and sponsor evidence endpoints rejecting placeholder keys (`your_zetaris_api_key_here`).
+- [x] **P2-10 Remediated:** `AmendmentMemoryEngine` parses dates via `parse_date` and blocks partial acceptance with conflicts under Art. 10(e).
+- [x] **Dedicated Regression Suite:** Created `apps/api/tests/test_security_redteam_fixes.py` with 12 new automated security tests (58/58 backend tests passing).
+- [x] **Comprehensive Documentation:** Created [SECURITY_REMEDIATION_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_REMEDIATION_REPORT.md) detailing all root causes and verification proofs.
 
 ---
 

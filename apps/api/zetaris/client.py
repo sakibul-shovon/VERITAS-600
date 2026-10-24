@@ -11,6 +11,8 @@ Exposes honest runtime telemetry ('LIVE_ZETARIS' vs. 'LOCAL_DUCKDB_FALLBACK').
 from __future__ import annotations
 
 import json
+import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -21,6 +23,7 @@ import pandas as pd
 
 from apps.api.config import get_settings
 
+logger = logging.getLogger("veritas.zetaris")
 SETTINGS = get_settings()
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -138,9 +141,9 @@ class ZetarisFederationClient:
                             "row": rows[0],
                             "raw_sql": query,
                         }
-        except Exception:
+        except Exception as exc:
             # Fall back smoothly if live Zetaris is offline or unreachable
-            pass
+            logger.warning("Live Zetaris execution failed (%s), falling back to DuckDB", exc)
         return None
 
     def execute_federated_check(
@@ -181,21 +184,52 @@ class ZetarisFederationClient:
         if runtime_master is not None:
             self._upsert_runtime_master(con, runtime_master)
 
-        # Bind parameters cleanly for DuckDB
-        # In DuckDB, named parameters can be bound using positional $1, $2 or string replacement for literals
-        # To preserve exact SQL syntax, we prepare the query with parameter injection
-        formatted_query = query
-        quote = lambda value: "'" + str(value).replace("'", "''") + "'"
-        formatted_query = formatted_query.replace(":lc_id", quote(lc_id))
-        formatted_query = formatted_query.replace(":beneficiary_name", quote(beneficiary_name))
-        formatted_query = formatted_query.replace(":vessel_name", quote(vessel_name))
-        formatted_query = formatted_query.replace(":notify_party_name", quote(notify_party_name))
-        formatted_query = formatted_query.replace(":invoice_unit_price", f"{invoice_unit_price}")
+        # Bind parameters cleanly for DuckDB using positional ? parameters
+        # Protects against parameter collision and SQL injection (P1-8)
+        pattern = re.compile(r":([a-zA-Z_][a-zA-Z0-9_]*)")
+        bound_values: list[Any] = []
 
-        # Execute query
-        rel = con.execute(formatted_query)
-        columns = [desc[0] for desc in rel.description]
-        results = rel.fetchall()
+        def _replacer(m: re.Match[str]) -> str:
+            k = m.group(1)
+            if k not in params:
+                raise KeyError(f"Missing parameter in query: {k}")
+            bound_values.append(params[k])
+            return "?"
+
+        bound_query = pattern.sub(_replacer, query)
+
+        # Execute query safely with bound parameters
+        try:
+            rel = con.execute(bound_query, bound_values)
+            columns = [desc[0] for desc in rel.description]
+            results = rel.fetchall()
+        except Exception as exc:
+            logger.error("DuckDB federated query failed: %s", exc)
+            query_ms = max(1, int((time.perf_counter() - start_t) * 1000))
+            return {
+                "execution_mode": "FALLBACK_ERROR",
+                "query_ms": query_ms,
+                "error": str(exc),
+                "row": {
+                    "lc_id": lc_id,
+                    "quarantined_amendment_count": 0,
+                    "quarantined_amendments_summary": None,
+                    "sanction_hit_count": 0,
+                    "sanction_max_risk_score": 0.0,
+                    "sanctions_summary": None,
+                    "tbml_price_zscore": 0.0,
+                    "effective_shipment_date": None,
+                    "original_shipment_date": None,
+                },
+                "raw_sql": query,
+                "federation_receipt": {
+                    "query_id": f"ZETARIS-ERR-{lc_id}-{int(time.time())}",
+                    "execution_mode": "FALLBACK_ERROR",
+                    "query_ms": query_ms,
+                    "error": str(exc),
+                },
+            }
+
         query_ms = max(1, int((time.perf_counter() - start_t) * 1000))
 
         if not results:

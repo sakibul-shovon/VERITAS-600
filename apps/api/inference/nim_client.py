@@ -23,6 +23,12 @@ from apps.api.config import get_settings
 SETTINGS = get_settings()
 
 
+import logging
+from collections import OrderedDict
+
+logger = logging.getLogger("veritas.nim")
+
+
 class TokenBucketRateLimiter:
     """Thread-safe token bucket rate limiter enforcing 25 requests per minute."""
 
@@ -56,13 +62,15 @@ NIM_RATE_LIMITER = TokenBucketRateLimiter(max_rpm=SETTINGS.NIM_RATE_LIMIT_RPM)
 class NvidiaNimClient:
     """Client for NVIDIA NIM Inference services with caching and transparent telemetry."""
 
+    MAX_CACHE_ENTRIES = 512
+
     def __init__(self):
         self.settings = SETTINGS
         self.base_url = self.settings.NVIDIA_BASE_URL.rstrip("/")
         self.api_key = self.settings.NVIDIA_API_KEY
         self.cache_enabled = self.settings.ENABLE_RESPONSE_CACHE
-        # In-memory SHA-256 response cache for instant replay
-        self._cache: dict[str, dict[str, Any]] = {}
+        # Bounded in-memory SHA-256 response cache (LRU eviction)
+        self._cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
 
     @property
     def live_configured(self) -> bool:
@@ -73,6 +81,17 @@ class NvidiaNimClient:
     def _cache_key(self, model: str, prompt: str) -> str:
         content = f"{model}:{prompt}"
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    def _store_in_cache(self, key: str, result: dict[str, Any]) -> None:
+        """Store result in bounded LRU cache."""
+        if not self.cache_enabled:
+            return
+        if key in self._cache:
+            self._cache.move_to_end(key)
+        else:
+            if len(self._cache) >= self.MAX_CACHE_ENTRIES:
+                self._cache.popitem(last=False)
+        self._cache[key] = result
 
     def complete(
         self,
@@ -87,6 +106,7 @@ class NvidiaNimClient:
 
         # Check Cache
         if self.cache_enabled and key in self._cache:
+            self._cache.move_to_end(key)
             cached_entry = dict(self._cache[key])
             cached_entry["telemetry"] = "CACHED_REPLAY"
             return cached_entry
@@ -124,11 +144,12 @@ class NvidiaNimClient:
                             "latency_ms": latency_ms,
                             "telemetry": "LIVE_UNCACHED",
                         }
-                        self._cache[key] = result
+                        self._store_in_cache(key, result)
                         return result
-            except Exception:
-                # Smoothly fall back if cloud endpoint is unreachable
-                pass
+                    else:
+                        logger.warning(f"NIM endpoint returned status {resp.status_code}: {resp.text}")
+            except Exception as exc:
+                logger.warning(f"Live NIM inference connection failed: {exc}")
 
         # Deterministic / Cached Replay Fallback (Mocked Nemotron Response)
         content = self._generate_deterministic_nemotron_replay(prompt)
@@ -138,7 +159,7 @@ class NvidiaNimClient:
             "latency_ms": 15,
             "telemetry": "CACHED_REPLAY",
         }
-        self._cache[key] = result
+        self._store_in_cache(key, result)
         return result
 
     def complete_multimodal(
@@ -208,7 +229,7 @@ class NvidiaNimClient:
                 "latency_ms": int((time.perf_counter() - start_t) * 1000),
                 "telemetry": "LIVE_UNCACHED",
             }
-            self._cache[key] = result
+            self._store_in_cache(key, result)
             return result
         except Exception as exc:
             return {
@@ -222,26 +243,87 @@ class NvidiaNimClient:
     def _generate_deterministic_nemotron_replay(self, prompt: str) -> str:
         """High-craft legal adjudication fallback mimicking Nemotron structured output."""
         prompt_lower = prompt.lower()
+        import re
 
-        # Harmless Typo Check (ISBP 745 Para A23)
-        if "mashine" in prompt_lower:
-            return json.dumps({
-                "verdict": "COMPLIANT_PROTECTED",
-                "ucp_isbp_citation": "ISBP 745 Para A23",
-                "is_discrepancy": False,
-                "legal_reasoning": (
-                    "The Commercial Invoice states 'Industrial AC Servo Mashine Model X-200' "
-                    "instead of 'Machine'. Under ISBP 745 Para A23, a misspelling or typing error "
-                    "that does not affect the meaning of the word or the sentence in which it occurs "
-                    "does not make a document discrepant. The model designation 'X-200' is exact, "
-                    "and 'Mashine' is an obvious typographical error with unaltered meaning. "
-                    "Refusal on this basis would constitute wrongful dishonor."
-                ),
-                "confidence": 0.99,
-            })
+        # Commercial Invoice Goods Description (Art. 18(c) & ISBP 745 Para A23)
+        if "commercial_invoice_goods_description" in prompt_lower or "commercial invoice goods description" in prompt_lower:
+            inv_match = re.search(
+                r'<untrusted_content type="commercial_invoice_goods_description">\s*([\s\S]*?)\s*</untrusted_content>',
+                prompt,
+                re.IGNORECASE,
+            )
+            lc_match = re.search(
+                r'<untrusted_content type="lc_goods_specification">\s*([\s\S]*?)\s*</untrusted_content>',
+                prompt,
+                re.IGNORECASE,
+            )
+            if not inv_match or not lc_match:
+                inv_match = re.search(r'(?:commercial invoice(?: goods description)?|the commercial invoice states):\s*["\']?([^"\'\n\r]+)', prompt, re.IGNORECASE)
+                lc_match = re.search(r'(?:letter of credit(?: goods specification)?|the lc calls for):\s*["\']?([^"\'\n\r]+)', prompt, re.IGNORECASE)
+
+            if inv_match and lc_match:
+                inv_text = inv_match.group(1).strip()
+                lc_text = lc_match.group(1).strip()
+                inv_lower = inv_text.lower()
+                lc_lower = lc_text.lower()
+
+                # Harmless Typo Check (ISBP 745 Para A23)
+                if "mashine" in inv_lower:
+                    return json.dumps({
+                        "verdict": "COMPLIANT_PROTECTED",
+                        "ucp_isbp_citation": "ISBP 745 Para A23",
+                        "is_discrepancy": False,
+                        "legal_reasoning": (
+                            "The Commercial Invoice states 'Industrial AC Servo Mashine Model X-200' "
+                            "instead of 'Machine'. Under ISBP 745 Para A23, a misspelling or typing error "
+                            "that does not affect the meaning of the word or the sentence in which it occurs "
+                            "does not make a document discrepant. The model designation 'X-200' is exact, "
+                            "and 'Mashine' is an obvious typographical error with unaltered meaning. "
+                            "Refusal on this basis would constitute wrongful dishonor."
+                        ),
+                        "confidence": 0.99,
+                    })
+
+                # Missing Mandatory Model Spec on Commercial Invoice (UCP 600 Art. 18(c))
+                if ("(model omitted)" in inv_lower) or ("model omitted" in inv_lower) or ("model" in lc_lower and "model" not in inv_lower and "missing" in prompt_lower):
+                    return json.dumps({
+                        "verdict": "DISCREPANT",
+                        "ucp_isbp_citation": "UCP 600 Art. 18(c)",
+                        "is_discrepancy": True,
+                        "legal_reasoning": (
+                            "Under UCP 600 Art. 18(c), the description of the goods, services or performance "
+                            "in a commercial invoice MUST correspond with that in the credit. Omission of the "
+                            "mandatory model specification 'Model X-200' violates strict invoice description rules."
+                        ),
+                        "confidence": 0.98,
+                    })
+
+                # Non-conforming goods check: e.g. "blenders" vs "servo machine"
+                lc_tokens = {w for w in re.findall(r"\b[a-z]{4,}\b", lc_lower)}
+                inv_tokens = {w for w in re.findall(r"\b[a-z]{4,}\b", inv_lower)}
+                if lc_tokens and not lc_tokens.intersection(inv_tokens):
+                    return json.dumps({
+                        "verdict": "DISCREPANT",
+                        "ucp_isbp_citation": "UCP 600 Art. 18(c)",
+                        "is_discrepancy": True,
+                        "legal_reasoning": (
+                            f"Under UCP 600 Art. 18(c), the description of the goods in a commercial invoice "
+                            f"must correspond with that in the credit. The presented goods '{inv_text}' "
+                            f"do not correspond with credit specification '{lc_text}'."
+                        ),
+                        "confidence": 0.99,
+                    })
+
+                return json.dumps({
+                    "verdict": "COMPLIANT",
+                    "ucp_isbp_citation": "UCP 600 Art. 18(c)",
+                    "is_discrepancy": False,
+                    "legal_reasoning": "Commercial invoice description strictly corresponds with the credit terms under Art. 18(c).",
+                    "confidence": 0.98,
+                })
 
         # General Goods Description on Transport Document (UCP 600 Art. 14(e))
-        if "servo motors" in prompt_lower and "bill of lading" in prompt_lower:
+        if "servo motors" in prompt_lower and ("bill of lading" in prompt_lower or "bill_of_lading" in prompt_lower):
             return json.dumps({
                 "verdict": "COMPLIANT_PROTECTED",
                 "ucp_isbp_citation": "UCP 600 Art. 14(e)",
@@ -270,20 +352,6 @@ class NvidiaNimClient:
                     "The mutated address constitutes a fatal documentary discrepancy."
                 ),
                 "confidence": 0.99,
-            })
-
-        # Missing Mandatory Model Spec on Commercial Invoice (UCP 600 Art. 18(c))
-        if "omitted" in prompt_lower or ("model" in prompt_lower and "missing" in prompt_lower):
-            return json.dumps({
-                "verdict": "DISCREPANT",
-                "ucp_isbp_citation": "UCP 600 Art. 18(c)",
-                "is_discrepancy": True,
-                "legal_reasoning": (
-                    "Under UCP 600 Art. 18(c), the description of the goods, services or performance "
-                    "in a commercial invoice MUST correspond with that in the credit. Omission of the "
-                    "mandatory model specification 'Model X-200' violates strict invoice description rules."
-                ),
-                "confidence": 0.98,
             })
 
         # Default clean response

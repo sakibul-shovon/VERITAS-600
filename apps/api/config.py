@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = "veritas_default_secret_key_change_in_production"
     ZTRV_HMAC_SECRET: str = "veritas_zero_trust_runtime_hmac_secret"
+    EXAMINER_API_KEY: str = ""  # If set, enforced on human-in-the-loop sign-off
 
 
 @lru_cache

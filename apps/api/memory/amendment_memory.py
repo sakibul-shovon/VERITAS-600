@@ -14,6 +14,8 @@ import json
 from dataclasses import dataclass
 from typing import Any, Literal
 
+from apps.api.engines.ucp600_deterministic import parse_date
+
 AcceptanceStatus = Literal["ACCEPTED", "REJECTED", "UNACCEPTED_PENDING"]
 
 
@@ -102,13 +104,18 @@ class AmendmentMemoryEngine:
                     # Map LC fields to presentation fields
                     pres_val = None
                     if field == "latest_shipment_date" and "bl_on_board_date" in presentation_fields:
-                        pres_val = str(presentation_fields["bl_on_board_date"]).strip().lower()
-                        # If shipment is past old latest date but within new latest date, implicit acceptance
-                        if pres_val > old_val and pres_val <= new_val:
-                            matches.append(field)
-                        elif pres_val <= old_val:
-                            # Adhered to original
-                            pass
+                        d_pres = parse_date(presentation_fields.get("bl_on_board_date"))
+                        d_old = parse_date(item.get("old_value"))
+                        d_new = parse_date(item.get("new_value"))
+                        if d_pres and d_old and d_new:
+                            # If shipment is past old latest date but within new latest date, implicit acceptance
+                            if d_pres > d_old and d_pres <= d_new:
+                                matches.append(field)
+                            elif d_pres <= d_old:
+                                # Adhered to original
+                                pass
+                            else:
+                                conflicts.append(field)
                         else:
                             conflicts.append(field)
 
@@ -131,15 +138,15 @@ class AmendmentMemoryEngine:
                             conflicts.append(field)
 
                 # Check Art. 10(e): Partial acceptance prohibited
-                if len(matches) > 0 and len(matches) < len(items):
+                if len(matches) > 0 and (len(matches) < len(items) or len(conflicts) > 0):
                     partial_acceptance_violation = True
                     unmatched = [it["amended_field"] for it in items if it["amended_field"] not in matches]
                     violation_details = (
                         f"Partial acceptance of amendment {amd_id} detected: presentation conforms to {matches} "
-                        f"while retaining original/non-conforming values for {unmatched}. "
+                        f"while conflicting or retaining original values for {conflicts or unmatched}. "
                         f"Prohibited under UCP 600 Art. 10(e)."
                     )
-                elif len(matches) == len(items) and len(items) > 0:
+                elif len(matches) == len(items) and len(items) > 0 and len(conflicts) == 0:
                     # Full implicit acceptance via documents under Art. 10(c)
                     implicit_acceptance_detected = True
                     for item in items:

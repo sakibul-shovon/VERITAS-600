@@ -3,7 +3,6 @@
   "4": "package.json",
   "9": "compilerOptions",
   "12": "seed_scenarios.py",
-  "14": "TokenBucketRateLimiter",
   "15": "next.config.js",
   "16": "next-env.d.ts",
   "17": "tailwind.config.js",

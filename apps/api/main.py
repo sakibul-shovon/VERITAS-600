@@ -6,18 +6,23 @@ scenarios discovery, human examiner sign-off, and empirical evaluation runner.
 
 from __future__ import annotations
 
+import asyncio
+import hmac
 import json
+import logging
 import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
+
+logger = logging.getLogger("veritas.api")
 
 from apps.api.cases.store import DOCUMENT_TYPES, CaseStore
 from apps.api.config import get_settings
@@ -120,26 +125,34 @@ def load_presentation_data(lc_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail=f"Scenario data for '{lc_id}' not found.")
 
 
+def _is_plausible_key(key: str | None) -> bool:
+    """Return true only for a configured key that is not a placeholder."""
+    k = (key or "").strip()
+    return bool(k and "your_" not in k.lower() and not k.startswith("placeholder") and len(k) >= 8)
+
+
 @app.get("/api/v1/health")
 async def health_check():
     """Health check exposing honest sponsor telemetry."""
+    zetaris_live = _is_plausible_key(SETTINGS.ZETARIS_API_KEY)
+    meterless_live = _is_plausible_key(SETTINGS.METERLESS_API_KEY)
     return {
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
         "sponsors": {
             "zetaris": {
-                "configured": bool(SETTINGS.ZETARIS_API_KEY),
+                "configured": zetaris_live,
                 "mode": SETTINGS.ZETARIS_EXECUTION_MODE,
                 "telemetry": (
                     "LIVE_ZETARIS"
-                    if SETTINGS.ZETARIS_API_KEY and SETTINGS.ZETARIS_EXECUTION_MODE != "FORCE_FALLBACK"
+                    if zetaris_live and SETTINGS.ZETARIS_EXECUTION_MODE != "FORCE_FALLBACK"
                     else "LOCAL_DUCKDB_FALLBACK"
                 ),
             },
             "meterless": {
-                "configured": bool(SETTINGS.METERLESS_API_KEY),
-                "active": bool(SETTINGS.METERLESS_API_KEY),
-                "mode": "GATEWAY_CONNECTED" if SETTINGS.METERLESS_API_KEY else "LOCAL_MARKOVIAN_ROUTER",
+                "configured": meterless_live,
+                "active": meterless_live,
+                "mode": "GATEWAY_CONNECTED" if meterless_live else "LOCAL_MARKOVIAN_ROUTER",
             },
             "nvidia_nim": {
                 "configured": nim_client.live_configured,
@@ -155,22 +168,26 @@ async def list_scenarios():
     """List available presentation scenarios."""
     scenarios = []
     for sc_id in case_store.list_case_ids():
-        data = load_presentation_data(sc_id)
-        master = data["master"]
-        scenarios.append({
-            "lc_id": sc_id,
-            "beneficiary": master["beneficiary_name"],
-            "applicant": master["applicant_name"],
-            "amount": master["amount"],
-            "currency": master["currency"],
-            "incoterm": master["incoterm"],
-            "target_verdict": data.get("target_verdict"),
-            "primary_citation": data.get("primary_citation"),
-            "latest_shipment_date": master["latest_shipment_date"],
-            "expiry_date": master["expiry_date"],
-            "case_source": data.get("case_source", "SAMPLE_CASE"),
-            "evidence_status": data.get("evidence_status", "SAMPLE_READY"),
-        })
+        try:
+            data = load_presentation_data(sc_id)
+            master = data.get("master", {})
+            scenarios.append({
+                "lc_id": sc_id,
+                "beneficiary": master.get("beneficiary_name", "Unknown Beneficiary"),
+                "applicant": master.get("applicant_name", "Unknown Applicant"),
+                "amount": float(master.get("amount", 0.0)),
+                "currency": master.get("currency", "USD"),
+                "incoterm": master.get("incoterm", "CIF"),
+                "target_verdict": data.get("target_verdict"),
+                "primary_citation": data.get("primary_citation"),
+                "latest_shipment_date": master.get("latest_shipment_date", ""),
+                "expiry_date": master.get("expiry_date", ""),
+                "case_source": data.get("case_source", "SAMPLE_CASE"),
+                "evidence_status": data.get("evidence_status", "SAMPLE_READY"),
+            })
+        except Exception as exc:
+            logger.warning(f"Skipping corrupted or unreadable case '{sc_id}': {exc}")
+            continue
     return {"scenarios": scenarios}
 
 
@@ -594,12 +611,42 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
 
 
 @app.post("/api/v1/examine/{lc_id}/approve-action")
-async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
+async def approve_human_action(
+    lc_id: str,
+    body: HumanSignOffRequest,
+    x_examiner_key: str | None = Header(default=None, alias="X-Examiner-Key"),
+    authorization: str | None = Header(default=None),
+):
     """Record mandatory human-in-the-loop examiner sign-off with cryptographic binding."""
+    # Check Examiner Authentication if configured
+    if SETTINGS.EXAMINER_API_KEY:
+        provided_key = x_examiner_key
+        if not provided_key and authorization and authorization.startswith("Bearer "):
+            provided_key = authorization[7:].strip()
+        if not provided_key or not hmac.compare_digest(provided_key, SETTINGS.EXAMINER_API_KEY):
+            raise HTTPException(status_code=401, detail="Unauthorized: Valid examiner credentials required for sign-off.")
+
     now_iso = datetime.now(UTC).isoformat()
     run_info = _RUN_STORE.get(lc_id)
     if not run_info or not run_info.get("decision"):
         raise HTTPException(status_code=409, detail="A completed examination run is required before sign-off.")
+
+    # Idempotence: prevent duplicate authorization on the same run
+    if run_info.get("approval_receipt"):
+        existing = run_info["approval_receipt"]
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_info.get('run_id')}' was already authorized by {existing.get('signer_name')} at {existing.get('signed_at_utc')}. Re-authorization is prohibited.",
+        )
+
+    # Check evidence version drift
+    if case_store.exists(lc_id):
+        try:
+            case_data = case_store.load(lc_id)
+            if run_info.get("evidence_version") is not None and case_data.get("evidence_version") != run_info.get("evidence_version"):
+                raise HTTPException(status_code=409, detail="Case evidence has been modified since this examination run. Re-examination is required.")
+        except Exception:
+            pass
 
     decision_obj = run_info["decision"]
     action_str = decision_obj.recommended_action
@@ -615,14 +662,26 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
 
     from apps.api.domain.decisions import ActionType, AuthorityLevel, DecisionReceipt
 
+    # Reject invalid action rather than defaulting to APPROVE_HONOUR
+    if action_str not in ActionType._value2member_map_:
+        raise HTTPException(status_code=409, detail=f"Unrecognized action '{action_str}' cannot be authorized.")
+    action_enum = ActionType(action_str)
+
+    # Determine authority role based on credential
+    signer_role = (
+        AuthorityLevel.DESK_HEAD
+        if (x_examiner_key and "head" in x_examiner_key.lower())
+        else AuthorityLevel.CHECKER
+    )
+
     receipt = DecisionReceipt.generate(
         run_id=run_id,
         lc_id=lc_id,
-        action=ActionType(action_str) if action_str in ActionType._value2member_map_ else ActionType.APPROVE_HONOUR,
+        action=action_enum,
         decision_sha256=decision_hash,
         merkle_root_sha256=merkle_root,
-        signer_name=body.examiner_name,
-        signer_role=AuthorityLevel.DESK_HEAD,
+        signer_name=body.examiner_name.strip(),
+        signer_role=signer_role,
         discrepancy_count=len(decision_obj.discrepancies),
         regulatory_hold_active=(action_str == "COMPLIANCE_HOLD_AML"),
     )
@@ -631,8 +690,9 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
     run_info["approval_receipt"] = receipt_dict
     try:
         case_store.record_approval(lc_id, receipt_dict)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.error(f"Failed to persist approval receipt for {lc_id}: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to durably store approval receipt.")
 
     return {
         "status": "AUTHORIZED_NOT_DISPATCHED",
@@ -651,22 +711,33 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
 async def get_sponsor_evidence(lc_id: str):
     """Retrieve inspectable multi-sponsor execution receipts for an LC."""
     run_info = _RUN_STORE.get(lc_id, {})
+    has_run = bool(run_info)
+    fed_risk = run_info.get("fed_risk", {})
+    zetaris_mode = (
+        fed_risk.get("execution_mode")
+        if has_run
+        else ("LIVE_CONFIGURED" if _is_plausible_key(SETTINGS.ZETARIS_API_KEY) else "LOCAL_DUCKDB_STANDBY")
+    )
     return {
         "lc_id": lc_id,
-        "run_id": run_info.get("run_id", f"RUN-{lc_id}-STATIC"),
+        "run_id": run_info.get("run_id", f"RUN-{lc_id}-IDLE"),
         "sponsors": {
             "zetaris": {
-                "execution_mode": run_info.get("fed_risk", {}).get("execution_mode", "LOCAL_DUCKDB_FALLBACK"),
-                "query_ms": run_info.get("fed_risk", {}).get("query_ms", 12),
-                "receipt": run_info.get("fed_risk", {}).get("federation_receipt"),
+                "execution_mode": zetaris_mode,
+                "query_ms": fed_risk.get("query_ms") if has_run else None,
+                "receipt": fed_risk.get("federation_receipt"),
             },
             "meterless": {
-                "routing_mode": "MARKOVIAN_6_CHUNK",
+                "routing_mode": "MARKOVIAN_6_CHUNK" if has_run else "IDLE",
                 "stage_manifest": run_info.get("stage_manifest", []),
             },
             "nvidia_nim": {
                 "model": SETTINGS.NEMOTRON_REASONING_MODEL,
-                "telemetry": "LIVE_UNCACHED" if nim_client.live_configured else "CACHED_REPLAY",
+                "telemetry": (
+                    run_info.get("neural_telemetry", "CACHED_REPLAY")
+                    if has_run
+                    else ("LIVE_CONFIGURED_IDLE" if nim_client.live_configured else "LOCAL_REPLAY_STANDBY")
+                ),
             },
             "cursor": {
                 "rule_governance": "AGENTS.md & .cursorrules",
@@ -676,29 +747,32 @@ async def get_sponsor_evidence(lc_id: str):
     }
 
 
-# Evaluation benchmark suite state cache
+# Evaluation benchmark suite state cache and concurrency lock
 _cached_benchmark_results: dict[str, Any] | None = None
+_evals_lock = asyncio.Lock()
 
 
 @app.post("/api/v1/evals/run")
 async def run_evals_benchmark():
     """Execute live 3-baseline benchmark across all 10 scenarios."""
     global _cached_benchmark_results
-    from apps.api.evals.compare_baselines import BaselineComparisonSuite
+    async with _evals_lock:
+        from apps.api.evals.compare_baselines import BaselineComparisonSuite
 
-    suite = BaselineComparisonSuite()
-    results = suite.run_benchmark()
-    _cached_benchmark_results = results
-    return results
+        suite = BaselineComparisonSuite()
+        results = suite.run_benchmark()
+        _cached_benchmark_results = results
+        return results
 
 
 @app.get("/api/v1/evals/results")
 async def get_evals_results():
     """Retrieve benchmark results from cache or trigger fresh run."""
     global _cached_benchmark_results
-    if _cached_benchmark_results is None:
-        from apps.api.evals.compare_baselines import BaselineComparisonSuite
+    async with _evals_lock:
+        if _cached_benchmark_results is None:
+            from apps.api.evals.compare_baselines import BaselineComparisonSuite
 
-        suite = BaselineComparisonSuite()
-        _cached_benchmark_results = suite.run_benchmark()
-    return _cached_benchmark_results
+            suite = BaselineComparisonSuite()
+            _cached_benchmark_results = suite.run_benchmark()
+        return _cached_benchmark_results

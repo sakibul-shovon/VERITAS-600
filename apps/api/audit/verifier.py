@@ -33,7 +33,7 @@ class AuditVerifier:
         secret = settings.ZTRV_HMAC_SECRET.encode("utf-8")
         mac = hmac.new(secret, sig_payload.encode("utf-8"), hashlib.sha256).hexdigest()
         expected_token = f"V600-SIG-{mac[:24].upper()}"
-        return signature_token == expected_token
+        return hmac.compare_digest(signature_token, expected_token)
 
     @staticmethod
     def verify_evidence_inclusion(

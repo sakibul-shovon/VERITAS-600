@@ -17,6 +17,9 @@ from typing import Any
 from PIL import Image
 from pypdf import PdfReader
 
+# Protect against pixel decompression bombs
+Image.MAX_IMAGE_PIXELS = 25_000_000
+
 try:  # PyMuPDF enables page rendering and exact boxes; text PDFs still work without it.
     import fitz
 except ImportError:  # pragma: no cover - platform wheel compatibility is environment-specific.
@@ -131,11 +134,11 @@ class DocumentExtractor:
             try:
                 if fitz is not None:
                     pdf = fitz.open(stream=content, filetype="pdf")
-                    pages = [page.get_text("text").strip() for page in pdf]
+                    pages = [page.get_text("text").strip() for page in list(pdf)[:50]]
                 else:
                     reader = PdfReader(BytesIO(content))
-                    pages = [(page.extract_text() or "").strip() for page in reader.pages]
-                raw_text = "\n\n".join(text for text in pages if text)
+                    pages = [(page.extract_text() or "").strip() for page in list(reader.pages)[:50]]
+                raw_text = "\n\n".join(text for text in pages if text)[:500_000]
             except Exception as exc:
                 return self._unavailable_result(display_type, filename, digest, f"Invalid PDF: {type(exc).__name__}")
             if len(raw_text) >= 20:

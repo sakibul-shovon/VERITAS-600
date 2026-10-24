@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
+import threading
 from collections.abc import Iterable
 from copy import deepcopy
 from datetime import UTC, datetime
@@ -24,13 +26,23 @@ DOCUMENT_TYPES = {
     "other",
 }
 
+NUMERIC_PRESENTATION_FIELDS = {
+    "invoice_amount",
+    "invoice_unit_price",
+    "packing_gross_weight_kg",
+    "bl_gross_weight_kg",
+    "insurance_amount",
+}
+
 FIELD_TO_PRESENTATION = {
     "commercial_invoice": {
         "invoice_no": "invoice_no",
         "invoice_date": "invoice_date",
         "goods_description": "invoice_goods_description",
         "unit_price": "invoice_unit_price",
+        "invoice_unit_price": "invoice_unit_price",
         "total_amount": "invoice_amount",
+        "invoice_amount": "invoice_amount",
     },
     "bill_of_lading": {
         "bl_no": "bl_no",
@@ -55,6 +67,7 @@ class CaseStore:
     def __init__(self, seed_dir: Path, runtime_dir: Path):
         self.seed_dir = Path(seed_dir)
         self.runtime_dir = Path(runtime_dir)
+        self._lock = threading.Lock()
 
     @staticmethod
     def validate_case_id(lc_id: str) -> str:
@@ -203,47 +216,60 @@ class CaseStore:
         return record
 
     def accept_evidence(self, lc_id: str, reviewed_documents: Iterable[dict[str, Any]]) -> dict[str, Any]:
-        data = deepcopy(self.load(lc_id))
-        by_id = {doc["document_id"]: doc for doc in data.get("evidence_documents", [])}
-        accepted_ids: list[str] = []
+        with self._lock:
+            data = deepcopy(self.load(lc_id))
+            by_id = {doc["document_id"]: doc for doc in data.get("evidence_documents", [])}
+            accepted_ids: list[str] = []
 
-        for reviewed in reviewed_documents:
-            document_id = reviewed.get("document_id")
-            if document_id not in by_id:
-                raise ValueError(f"Unknown document '{document_id}'.")
-            record = by_id[document_id]
-            extracted_fields = record.get("extraction", {}).get("fields", {})
-            reviewed_fields = reviewed.get("fields") or {
-                key: value.get("value") for key, value in extracted_fields.items()
+            for reviewed in reviewed_documents:
+                document_id = reviewed.get("document_id")
+                if document_id not in by_id:
+                    raise ValueError(f"Unknown document '{document_id}'.")
+                record = by_id[document_id]
+                extracted_fields = record.get("extraction", {}).get("fields", {})
+                reviewed_fields = reviewed.get("fields") or {
+                    key: value.get("value") for key, value in extracted_fields.items()
+                }
+                mapping = FIELD_TO_PRESENTATION.get(record["document_type"], {})
+                for field_key, value in reviewed_fields.items():
+                    presentation_key = mapping.get(field_key)
+                    if presentation_key:
+                        if presentation_key in NUMERIC_PRESENTATION_FIELDS and value is not None:
+                            if isinstance(value, dict):
+                                raise ValueError(f"Numeric field '{field_key}' cannot be an object.")
+                            try:
+                                f_val = float(str(value).replace(",", "").strip())
+                                if math.isnan(f_val) or math.isinf(f_val):
+                                    raise ValueError(f"Numeric field '{field_key}' cannot be NaN or Infinity.")
+                                if f_val < 0:
+                                    raise ValueError(f"Numeric field '{field_key}' cannot be negative.")
+                                value = f_val
+                            except (ValueError, TypeError) as exc:
+                                raise ValueError(f"Field '{field_key}' must be a valid finite number: {exc}")
+                        data["presentation"][presentation_key] = value
+                record["review_status"] = "ACCEPTED"
+                record["reviewed_fields"] = reviewed_fields
+                record["accepted_at"] = datetime.now(UTC).isoformat()
+                accepted_ids.append(document_id)
+
+            data["evidence_documents"] = list(by_id.values())
+            accepted_types = {
+                document["document_type"]
+                for document in data["evidence_documents"]
+                if document.get("review_status") == "ACCEPTED"
             }
-            mapping = FIELD_TO_PRESENTATION.get(record["document_type"], {})
-            for field_key, value in reviewed_fields.items():
-                presentation_key = mapping.get(field_key)
-                if presentation_key:
-                    data["presentation"][presentation_key] = value
-            record["review_status"] = "ACCEPTED"
-            record["reviewed_fields"] = reviewed_fields
-            record["accepted_at"] = datetime.now(UTC).isoformat()
-            accepted_ids.append(document_id)
-
-        data["evidence_documents"] = list(by_id.values())
-        accepted_types = {
-            document["document_type"]
-            for document in data["evidence_documents"]
-            if document.get("review_status") == "ACCEPTED"
-        }
-        required_types = {"commercial_invoice", "bill_of_lading", "packing_list", "insurance"}
-        missing_types = sorted(required_types - accepted_types) if data.get("case_source") == "USER_CREATED" else []
-        data["missing_document_types"] = missing_types
-        data["evidence_status"] = (
-            "ACCEPTED" if accepted_ids and not missing_types else
-            "NEEDS_REVIEW" if accepted_ids else
-            data.get("evidence_status", "AWAITING_DOCUMENTS")
-        )
-        data["evidence_version"] = int(data.get("evidence_version", 0)) + 1
-        data["evidence_accepted_at"] = datetime.now(UTC).isoformat()
-        self._write_case(lc_id, data)
-        return data
+            required_types = {"commercial_invoice", "bill_of_lading", "packing_list", "insurance"}
+            missing_types = sorted(required_types - accepted_types) if data.get("case_source") == "USER_CREATED" else []
+            data["missing_document_types"] = missing_types
+            data["evidence_status"] = (
+                "ACCEPTED" if accepted_ids and not missing_types else
+                "NEEDS_REVIEW" if accepted_ids else
+                data.get("evidence_status", "AWAITING_DOCUMENTS")
+            )
+            data["evidence_version"] = int(data.get("evidence_version", 0)) + 1
+            data["evidence_accepted_at"] = datetime.now(UTC).isoformat()
+            self._write_case(lc_id, data)
+            return data
 
     def document_path(self, lc_id: str, document_id: str) -> Path:
         if not re.fullmatch(r"DOC-[a-f0-9]{16}", document_id):
@@ -255,8 +281,9 @@ class CaseStore:
 
     def record_approval(self, lc_id: str, receipt_dict: dict[str, Any]) -> dict[str, Any]:
         """Persist authorized sign-off receipt to durable case storage."""
-        data = deepcopy(self.load(lc_id))
-        data["approval_receipt"] = receipt_dict
-        data["authorized_at"] = datetime.now(UTC).isoformat()
-        self._write_case(lc_id, data)
-        return data
+        with self._lock:
+            data = deepcopy(self.load(lc_id))
+            data["approval_receipt"] = receipt_dict
+            data["authorized_at"] = datetime.now(UTC).isoformat()
+            self._write_case(lc_id, data)
+            return data

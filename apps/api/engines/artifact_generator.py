@@ -14,6 +14,25 @@ from typing import Any
 from apps.api.engines.decision_engine import BankDecision
 
 
+def sanitize_swift_text(text: str) -> str:
+    """Sanitize user/model-provided text for SWIFT MT message formats.
+
+    Strips SWIFT block delimiters ('{' and '}') and neutralizes tag injection (e.g. lines starting with ':XX:').
+    """
+    if not text:
+        return ""
+    cleaned = str(text).replace("{", "(").replace("}", ")")
+    lines = cleaned.splitlines()
+    sanitized = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith(":") and len(stripped) > 2 and stripped[1:3].isalnum():
+            sanitized.append(" " + line)
+        else:
+            sanitized.append(line)
+    return "\n".join(sanitized)
+
+
 class ArtifactGenerator:
     """Generates bank-ready operational artifacts matching international standards."""
 
@@ -44,8 +63,11 @@ class ArtifactGenerator:
         amount = float(presentation.get("invoice_amount", active_lc.get("amount", 0.0)))
         amount_swift = f"{amount:,.2f}".replace(",", "").replace(".", ",")
 
-        # Format discrepancies
-        discrepancies_formatted = "\n".join(f"+ {d}" for d in decision.discrepancies)
+        # Format discrepancies safely
+        discrepancies_formatted = "\n".join(
+            f"+ {sanitize_swift_text(d)}" for d in decision.discrepancies
+        )
+        invoice_no = sanitize_swift_text(str(presentation.get("invoice_no", "PRES-001"))).strip()
 
         # Demurrage Advisory text
         advisory_text = ""
@@ -62,7 +84,7 @@ BANK TRADE ADVISORY — PRE-EXPIRY CURE VS. APPLICANT WAIVER COMPARISON:
 
         mt734 = f"""{'{1:F01ECOMUS33AXXX0000000000}{2:I734GTBKSGSGAXXXN}{4:'}
 :20:REF-{lc_id}-{today_swift}
-:21:{presentation.get('invoice_no', 'PRES-001')}
+:21:{invoice_no}
 :32A:{today_swift}{currency}{amount_swift}
 :77J:DISCREPANCIES NOTED PURSUANT TO ICC UCP 600 ART. 16(c)(ii):
 {discrepancies_formatted}
@@ -154,8 +176,17 @@ RECOMMENDED ACTION:   APPROVE_HONOUR
         signature_token: str,
     ) -> str:
         voucher = self.generate_settlement_voucher(decision, active_lc, presentation)
-        voucher = voucher.replace(
-            "SETTLEMENT STATUS:    PROPOSED - PENDING HUMAN EXAMINER AUTHORIZATION\nDISPATCH STATUS:      AWAITING SIGN-OFF (NOT DISPATCHED)\nRECOMMENDED ACTION:   APPROVE_HONOUR",
-            f"SETTLEMENT STATUS:    AUTHORIZED BY HUMAN EXAMINER ({signer_name})\nDISPATCH STATUS:      AUTHORIZED_NOT_DISPATCHED (EXTERNAL GATEWAY NOT CONNECTED)\nCRYPTOGRAPHIC SEAL:   {signature_token}",
+        target = (
+            "SETTLEMENT STATUS:    PROPOSED - PENDING HUMAN EXAMINER AUTHORIZATION\n"
+            "DISPATCH STATUS:      AWAITING SIGN-OFF (NOT DISPATCHED)\n"
+            "RECOMMENDED ACTION:   APPROVE_HONOUR"
         )
+        replacement = (
+            f"SETTLEMENT STATUS:    AUTHORIZED BY HUMAN EXAMINER ({signer_name})\n"
+            f"DISPATCH STATUS:      AUTHORIZED_NOT_DISPATCHED (EXTERNAL GATEWAY NOT CONNECTED)\n"
+            f"CRYPTOGRAPHIC SEAL:   {signature_token}"
+        )
+        if target not in voucher:
+            raise ValueError("Settlement voucher template drift: target status block not found for replacement.")
+        voucher = voucher.replace(target, replacement)
         return voucher

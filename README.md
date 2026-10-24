@@ -135,3 +135,4 @@ Or navigate to the **`/evals`** tab in the web interface.
 * **License:** Apache 2.0 (See [LICENSE](LICENSE))
 * **Architecture & Plan:** Complete details in [docs/plan.md](docs/plan.md)
 * **Agent Continuity Tracker:** [STATUS.md](STATUS.md)
+* **Security & Audit Verification:** [SECURITY_REMEDIATION_REPORT.md](SECURITY_REMEDIATION_REPORT.md) (All 19 Red-Team findings remediated & verified with 58 tests)

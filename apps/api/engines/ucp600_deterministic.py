@@ -10,9 +10,40 @@ If any check in this engine fails, the presentation is permanently locked to DIS
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Any
+
+
+def normalize_trade_text(text: str) -> str:
+    """Normalize text against Unicode homoglyphs, NFKC, and whitespace.
+
+    Protects against homoglyph obfuscation (e.g. Cyrillic 'с' mimicking Latin 'c' in 'сover note').
+    """
+    if not text:
+        return ""
+    norm = unicodedata.normalize("NFKC", str(text)).casefold()
+    homoglyphs = {
+        "\u0441": "c",  # Cyrillic small letter es
+        "\u043e": "o",  # Cyrillic small letter o
+        "\u0435": "e",  # Cyrillic small letter ie
+        "\u0430": "a",  # Cyrillic small letter a
+        "\u0440": "p",  # Cyrillic small letter er
+        "\u0456": "i",  # Cyrillic small letter byelorussian-ukrainian i
+        "\u0458": "j",  # Cyrillic small letter je
+        "\u0445": "x",  # Cyrillic small letter ha
+        "\u0443": "y",  # Cyrillic small letter u
+        "\u0473": "f",  # Cyrillic small letter fita
+        "\u03bf": "o",  # Greek small letter omicron
+        "\u03b5": "e",  # Greek small letter epsilon
+        "\u03b1": "a",  # Greek small letter alpha
+        "\u03c1": "p",  # Greek small letter rho
+        "\u03bd": "v",  # Greek small letter nu
+    }
+    for char, replacement in homoglyphs.items():
+        norm = norm.replace(char, replacement)
+    return norm
 
 
 @dataclass
@@ -37,9 +68,11 @@ class DeterministicEvaluation:
 def parse_date(date_val: Any) -> date | None:
     """Parse date from string or date/datetime object across common trade formats.
 
-    Supports ISO (YYYY-MM-DD), slash-delimited (DD/MM/YYYY, MM/DD/YYYY, YYYY/MM/DD),
-    dash-delimited (DD-MM-YYYY), and dot-delimited formats.
-    Returns None if date_val is None or empty.
+    Policy Contract (P1-4):
+    - ISO 8601 (YYYY-MM-DD) is the primary authoritative format for international trade.
+    - Slash-delimited trade documents follow ICC international banking standard (DD/MM/YYYY).
+    - Unparseable strings raise ValueError to prevent silent date corruption.
+    - Empty or None values return None.
     """
     if date_val is None:
         return None
@@ -237,7 +270,13 @@ class UCP600DeterministicEngine:
         min_insured_pct = float(active_lc.get("insurance_min_pct", 110.0))
 
         # Check 3.1: Reject Cover Notes (Art. 28(c))
-        is_cover_note = "cover note" in insurance_doc_type.lower()
+        norm_doc_type = normalize_trade_text(insurance_doc_type)
+        is_cover_note = (
+            "cover note" in norm_doc_type
+            or "cover_note" in norm_doc_type
+            or "covernote" in norm_doc_type
+            or "cover-note" in norm_doc_type
+        )
         passed_doc_type = not is_cover_note
         results.append(
             DeterministicCheckResult(
@@ -310,6 +349,22 @@ class UCP600DeterministicEngine:
                         computed_values={"insurance_effective_date": str(ins_eff_date), "shipment_date": str(shipment_date)},
                     )
                 )
+        elif (
+            active_lc.get("incoterm", "").upper() in ("CIF", "CIP")
+            and insurance_amount > 0
+            and not is_cover_note
+        ):
+            results.append(
+                DeterministicCheckResult(
+                    check_id="INSURANCE_EFFECTIVE_DATE",
+                    name="Insurance Date Prior to Shipment",
+                    ucp_citation="UCP 600 Art. 28(e)",
+                    passed=False,
+                    severity="FATAL_DISCREPANCY",
+                    details="Insurance document presented without mandatory issue/effective date under UCP 600 Art. 28(e)",
+                    computed_values={"insurance_effective_date": "MISSING", "shipment_date": str(shipment_date)},
+                )
+            )
 
         # ----------------------------------------------------------------------
         # 4. Cross-Document Weight Matching (Art. 14(d))
@@ -346,6 +401,21 @@ class UCP600DeterministicEngine:
                         },
                     )
                 )
+        elif (packing_gross_wt is not None and bl_gross_wt is None) or (packing_gross_wt is None and bl_gross_wt is not None):
+            results.append(
+                DeterministicCheckResult(
+                    check_id="CROSS_DOC_WEIGHT_RECONCILIATION",
+                    name="Gross Weight Consistency (Packing List vs B/L)",
+                    ucp_citation="UCP 600 Art. 14(d)",
+                    passed=False,
+                    severity="FATAL_DISCREPANCY",
+                    details="Gross weight reconciliation failed: one document specifies gross weight but counterpart is missing under UCP 600 Art. 14(d)",
+                    computed_values={
+                        "packing_gross_weight_kg": packing_gross_wt,
+                        "bl_gross_weight_kg": bl_gross_wt,
+                    },
+                )
+            )
 
         # ----------------------------------------------------------------------
         # Demurrage Savings Advisory Calculation (For Curable Discrepancies)
