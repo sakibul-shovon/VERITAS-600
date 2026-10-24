@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional
 
 
 class RuleCategory(str, Enum):
@@ -38,7 +37,7 @@ class LegalRule:
     hard_invariant_locked: bool = True
 
 
-RULES_REGISTRY: Dict[str, LegalRule] = {
+RULES_REGISTRY: dict[str, LegalRule] = {
     "UCP600-ART-6D1": LegalRule(
         rule_id="UCP600-ART-6D1",
         citation="UCP 600 Art. 6(d)(i)",
@@ -198,5 +197,5 @@ RULES_REGISTRY: Dict[str, LegalRule] = {
 }
 
 
-def get_rule(rule_id: str) -> Optional[LegalRule]:
+def get_rule(rule_id: str) -> LegalRule | None:
     return RULES_REGISTRY.get(rule_id)

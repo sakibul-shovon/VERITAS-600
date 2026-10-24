@@ -14,7 +14,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import pytest
+
 from apps.api.engines.ucp600_deterministic import UCP600DeterministicEngine
 from apps.api.memory.amendment_memory import AmendmentMemoryEngine
 

@@ -9,10 +9,10 @@ Implements UCP 600 Art. 10(c) & 10(e) rules:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
 import json
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Literal
 
 AcceptanceStatus = Literal["ACCEPTED", "REJECTED", "UNACCEPTED_PENDING"]
 
@@ -29,13 +29,13 @@ class TermRecord:
 
 @dataclass
 class AmendmentResolution:
-    active_terms: Dict[str, Any]
+    active_terms: dict[str, Any]
     active_terms_sha256: str
-    accepted_amendments: List[Dict[str, Any]]
-    quarantined_amendments: List[Dict[str, Any]]
+    accepted_amendments: list[dict[str, Any]]
+    quarantined_amendments: list[dict[str, Any]]
     implicit_acceptance_detected: bool
     partial_acceptance_violation: bool
-    violation_details: Optional[str] = None
+    violation_details: str | None = None
 
 
 class AmendmentMemoryEngine:
@@ -46,9 +46,9 @@ class AmendmentMemoryEngine:
 
     def build_active_state(
         self,
-        base_lc: Dict[str, Any],
-        amendments: List[Dict[str, Any]],
-        presentation_fields: Optional[Dict[str, Any]] = None,
+        base_lc: dict[str, Any],
+        amendments: list[dict[str, Any]],
+        presentation_fields: dict[str, Any] | None = None,
     ) -> AmendmentResolution:
         """Resolve active terms under UCP 600 Art. 10(c) and 10(e).
 
@@ -59,14 +59,14 @@ class AmendmentMemoryEngine:
         """
         # 1. Initialize active terms with baseline MT700
         active_terms = dict(base_lc)
-        accepted_list: List[Dict[str, Any]] = []
-        quarantined_list: List[Dict[str, Any]] = []
+        accepted_list: list[dict[str, Any]] = []
+        quarantined_list: list[dict[str, Any]] = []
 
         # Sort amendments by sequence number
         sorted_amds = sorted(amendments, key=lambda x: x.get("sequence_no", 0))
 
         # Track unaccepted amendments grouped by amendment_id
-        pending_by_id: Dict[str, List[Dict[str, Any]]] = {}
+        pending_by_id: dict[str, list[dict[str, Any]]] = {}
 
         for amd in sorted_amds:
             status = amd.get("beneficiary_acceptance_status", "UNACCEPTED_PENDING")

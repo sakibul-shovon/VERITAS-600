@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
 import hashlib
-import json
-from typing import Any, Dict, List, Optional
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
 
 
 @dataclass
@@ -17,11 +16,11 @@ class BoundingBox:
     ymax: int
     xmax: int
 
-    def to_list(self) -> List[int]:
+    def to_list(self) -> list[int]:
         return [self.ymin, self.xmin, self.ymax, self.xmax]
 
     @classmethod
-    def from_list(cls, coords: List[int]) -> BoundingBox:
+    def from_list(cls, coords: list[int]) -> BoundingBox:
         if len(coords) != 4:
             raise ValueError("Bounding box must have 4 integers [ymin, xmin, ymax, xmax]")
         return cls(ymin=coords[0], xmin=coords[1], ymax=coords[2], xmax=coords[3])
@@ -36,9 +35,9 @@ class EvidenceRecord:
     raw_value: Any
     normalized_value: Any
     confidence: float
-    bounding_box: List[int]
+    bounding_box: list[int]
     source_digest_sha256: str
-    timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp_utc: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def compute_sha256(self) -> str:
         """Deterministic digest of this evidence record."""
@@ -48,7 +47,7 @@ class EvidenceRecord:
         )
         return hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -57,15 +56,15 @@ class EvidenceManifest:
     """Collection of evidence records for an examination run."""
     run_id: str
     lc_id: str
-    records: List[EvidenceRecord] = field(default_factory=list)
+    records: list[EvidenceRecord] = field(default_factory=list)
 
     def add_record(self, record: EvidenceRecord) -> None:
         self.records.append(record)
 
-    def leaf_hashes(self) -> List[str]:
+    def leaf_hashes(self) -> list[str]:
         return [r.compute_sha256() for r in self.records]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
             "lc_id": self.lc_id,

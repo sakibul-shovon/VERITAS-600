@@ -6,22 +6,23 @@ scenarios discovery, human examiner sign-off, and empirical evaluation runner.
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional
+from dataclasses import asdict
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
+from apps.api.cases.store import DOCUMENT_TYPES, CaseStore
 from apps.api.config import get_settings
-from apps.api.cases.store import CaseStore, DOCUMENT_TYPES
 from apps.api.engines.artifact_generator import ArtifactGenerator
-from apps.api.engines.decision_engine import BankDecision, BankDecisionEngine
+from apps.api.engines.decision_engine import BankDecisionEngine
 from apps.api.engines.document_extractor import DocumentExtractor
 from apps.api.engines.ucp600_deterministic import UCP600DeterministicEngine
 from apps.api.engines.ucp600_legal_adjudicator import UCP600LegalAdjudicator
@@ -41,10 +42,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Enable CORS for Next.js frontend (port 3000)
+# Allowed origins for Next.js frontend (ports 3000 / 3001)
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,7 +73,7 @@ case_store = CaseStore(PRESENTATIONS_DIR, RUNTIME_CASES_DIR)
 
 class HumanSignOffRequest(BaseModel):
     examiner_name: str = Field(min_length=2, max_length=128)
-    comments: Optional[str] = Field(default=None, max_length=2000)
+    comments: str | None = Field(default=None, max_length=2000)
     run_id: str = Field(min_length=8, max_length=128)
     decision_sha256: str = Field(min_length=16, max_length=128)
     expected_action: str = Field(min_length=3, max_length=64)
@@ -76,35 +84,35 @@ class CaseCreateRequest(BaseModel):
     applicant_name: str = Field(min_length=2, max_length=128)
     applicant_address_strict: str = Field(min_length=4, max_length=256)
     beneficiary_name: str = Field(min_length=2, max_length=128)
-    issuing_bank: Optional[str] = Field(default=None, max_length=128)
+    issuing_bank: str | None = Field(default=None, max_length=128)
     currency: str = Field(default="USD", min_length=3, max_length=3)
     amount: float = Field(gt=0)
     tolerance_pct: float = Field(default=0, ge=0, le=100)
     incoterm: str = Field(default="CIF", min_length=2, max_length=16)
     hs_code_6: str = Field(min_length=4, max_length=10)
     goods_description_strict: str = Field(min_length=3, max_length=2000)
-    unit_price: Optional[float] = Field(default=None, gt=0)
+    unit_price: float | None = Field(default=None, gt=0)
     quantity: int = Field(gt=0)
     port_of_loading: str = Field(min_length=2, max_length=128)
     port_of_discharge: str = Field(min_length=2, max_length=128)
     latest_shipment_date: str
     expiry_date: str
-    presentation_date: Optional[str] = None
+    presentation_date: str | None = None
     presentation_period_days: int = Field(default=21, ge=1, le=365)
     daily_demurrage_usd: float = Field(default=0, ge=0)
-    swift_mt700_raw: Optional[str] = Field(default=None, max_length=20000)
+    swift_mt700_raw: str | None = Field(default=None, max_length=20000)
 
 
 class ReviewedDocument(BaseModel):
     document_id: str
-    fields: Dict[str, Any] = Field(default_factory=dict)
+    fields: dict[str, Any] = Field(default_factory=dict)
 
 
 class EvidenceAcceptanceRequest(BaseModel):
-    documents: List[ReviewedDocument] = Field(min_length=1)
+    documents: list[ReviewedDocument] = Field(min_length=1)
 
 
-def load_presentation_data(lc_id: str) -> Dict[str, Any]:
+def load_presentation_data(lc_id: str) -> dict[str, Any]:
     """Load an immutable sample or a file-backed examiner-created case."""
     try:
         return case_store.load(lc_id)
@@ -117,16 +125,21 @@ async def health_check():
     """Health check exposing honest sponsor telemetry."""
     return {
         "status": "healthy",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "sponsors": {
             "zetaris": {
                 "configured": bool(SETTINGS.ZETARIS_API_KEY),
                 "mode": SETTINGS.ZETARIS_EXECUTION_MODE,
-                "telemetry": "LIVE_ZETARIS" if SETTINGS.ZETARIS_API_KEY else "LOCAL_DUCKDB_FALLBACK",
+                "telemetry": (
+                    "LIVE_ZETARIS"
+                    if SETTINGS.ZETARIS_API_KEY and SETTINGS.ZETARIS_EXECUTION_MODE != "FORCE_FALLBACK"
+                    else "LOCAL_DUCKDB_FALLBACK"
+                ),
             },
             "meterless": {
                 "configured": bool(SETTINGS.METERLESS_API_KEY),
-                "active": True,
+                "active": bool(SETTINGS.METERLESS_API_KEY),
+                "mode": "GATEWAY_CONNECTED" if SETTINGS.METERLESS_API_KEY else "LOCAL_MARKOVIAN_ROUTER",
             },
             "nvidia_nim": {
                 "configured": nim_client.live_configured,
@@ -270,12 +283,12 @@ async def get_scenario_details(lc_id: str):
 async def extract_documents(lc_id: str):
     """Run real multimodal OCR & VLM field extraction on presentation documents."""
     data = load_presentation_data(lc_id)
-    inv = extractor.extract_document("Commercial Invoice", "...", lc_id)
-    bl = extractor.extract_document("Ocean Bill of Lading", "...", lc_id)
-    ins = extractor.extract_document("Insurance Certificate", "...", lc_id)
+    inv = extractor.extract_document("Commercial Invoice", "...", lc_id, presentation_data=data)
+    bl = extractor.extract_document("Ocean Bill of Lading", "...", lc_id, presentation_data=data)
+    ins = extractor.extract_document("Insurance Certificate", "...", lc_id, presentation_data=data)
     return {
         "lc_id": lc_id,
-        "extracted_at": datetime.now(timezone.utc).isoformat(),
+        "extracted_at": datetime.now(UTC).isoformat(),
         "documents": {
             "invoice": asdict(inv),
             "bill_of_lading": asdict(bl),
@@ -285,7 +298,7 @@ async def extract_documents(lc_id: str):
 
 
 # In-memory run store for cryptographic audit binding
-_RUN_STORE: Dict[str, Dict[str, Any]] = {}
+_RUN_STORE: dict[str, dict[str, Any]] = {}
 
 
 @app.get("/api/v1/examine/{lc_id}")
@@ -304,7 +317,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
 
     async def event_generator():
         run_clock = time.perf_counter()
-        run_id = f"RUN-{lc_id}-{int(datetime.now(timezone.utc).timestamp())}"
+        run_id = f"RUN-{lc_id}-{int(datetime.now(UTC).timestamp())}"
 
         # ----------------------------------------------------------------------
         # Stage 1: Meterless Context Routing & Amendment Memory
@@ -312,7 +325,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         stage_clock = time.perf_counter()
         yield {
             "event": "stage_start",
-            "data": json.dumps({"stage": 1, "name": "Meterless Context Routing & Amendment Memory (Art. 10)", "started_at": datetime.now(timezone.utc).isoformat()}),
+            "data": json.dumps({"stage": 1, "name": "Meterless Context Routing & Amendment Memory (Art. 10)", "started_at": datetime.now(UTC).isoformat()}),
         }
         resolution = amendment_memory.build_active_state(master, amendments, presentation)
         chunks = meterless_router.route_markovian_chunks(resolution.active_terms, amendments, presentation)
@@ -343,7 +356,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         stage_clock = time.perf_counter()
         yield {
             "event": "stage_start",
-            "data": json.dumps({"stage": 2, "name": "Zetaris Join-Safe 3-Silo Federation Check", "started_at": datetime.now(timezone.utc).isoformat()}),
+            "data": json.dumps({"stage": 2, "name": "Zetaris Join-Safe 3-Silo Federation Check", "started_at": datetime.now(UTC).isoformat()}),
         }
         fed_risk = zetaris_client.execute_federated_check(
             lc_id=lc_id,
@@ -374,7 +387,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         stage_clock = time.perf_counter()
         yield {
             "event": "stage_start",
-            "data": json.dumps({"stage": 3, "name": "Deterministic UCP 600 Symbolic Math & Dates", "started_at": datetime.now(timezone.utc).isoformat()}),
+            "data": json.dumps({"stage": 3, "name": "Deterministic UCP 600 Symbolic Math & Dates", "started_at": datetime.now(UTC).isoformat()}),
         }
         det_eval = det_engine.evaluate_presentation(resolution.active_terms, presentation)
 
@@ -396,7 +409,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         stage_clock = time.perf_counter()
         yield {
             "event": "stage_start",
-            "data": json.dumps({"stage": 4, "name": "NVIDIA Nemotron Legal Adjudication & Extraction", "started_at": datetime.now(timezone.utc).isoformat()}),
+            "data": json.dumps({"stage": 4, "name": "NVIDIA Nemotron Legal Adjudication & Extraction", "started_at": datetime.now(UTC).isoformat()}),
         }
         legal_eval = adjudicator.adjudicate_presentation(
             resolution.active_terms, presentation, deterministic_eval=det_eval
@@ -443,7 +456,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         stage_clock = time.perf_counter()
         yield {
             "event": "stage_start",
-            "data": json.dumps({"stage": 5, "name": "Bank Officer Decision & Artifact Generation", "started_at": datetime.now(timezone.utc).isoformat()}),
+            "data": json.dumps({"stage": 5, "name": "Bank Officer Decision & Artifact Generation", "started_at": datetime.now(UTC).isoformat()}),
         }
         decision = decision_engine.evaluate(
             lc_id=lc_id,
@@ -456,8 +469,8 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
         artifact_text = artifact_gen.generate_artifact(decision, resolution.active_terms, presentation)
 
         # Cryptographic Merkle Root over Evidence & Rules
-        from apps.api.audit.merkle import MerkleTree
         from apps.api.audit.canonical_json import canonical_sha256
+        from apps.api.audit.merkle import MerkleTree
 
         leaves = [
             resolution.active_terms_sha256,
@@ -500,7 +513,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
                 "decision_sha256": decision_hash,
                 "duration_ms": int((time.perf_counter() - run_clock) * 1000),
                 "stage_duration_ms": max(1, int((time.perf_counter() - stage_clock) * 1000)),
-                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "completed_at": datetime.now(UTC).isoformat(),
             }),
         }
 
@@ -546,7 +559,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
     merkle_root = tree.root_hex
     decision_hash = canonical_sha256(asdict(decision))
 
-    run_id = f"RUN-{lc_id}-{int(datetime.now(timezone.utc).timestamp())}"
+    run_id = f"RUN-{lc_id}-{int(datetime.now(UTC).timestamp())}"
     _RUN_STORE[lc_id] = {
         "run_id": run_id,
         "decision": decision,
@@ -583,7 +596,7 @@ async def examine_presentation_sse(lc_id: str, request: Request, stream: bool = 
 @app.post("/api/v1/examine/{lc_id}/approve-action")
 async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
     """Record mandatory human-in-the-loop examiner sign-off with cryptographic binding."""
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     run_info = _RUN_STORE.get(lc_id)
     if not run_info or not run_info.get("decision"):
         raise HTTPException(status_code=409, detail="A completed examination run is required before sign-off.")
@@ -614,6 +627,13 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
         regulatory_hold_active=(action_str == "COMPLIANCE_HOLD_AML"),
     )
 
+    receipt_dict = receipt.to_dict()
+    run_info["approval_receipt"] = receipt_dict
+    try:
+        case_store.record_approval(lc_id, receipt_dict)
+    except Exception:
+        pass
+
     return {
         "status": "AUTHORIZED_NOT_DISPATCHED",
         "lc_id": lc_id,
@@ -621,7 +641,7 @@ async def approve_human_action(lc_id: str, body: HumanSignOffRequest):
         "human_approved_at": now_iso,
         "examiner_comments": body.comments,
         "audit_receipt_hash": receipt.signature_token,
-        "decision_receipt": receipt.to_dict(),
+        "decision_receipt": receipt_dict,
         "dispatch_status": "NOT_CONNECTED",
         "message": f"Action signed off by {body.examiner_name} and cryptographically sealed. External dispatch is not connected.",
     }
@@ -657,7 +677,7 @@ async def get_sponsor_evidence(lc_id: str):
 
 
 # Evaluation benchmark suite state cache
-_cached_benchmark_results: Optional[Dict[str, Any]] = None
+_cached_benchmark_results: dict[str, Any] | None = None
 
 
 @app.post("/api/v1/evals/run")

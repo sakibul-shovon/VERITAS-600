@@ -11,10 +11,10 @@ Exposes honest runtime telemetry ('LIVE_ZETARIS' vs. 'LOCAL_DUCKDB_FALLBACK').
 from __future__ import annotations
 
 import json
-from pathlib import Path
-import re
 import time
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any
+
 import duckdb
 import httpx
 import pandas as pd
@@ -33,11 +33,11 @@ STANDBY_DB_PATH = ROOT_DIR / "apps" / "api" / "db" / "veritas_standby.duckdb"
 class ZetarisFederationClient:
     """Federation client executing in-situ 3-silo queries with local DuckDB fallback."""
 
-    def __init__(self, execution_mode: Optional[str] = None):
+    def __init__(self, execution_mode: str | None = None):
         self.settings = SETTINGS
         # Mode can be 'AUTO', 'FORCE_LIVE', or 'FORCE_FALLBACK'
         self.requested_mode = execution_mode or self.settings.ZETARIS_EXECUTION_MODE
-        self._duckdb_con: Optional[duckdb.DuckDBPyConnection] = None
+        self._duckdb_con: duckdb.DuckDBPyConnection | None = None
 
     def _init_duckdb_fallback(self) -> duckdb.DuckDBPyConnection:
         """Initialize in-memory DuckDB connection mounting all 3 silos as schemas."""
@@ -103,8 +103,8 @@ class ZetarisFederationClient:
     def _execute_live_zetaris(
         self,
         query: str,
-        params: Dict[str, Any],
-    ) -> Optional[Dict[str, Any]]:
+        params: dict[str, Any],
+    ) -> dict[str, Any] | None:
         """Attempt to execute query against live Zetaris API."""
         if not self.settings.ZETARIS_API_KEY:
             return None
@@ -150,8 +150,8 @@ class ZetarisFederationClient:
         vessel_name: str,
         notify_party_name: str,
         invoice_unit_price: float,
-        runtime_master: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        runtime_master: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Execute the 3-silo join-safe federated check query for an LC.
 
         Guarantees exactly 1 row per LC.
@@ -229,7 +229,7 @@ class ZetarisFederationClient:
             "federation_receipt": receipt,
         }
 
-    def _upsert_runtime_master(self, con: duckdb.DuckDBPyConnection, master: Dict[str, Any]) -> None:
+    def _upsert_runtime_master(self, con: duckdb.DuckDBPyConnection, master: dict[str, Any]) -> None:
         """Expose a user-created LC to the local federation without mutating seed data."""
         con.execute(
             "CREATE TABLE IF NOT EXISTS runtime_lc_master AS "

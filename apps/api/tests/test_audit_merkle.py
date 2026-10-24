@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from decimal import Decimal
-import pytest
 
 from apps.api.audit.canonical_json import canonical_sha256, canonicalize_json
 from apps.api.audit.hash_chain import RunHashChain
@@ -11,7 +10,7 @@ from apps.api.audit.merkle import MerkleTree
 from apps.api.audit.verifier import AuditVerifier
 from apps.api.domain.decisions import ActionType, AuthorityLevel, DecisionReceipt
 from apps.api.domain.money import Money
-from apps.api.rulepacks.ucp600_rules import RULES_REGISTRY, get_rule
+from apps.api.rulepacks.ucp600_rules import get_rule
 
 
 def test_canonical_json_determinism():

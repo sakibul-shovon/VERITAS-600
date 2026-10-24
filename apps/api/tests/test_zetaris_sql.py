@@ -11,6 +11,7 @@ Invariants tested:
 from __future__ import annotations
 
 import pytest
+
 from apps.api.zetaris.client import ZetarisFederationClient
 
 

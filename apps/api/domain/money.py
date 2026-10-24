@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
-from typing import Union
+from decimal import ROUND_HALF_UP, Decimal
 
 
 @dataclass(frozen=True)
@@ -17,18 +16,18 @@ class Money:
     currency: str = "USD"
 
     @classmethod
-    def from_value(cls, val: Union[float, int, str, Decimal], currency: str = "USD") -> Money:
+    def from_value(cls, val: float | str | Decimal, currency: str = "USD") -> Money:
         if isinstance(val, Decimal):
             d = val
         else:
             d = Decimal(str(val))
         return cls(amount=d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), currency=currency.upper())
 
-    def add_percentage(self, pct: Union[float, Decimal]) -> Money:
+    def add_percentage(self, pct: float | Decimal) -> Money:
         factor = Decimal("1.0") + (Decimal(str(pct)) / Decimal("100.0"))
         return Money((self.amount * factor).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), self.currency)
 
-    def multiply_percentage(self, pct: Union[float, Decimal]) -> Money:
+    def multiply_percentage(self, pct: float | Decimal) -> Money:
         factor = Decimal(str(pct)) / Decimal("100.0")
         return Money((self.amount * factor).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), self.currency)
 

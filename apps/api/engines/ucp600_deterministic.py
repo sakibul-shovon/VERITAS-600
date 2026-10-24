@@ -10,9 +10,9 @@ If any check in this engine fails, the presentation is permanently locked to DIS
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -23,25 +23,53 @@ class DeterministicCheckResult:
     passed: bool
     severity: str  # 'COMPLIANT' or 'FATAL_DISCREPANCY'
     details: str
-    computed_values: Dict[str, Any]
+    computed_values: dict[str, Any]
 
 
 @dataclass
 class DeterministicEvaluation:
     all_passed: bool
     failed_checks_count: int
-    checks: List[DeterministicCheckResult]
-    demurrage_analysis: Optional[Dict[str, Any]] = None
+    checks: list[DeterministicCheckResult]
+    demurrage_analysis: dict[str, Any] | None = None
 
 
-def parse_date(date_val: Any) -> date:
-    """Parse date from string (YYYY-MM-DD) or date object."""
+def parse_date(date_val: Any) -> date | None:
+    """Parse date from string or date/datetime object across common trade formats.
+
+    Supports ISO (YYYY-MM-DD), slash-delimited (DD/MM/YYYY, MM/DD/YYYY, YYYY/MM/DD),
+    dash-delimited (DD-MM-YYYY), and dot-delimited formats.
+    Returns None if date_val is None or empty.
+    """
+    if date_val is None:
+        return None
     if isinstance(date_val, date) and not isinstance(date_val, datetime):
         return date_val
     if isinstance(date_val, datetime):
         return date_val.date()
     date_str = str(date_val).strip()
-    return datetime.strptime(date_str, "%Y-%m-%d").date()
+    if not date_str:
+        return None
+
+    formats = (
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%m/%d/%Y",
+        "%d-%m-%Y",
+        "%Y/%m/%d",
+        "%d.%m.%Y",
+        "%Y.%m.%d",
+    )
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(date_str).date()
+    except Exception:
+        pass
+    raise ValueError(f"Unable to parse date string: '{date_str}'")
 
 
 class UCP600DeterministicEngine:
@@ -49,19 +77,30 @@ class UCP600DeterministicEngine:
 
     def evaluate_presentation(
         self,
-        active_lc: Dict[str, Any],
-        presentation: Dict[str, Any],
+        active_lc: dict[str, Any],
+        presentation: dict[str, Any],
     ) -> DeterministicEvaluation:
         """Run all deterministic mathematical, temporal, insurance, and weight checks."""
-        results: List[DeterministicCheckResult] = []
+        results: list[DeterministicCheckResult] = []
 
         # ----------------------------------------------------------------------
         # 1. Temporal Checks
         # ----------------------------------------------------------------------
-        pres_date = parse_date(presentation.get("presentation_date", date.today()))
-        expiry_date = parse_date(active_lc["expiry_date"])
-        shipment_date = parse_date(presentation.get("bl_on_board_date", active_lc["latest_shipment_date"]))
-        latest_shipment_date = parse_date(active_lc["latest_shipment_date"])
+        pres_date_val = presentation.get("presentation_date")
+        pres_date = parse_date(pres_date_val) if pres_date_val else date.today()
+        if not pres_date:
+            pres_date = date.today()
+
+        expiry_date = parse_date(active_lc.get("expiry_date"))
+        if not expiry_date:
+            raise ValueError(f"Active LC missing valid expiry_date: {active_lc.get('expiry_date')}")
+
+        latest_shipment_date = parse_date(active_lc.get("latest_shipment_date")) or expiry_date
+
+        bl_board_raw = presentation.get("bl_on_board_date")
+        has_bl_on_board = bool(bl_board_raw and str(bl_board_raw).strip())
+        bl_date = parse_date(bl_board_raw) if has_bl_on_board else None
+        shipment_date = bl_date or latest_shipment_date
 
         # Check 1.1: Presentation Date <= Expiry Date (Art. 6(d)(i))
         passed_expiry = pres_date <= expiry_date
@@ -112,7 +151,24 @@ class UCP600DeterministicEngine:
         )
 
         # Check 1.3: Shipment Date <= Effective Latest Shipment Date (Art. 20(a)(ii))
-        passed_shipment = shipment_date <= latest_shipment_date
+        if bl_date is not None:
+            passed_shipment = bl_date <= latest_shipment_date
+            details = (
+                f"Bill of Lading on-board date ({bl_date}) is on or before latest shipment date ({latest_shipment_date})"
+                if passed_shipment
+                else f"Late shipment: Bill of Lading on-board date ({bl_date}) exceeds latest shipment date ({latest_shipment_date})"
+            )
+            computed_shipment = str(bl_date)
+        elif "bl_on_board_date" in presentation and not has_bl_on_board:
+            # Document record present but no date extracted
+            passed_shipment = False
+            details = "Transport document missing mandatory on-board notation/date under UCP 600 Art. 20(a)(ii)"
+            computed_shipment = "MISSING"
+        else:
+            passed_shipment = shipment_date <= latest_shipment_date
+            details = f"Shipment inferred within latest date ({latest_shipment_date})"
+            computed_shipment = str(shipment_date)
+
         results.append(
             DeterministicCheckResult(
                 check_id="TEMPORAL_LATEST_SHIPMENT",
@@ -120,12 +176,8 @@ class UCP600DeterministicEngine:
                 ucp_citation="UCP 600 Art. 20(a)(ii)",
                 passed=passed_shipment,
                 severity="COMPLIANT" if passed_shipment else "FATAL_DISCREPANCY",
-                details=(
-                    f"Bill of Lading on-board date ({shipment_date}) is on or before latest shipment date ({latest_shipment_date})"
-                    if passed_shipment
-                    else f"Late shipment: Bill of Lading on-board date ({shipment_date}) exceeds latest shipment date ({latest_shipment_date})"
-                ),
-                computed_values={"bl_on_board_date": str(shipment_date), "latest_shipment_date": str(latest_shipment_date)},
+                details=details,
+                computed_values={"bl_on_board_date": computed_shipment, "latest_shipment_date": str(latest_shipment_date)},
             )
         )
 
@@ -204,8 +256,8 @@ class UCP600DeterministicEngine:
         )
 
         # Check 3.2: Minimum 110% Coverage of CIF/CIP Value (Art. 28(f)(ii))
-        # InsuredValue >= 1.10 * max(CIF_CIP, InvoiceGross)
-        cif_basis = max(invoice_amount, float(active_lc.get("amount", 0.0)))
+        # UCP 600 Art. 28(f)(ii): Basis is CIF/CIP value of goods, or gross invoice/honour value if CIF not stated.
+        cif_basis = invoice_amount if invoice_amount > 0 else float(active_lc.get("amount", 0.0))
         required_insurance_min = round(cif_basis * (min_insured_pct / 100.0), 2)
         insurance_shortfall = round(max(0.0, required_insurance_min - insurance_amount), 2)
         actual_coverage_pct = round((insurance_amount / cif_basis) * 100.0, 2) if cif_basis > 0 else 0.0
@@ -233,25 +285,31 @@ class UCP600DeterministicEngine:
             )
         )
 
-        # Check 3.3: Insurance Effective Date <= Shipment Date (Art. 28(e))
-        if "insurance_effective_date" in presentation:
-            ins_eff_date = parse_date(presentation["insurance_effective_date"])
-            passed_ins_date = ins_eff_date <= shipment_date
-            results.append(
-                DeterministicCheckResult(
-                    check_id="INSURANCE_EFFECTIVE_DATE",
-                    name="Insurance Date Prior to Shipment",
-                    ucp_citation="UCP 600 Art. 28(e)",
-                    passed=passed_ins_date,
-                    severity="COMPLIANT" if passed_ins_date else "FATAL_DISCREPANCY",
-                    details=(
-                        f"Insurance effective date ({ins_eff_date}) is on or before shipment date ({shipment_date})"
-                        if passed_ins_date
-                        else f"Insurance date ({ins_eff_date}) is later than shipment date ({shipment_date})"
-                    ),
-                    computed_values={"insurance_effective_date": str(ins_eff_date), "shipment_date": str(shipment_date)},
+        # Check 3.3: Insurance Date Prior to or On Shipment Date (Art. 28(e))
+        ins_date_raw = (
+            presentation.get("insurance_issue_date")
+            or presentation.get("insurance_effective_date")
+            or presentation.get("insurance_date")
+        )
+        if ins_date_raw and str(ins_date_raw).strip():
+            ins_eff_date = parse_date(ins_date_raw)
+            if ins_eff_date and shipment_date:
+                passed_ins_date = ins_eff_date <= shipment_date
+                results.append(
+                    DeterministicCheckResult(
+                        check_id="INSURANCE_EFFECTIVE_DATE",
+                        name="Insurance Date Prior to Shipment",
+                        ucp_citation="UCP 600 Art. 28(e)",
+                        passed=passed_ins_date,
+                        severity="COMPLIANT" if passed_ins_date else "FATAL_DISCREPANCY",
+                        details=(
+                            f"Insurance document/effective date ({ins_eff_date}) is on or before shipment date ({shipment_date})"
+                            if passed_ins_date
+                            else f"Insurance date ({ins_eff_date}) is later than shipment date ({shipment_date})"
+                        ),
+                        computed_values={"insurance_effective_date": str(ins_eff_date), "shipment_date": str(shipment_date)},
+                    )
                 )
-            )
 
         # ----------------------------------------------------------------------
         # 4. Cross-Document Weight Matching (Art. 14(d))
@@ -262,28 +320,32 @@ class UCP600DeterministicEngine:
         if packing_gross_wt is not None and bl_gross_wt is not None:
             packing_wt = float(packing_gross_wt)
             bl_wt = float(bl_gross_wt)
-            weight_diff = abs(packing_wt - bl_wt)
-            passed_weight = weight_diff == 0.0
+            # Only perform cross-reconciliation if at least one weight is non-zero (avoid 0==0 silent pass)
+            if packing_wt > 0 or bl_wt > 0:
+                weight_diff = abs(packing_wt - bl_wt)
+                # Allow rounding / minor tolerance (0.1% or 0.5 kg)
+                allowed_tol = max(0.5, 0.001 * max(packing_wt, bl_wt))
+                passed_weight = weight_diff <= allowed_tol
 
-            results.append(
-                DeterministicCheckResult(
-                    check_id="CROSS_DOC_WEIGHT_RECONCILIATION",
-                    name="Gross Weight Consistency (Packing List vs B/L)",
-                    ucp_citation="UCP 600 Art. 14(d)",
-                    passed=passed_weight,
-                    severity="COMPLIANT" if passed_weight else "FATAL_DISCREPANCY",
-                    details=(
-                        f"Gross weight matches across Packing List and Bill of Lading ({bl_wt:,.2f} kg)"
-                        if passed_weight
-                        else f"Weight conflict: Packing List states {packing_wt:,.2f} kg while Bill of Lading states {bl_wt:,.2f} kg (Variance: {weight_diff:,.2f} kg)"
-                    ),
-                    computed_values={
-                        "packing_gross_weight_kg": packing_wt,
-                        "bl_gross_weight_kg": bl_wt,
-                        "weight_diff_kg": weight_diff,
-                    },
+                results.append(
+                    DeterministicCheckResult(
+                        check_id="CROSS_DOC_WEIGHT_RECONCILIATION",
+                        name="Gross Weight Consistency (Packing List vs B/L)",
+                        ucp_citation="UCP 600 Art. 14(d)",
+                        passed=passed_weight,
+                        severity="COMPLIANT" if passed_weight else "FATAL_DISCREPANCY",
+                        details=(
+                            f"Gross weight matches across Packing List and Bill of Lading ({bl_wt:,.2f} kg)"
+                            if passed_weight
+                            else f"Weight conflict: Packing List states {packing_wt:,.2f} kg while Bill of Lading states {bl_wt:,.2f} kg (Variance: {weight_diff:,.2f} kg)"
+                        ),
+                        computed_values={
+                            "packing_gross_weight_kg": packing_wt,
+                            "bl_gross_weight_kg": bl_wt,
+                            "weight_diff_kg": weight_diff,
+                        },
+                    )
                 )
-            )
 
         # ----------------------------------------------------------------------
         # Demurrage Savings Advisory Calculation (For Curable Discrepancies)
@@ -311,7 +373,7 @@ class UCP600DeterministicEngine:
                 "cured_demurrage_cost": cured_demurrage_cost,
                 "net_savings_usd": net_savings,
                 "advisory": (
-                    f"11 days remain in the UCP 600 Art. 14(c) presentation window. "
+                    f"{max(0, days_remaining_in_window)} days remain in the UCP 600 Art. 14(c) presentation window. "
                     f"Re-presenting cured documents within 48h saves ${net_savings:,.2f} "
                     f"in port demurrage vs waiting for applicant waiver."
                 ),

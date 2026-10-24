@@ -9,16 +9,15 @@ Provides:
 from __future__ import annotations
 
 import hashlib
-from typing import List, Tuple
 
 
 class MerkleTree:
     """Immutable Merkle Tree over evidence leaves."""
 
-    def __init__(self, leaves: List[str]):
+    def __init__(self, leaves: list[str]):
         """Initialize with a list of hex-encoded leaf digests."""
         self.raw_leaves = list(leaves)
-        self.levels: List[List[bytes]] = []
+        self.levels: list[list[bytes]] = []
         self._build_tree()
 
     def _hash_leaf(self, hex_digest: str) -> bytes:
@@ -38,7 +37,7 @@ class MerkleTree:
         self.levels.append(current)
 
         while len(current) > 1:
-            next_level: List[bytes] = []
+            next_level: list[bytes] = []
             for i in range(0, len(current), 2):
                 left = current[i]
                 if i + 1 < len(current):
@@ -55,12 +54,12 @@ class MerkleTree:
     def root_hex(self) -> str:
         return self.root
 
-    def get_proof(self, index: int) -> List[Tuple[str, str]]:
+    def get_proof(self, index: int) -> list[tuple[str, str]]:
         """Return inclusion proof as a list of (direction, sibling_hex)."""
         if index < 0 or index >= len(self.raw_leaves):
             raise IndexError("Leaf index out of bounds")
 
-        proof: List[Tuple[str, str]] = []
+        proof: list[tuple[str, str]] = []
         idx = index
 
         for level in self.levels[:-1]:
@@ -77,7 +76,7 @@ class MerkleTree:
         return proof
 
     @staticmethod
-    def verify_proof(leaf_hex: str, proof: List[Tuple[str, str]], expected_root_hex: str) -> bool:
+    def verify_proof(leaf_hex: str, proof: list[tuple[str, str]], expected_root_hex: str) -> bool:
         """Verify that leaf_hex is in the tree with root expected_root_hex."""
         current = hashlib.sha256(b"\x00" + bytes.fromhex(leaf_hex)).digest()
 

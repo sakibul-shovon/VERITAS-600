@@ -7,3 +7,10 @@ asyncio_mode = "strict"
 line-length = 100
 target-version = "py311"
 exclude = [".venv", "node_modules"]
+
+[tool.ruff.lint]
+ignore = [
+    "B008",    # FastAPI Depends / File / Form function calls in argument defaults
+    "BLE001",  # Defensive runtime fallbacks catching Exception
+    "S110",    # Handled fallback cascades with try-except-pass
+]

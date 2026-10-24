@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -58,7 +59,7 @@ class Settings(BaseSettings):
     ZTRV_HMAC_SECRET: str = "veritas_zero_trust_runtime_hmac_secret"
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Return cached singleton instance of Settings."""
     return Settings()

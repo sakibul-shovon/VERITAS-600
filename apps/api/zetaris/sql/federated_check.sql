@@ -13,6 +13,7 @@ WITH accepted_shipment_amd AS (
     FROM postgres_trade.lc_amendments
     WHERE amended_field = 'latest_shipment_date'
       AND beneficiary_acceptance_status = 'ACCEPTED'
+      AND lc_id = :lc_id
     ORDER BY sequence_no DESC
     LIMIT 1
 ),
@@ -23,6 +24,7 @@ unaccepted_amendments_agg AS (
         STRING_AGG(amended_field || '=' || new_value, '; ') AS quarantined_amendments_summary
     FROM postgres_trade.lc_amendments
     WHERE beneficiary_acceptance_status = 'UNACCEPTED_PENDING'
+      AND lc_id = :lc_id
     GROUP BY lc_id
 ),
 sanctions_hits_agg AS (

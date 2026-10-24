@@ -13,9 +13,9 @@ Produces 3 Mutually Exclusive Bank Actions:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from apps.api.engines.ucp600_deterministic import DeterministicEvaluation
 from apps.api.engines.ucp600_legal_adjudicator import LegalAdjudicationResult
@@ -30,13 +30,13 @@ class BankDecision:
     action_title: str
     action_summary: str
     action_status: str  # 'PENDING_HUMAN_SIGN_OFF' or 'APPROVED'
-    legal_citations: List[str]
-    discrepancies: List[str]
-    regulatory_flags: List[str]
-    demurrage_savings_advisory: Optional[Dict[str, Any]]
-    execution_telemetry: Dict[str, Any]
-    human_approved_by: Optional[str] = None
-    human_approved_at: Optional[str] = None
+    legal_citations: list[str]
+    discrepancies: list[str]
+    regulatory_flags: list[str]
+    demurrage_savings_advisory: dict[str, Any] | None
+    execution_telemetry: dict[str, Any]
+    human_approved_by: str | None = None
+    human_approved_at: str | None = None
 
 
 class BankDecisionEngine:
@@ -45,11 +45,11 @@ class BankDecisionEngine:
     def evaluate(
         self,
         lc_id: str,
-        active_lc: Dict[str, Any],
-        presentation: Dict[str, Any],
+        active_lc: dict[str, Any],
+        presentation: dict[str, Any],
         deterministic_eval: DeterministicEvaluation,
         legal_eval: LegalAdjudicationResult,
-        federated_risk: Dict[str, Any],
+        federated_risk: dict[str, Any],
     ) -> BankDecision:
         """Synthesize all engine findings into a single authoritative bank action."""
         fed_row = federated_risk.get("row", {})
@@ -58,9 +58,9 @@ class BankDecisionEngine:
         sanctions_summary = fed_row.get("sanctions_summary") or ""
 
         # Collect discrepancies
-        discrepancies: List[str] = []
-        citations: List[str] = []
-        regulatory_flags: List[str] = []
+        discrepancies: list[str] = []
+        citations: list[str] = []
+        regulatory_flags: list[str] = []
 
         # 1. Deterministic Failures
         for check in deterministic_eval.checks:
@@ -76,14 +76,14 @@ class BankDecisionEngine:
             elif finding.verdict == "COMPLIANT_PROTECTED":
                 citations.append(finding.ucp_isbp_citation)
 
-        # 3. Regulatory / TBML Anomaly Check
-        is_tbml_anomaly = z_score > 4.0
+        # 3. Regulatory / TBML Anomaly Check (+3.0σ standard per FATF/Wolfsberg TBML benchmark)
+        is_tbml_anomaly = z_score >= 3.0
         is_sanctions_hit = sanction_hits > 0
 
         if is_tbml_anomaly:
             regulatory_flags.append(
                 f"Severe Trade-Based Money Laundering (TBML) Unit Price Anomaly: Z-score = +{z_score:.2f} "
-                f"vs 6-digit HS customs distribution mean."
+                f"vs 6-digit HS customs distribution mean (exceeds +3.0σ threshold)."
             )
         if is_sanctions_hit:
             regulatory_flags.append(
@@ -109,9 +109,9 @@ class BankDecisionEngine:
             action = "ISSUE_MT734_REFUSAL"
             title = "ISSUE SWIFT MT734 NOTICE OF REFUSAL"
             summary = (
-                f"Documentary discrepancies identified under ICC UCP 600. "
-                f"Holding documents at presenting party's disposal under Art. 16(c)(iii)(a). "
-                f"Demurrage-saving cure advisory attached."
+                "Documentary discrepancies identified under ICC UCP 600. "
+                "Holding documents at presenting party's disposal under Art. 16(c)(iii)(a). "
+                "Demurrage-saving cure advisory attached."
             )
             citations.append("UCP 600 Art. 16(c)(iii)")
 
@@ -132,7 +132,7 @@ class BankDecisionEngine:
             "deterministic_passed": deterministic_eval.all_passed,
             "neural_status": legal_eval.overall_legal_status,
             "hard_invariant_enforced": legal_eval.hard_invariant_enforced,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         return BankDecision(

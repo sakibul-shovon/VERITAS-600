@@ -9,11 +9,9 @@ Implements Meterless reasoning primitives:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-import hashlib
 import time
-from typing import Any, Dict, List, Optional
-import httpx
+from dataclasses import dataclass
+from typing import Any
 
 from apps.api.config import get_settings
 
@@ -35,7 +33,7 @@ class MeterlessContextPacket:
     stage_id: str
     chunk_index: int
     total_chunks: int
-    context_data: Dict[str, Any]
+    context_data: dict[str, Any]
     prompt_snippet: str
 
 
@@ -54,10 +52,10 @@ class MeterlessRouter:
 
     def route_markovian_chunks(
         self,
-        lc_master: Dict[str, Any],
-        amendments: List[Dict[str, Any]],
-        presentation: Dict[str, Any],
-    ) -> List[MeterlessContextPacket]:
+        lc_master: dict[str, Any],
+        amendments: list[dict[str, Any]],
+        presentation: dict[str, Any],
+    ) -> list[MeterlessContextPacket]:
         """Decompose presentation inspection into 6 focused Markovian chunks.
 
         Chunk 1: Temporal Validation (Expiry, Shipment Date, 21-Day Window)
@@ -67,7 +65,7 @@ class MeterlessRouter:
         Chunk 5: Lexical Adjudication (ISBP A23 Typos & Art. 14(e) Descriptions)
         Chunk 6: Cross-Silo Risk & Regulatory AML Check (TBML Z-Score & Sanctions)
         """
-        chunks: List[MeterlessContextPacket] = [
+        chunks: list[MeterlessContextPacket] = [
             MeterlessContextPacket(
                 stage_id="TEMPORAL",
                 chunk_index=1,
@@ -147,7 +145,7 @@ class MeterlessRouter:
     def compute_telemetry(
         self,
         raw_context_data: Any,
-        routed_packets: List[MeterlessContextPacket],
+        routed_packets: list[MeterlessContextPacket],
         start_time_sec: float,
     ) -> TokenTelemetry:
         """Compute honest token telemetry and savings percentage."""
@@ -169,7 +167,7 @@ class MeterlessRouter:
             routing_mode="MARKOVIAN_6_CHUNK",
         )
 
-    def get_stage_manifest(self, packets: List[MeterlessContextPacket]) -> List[Dict[str, Any]]:
+    def get_stage_manifest(self, packets: list[MeterlessContextPacket]) -> list[dict[str, Any]]:
         """Return inspectable context manifest per stage proving context boundaries."""
         manifest = []
         for p in packets:

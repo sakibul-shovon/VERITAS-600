@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
 import hashlib
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from enum import Enum
+from typing import Any
 
 
 class ActionType(str, Enum):
@@ -25,6 +25,7 @@ class AuthorityLevel(str, Enum):
 class DispatchStatus(str, Enum):
     PENDING_APPROVAL = "PENDING_APPROVAL"
     APPROVED_QUEUED = "APPROVED_QUEUED"
+    AUTHORIZED_NOT_DISPATCHED = "AUTHORIZED_NOT_DISPATCHED"
     ACKNOWLEDGED_DISPATCHED = "ACKNOWLEDGED_DISPATCHED"
 
 
@@ -58,10 +59,17 @@ class DecisionReceipt:
         discrepancy_count: int = 0,
         regulatory_hold_active: bool = False,
     ) -> DecisionReceipt:
-        signed_at = datetime.now(timezone.utc).isoformat()
+        signed_at = datetime.now(UTC).isoformat()
         sig_payload = f"{run_id}:{lc_id}:{action.value}:{decision_sha256}:{merkle_root_sha256}:{signer_name}:{signed_at}"
-        sig_token = f"V600-SIG-{hashlib.sha256(sig_payload.encode('utf-8')).hexdigest()[:24].upper()}"
-        outbox_id = f"OUTBOX-{lc_id}-{datetime.now(timezone.utc).strftime('%y%m%d%H%M%S')}"
+
+        import hmac
+
+        from apps.api.config import get_settings
+        settings = get_settings()
+        secret = settings.ZTRV_HMAC_SECRET.encode("utf-8")
+        mac = hmac.new(secret, sig_payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        sig_token = f"V600-SIG-{mac[:24].upper()}"
+        outbox_id = f"OUTBOX-{lc_id}-{datetime.now(UTC).strftime('%y%m%d%H%M%S')}"
 
         return cls(
             run_id=run_id,
@@ -72,14 +80,14 @@ class DecisionReceipt:
             signer_name=signer_name,
             signer_role=signer_role,
             signed_at_utc=signed_at,
-            dispatch_status=DispatchStatus.ACKNOWLEDGED_DISPATCHED,
+            dispatch_status=DispatchStatus.AUTHORIZED_NOT_DISPATCHED,
             outbox_receipt_id=outbox_id,
             signature_token=sig_token,
             discrepancy_count=discrepancy_count,
             regulatory_hold_active=regulatory_hold_active,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
             "lc_id": self.lc_id,

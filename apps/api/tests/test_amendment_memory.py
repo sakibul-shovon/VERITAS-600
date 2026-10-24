@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import pytest
+
 from apps.api.memory.amendment_memory import AmendmentMemoryEngine
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent

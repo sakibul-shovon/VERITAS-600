@@ -11,26 +11,26 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 9 real examiner intake and usability hardening implemented on `feat/ui-redesign` — full verification clean** |
-| **Overall Progress** | **Phases 0–9 complete; `/examine` now starts clean, accepts real PDF/image evidence, persists examiner-reviewed extraction, runs new user-created cases end-to-end, explains metrics, and binds human authorization to an immutable run** |
-| **Active Task** | Configure live NVIDIA vision credentials and rehearse a scanned-document OCR run before final PR merge |
-| **Last Updated** | 2026-10-23 |
-| **Next Action Item** | **Set `NVIDIA_API_KEY`, restart the API, verify one scanned PDF/image returns `LIVE_NEMOTRON_VLM`, then rehearse New case → Upload → Verify → Run → Explain → Authorize and prepare the PR** |
+| **Current Phase** | **Phase 10 Codebase Audit, Correctness & Telemetry Hardening [COMPLETED & VERIFIED] on `feat/ui-redesign`** |
+| **Overall Progress** | **Phases 0–10 complete; all 19 audit findings (P0–P3) fully resolved; 46/46 pytest tests passing; ruff 0 errors; honest telemetry; verified Next.js 15 build** |
+| **Active Task** | Complete audit documentation, commit verified changes, and push to GitHub remote branch `feat/ui-redesign` |
+| **Last Updated** | 2026-10-24 |
+| **Next Action Item** | **Push changes to `origin/feat/ui-redesign`, verify GitHub CI pipeline status, and present audit findings report to user.** |
 
 ```
-[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: IMPLEMENTED AND VERIFIED ON FEAT/UI-REDESIGN]
+[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: AUDIT HARDENING COMPLETE (46/46 PYTEST PASSING)]
 ```
 
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-1. **Read the implementation blueprint:** [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md), especially Sections 24–29.
-2. **Review the implemented landing:** `/` is now the Evidence Ledger product story and the preserved terminal is at `/examine` (build verified).
-3. **Verify live OCR credentials:** current local test environment has no configured NVIDIA vision key, so image/scanned-PDF intake correctly reports `OCR_UNAVAILABLE`; set `NVIDIA_API_KEY` before the live OCR rehearsal.
-4. **Rehearse the production path:** New case → upload four required documents → review/accept fields → run five stages → inspect explanations → authorize (not dispatch).
-5. **Verify backend suite:** `.\.venv\Scripts\pytest.exe apps/api/tests/ -v` (38/38 passed on 2026-10-23).
-6. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build; `/examine` 134 kB first-load JS on 2026-10-23).
+1. **Review the Audit Report:** [AUDIT_CORRECTNESS_REPORT.md](file:///h:/Projects/VERITAS-600/AUDIT_CORRECTNESS_REPORT.md) detailing all 19 resolved items across P0 (logic/correctness), P1 (telemetry), P2 (security), and P3 (CI/CD reproducibility).
+2. **Review the implementation blueprint:** [ui-redesign.md](file:///h:/Projects/VERITAS-600/ui-redesign.md), especially Sections 24–29.
+3. **Verify backend suite:** `pytest apps/api/tests/ -v` (46/46 passed in 4.91s).
+4. **Verify linter:** `ruff check apps/api` (0 errors).
+5. **Verify frontend build:** `cd apps/web && npm run build` (clean Next.js 15.5.28 build; `/examine` 134 kB first-load JS).
+6. **Next Milestones:** Review PR on GitHub for merging `feat/ui-redesign` into `main`.
 
 ---
 
@@ -207,6 +207,32 @@
 - [x] Bind human authorization to the exact run ID, decision digest, and expected action; explicitly report `AUTHORIZED_NOT_DISPATCHED` because external dispatch is not connected.
 - [x] **Real-PDF verification:** generated and uploaded four actual PDF documents; extracted/persisted invoice `$240,000`, insurance `$264,000`, shipment `2026-11-12`, and weight `12,500`; downstream deterministic coverage computed `110.0%`.
 - [x] **Regression verification:** backend suite 38/38 passes; Next.js 15.5.28 production build succeeds with `/examine` at 134 kB first-load JS.
+
+---
+
+### Phase 10: Codebase Correctness & Telemetry Hardening Audit ✅ [COMPLETED & VERIFIED]
+
+- [x] **P0 Correctness:** Fixed Zetaris SQL cross-LC CTE pollution by adding `AND lc_id = :lc_id` in `federated_check.sql`.
+- [x] **P0 Correctness:** Implemented robust multi-format trade date parser (`%Y-%m-%d`, `%d/%m/%Y`, `%m/%d/%Y`, `%d-%m-%Y`, `%d.%m.%Y`, ISO 8601) in `ucp600_deterministic.py`.
+- [x] **P0 Correctness:** Handled empty/null B/L on-board date safely under **UCP 600 Art. 20(a)(ii)** without raising unhandled 500 exceptions.
+- [x] **P0 Correctness:** Corrected minimum insurance calculation basis under **UCP 600 Art. 28(f)(ii)** to `invoice_amount if invoice_amount > 0 else lc_amount` (eliminating false penalties when invoice < credit).
+- [x] **P0 Correctness:** Aligned insurance date evaluation under **UCP 600 Art. 28(e)** to prioritize `insurance_effective_date` / `insurance_date` over issue date.
+- [x] **P0 Correctness:** Fixed gross weight cross-reconciliation under **UCP 600 Art. 14(d)** (requires weight > 0, permits 0.1% / 0.5kg commercial rounding tolerance).
+- [x] **P0 Correctness:** Dynamic presentation window demurrage savings advisory calculation replacing hardcoded text.
+- [x] **P0 Correctness:** Added `_safe_parse_json` stripping markdown code blocks and recovering JSON objects from conversational model outputs in `ucp600_legal_adjudicator.py`.
+- [x] **P0 Correctness:** Standardized TBML unit price anomaly threshold to `z_score >= 3.0` across all modules matching Wolfsberg standard deviation rules.
+- [x] **P1 Telemetry:** Marked pre-signoff vouchers as `SETTLEMENT STATUS: PROPOSED - PENDING HUMAN EXAMINER AUTHORIZATION` and `DISPATCH STATUS: AWAITING SIGN-OFF (NOT DISPATCHED)`.
+- [x] **P1 Telemetry:** Replaced misleading `EXECUTED` badges with honest `AUTHORIZED (NOT DISPATCHED)` / `AUTHORIZED_NOT_DISPATCHED`.
+- [x] **P1 Telemetry:** Hardened `/api/v1/health` to dynamically report live vs DuckDB standby and Meterless key presence.
+- [x] **P2 Security:** Removed wildcard CORS (`*` + credentials); restricted to explicit localhost origins.
+- [x] **P2 Security:** Thread-safe `TokenBucketRateLimiter` using `threading.Lock()` in `nim_client.py`.
+- [x] **P2 Security:** HMAC-SHA256 signature keying with `SETTINGS.ZTRV_HMAC_SECRET` in `DecisionReceipt` and `AuditVerifier`.
+- [x] **P2 Security:** Added `record_approval` in `CaseStore` to durably persist examiner digital signatures on disk.
+- [x] **P3 Reproducibility:** Added `seed_scenarios.py` step to `.github/workflows/ci.yml` before pytest execution.
+- [x] **P3 Reproducibility:** Removed `|| echo` mask from `ruff check apps/api` in CI workflow.
+- [x] **P3 Reproducibility:** Fixed all 331 ruff lint issues in `apps/api/` (0 errors remaining).
+- [x] **P3 Testing:** Created dedicated test suite `apps/api/tests/test_audit_fixes.py` (8 new tests).
+- [x] **Comprehensive Verification:** 46/46 pytest tests pass in 4.91s; `ruff check apps/api` 0 errors; Next.js 15 production build succeeds cleanly. Complete report in `AUDIT_CORRECTNESS_REPORT.md`.
 
 ---
 

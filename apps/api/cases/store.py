@@ -6,14 +6,14 @@ stored below ``data/runtime_cases`` so a backend restart does not discard examin
 
 from __future__ import annotations
 
-from copy import deepcopy
-from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
 import re
-from typing import Any, Dict, Iterable, List
-
+from collections.abc import Iterable
+from copy import deepcopy
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 CASE_ID_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]{2,31}$")
 DOCUMENT_TYPES = {
@@ -75,13 +75,13 @@ class CaseStore:
     def exists(self, lc_id: str) -> bool:
         return self._runtime_case_path(lc_id).exists() or self._seed_path(lc_id).exists()
 
-    def list_case_ids(self) -> List[str]:
+    def list_case_ids(self) -> list[str]:
         ids = {path.stem for path in self.seed_dir.glob("LC-*.json")}
         if self.runtime_dir.exists():
             ids.update(path.parent.name for path in self.runtime_dir.glob("*/case.json"))
         return sorted(ids)
 
-    def load(self, lc_id: str) -> Dict[str, Any]:
+    def load(self, lc_id: str) -> dict[str, Any]:
         runtime_path = self._runtime_case_path(lc_id)
         source = runtime_path if runtime_path.exists() else self._seed_path(lc_id)
         if not source.exists():
@@ -93,7 +93,7 @@ class CaseStore:
         data.setdefault("evidence_documents", [])
         return data
 
-    def _write_case(self, lc_id: str, data: Dict[str, Any]) -> None:
+    def _write_case(self, lc_id: str, data: dict[str, Any]) -> None:
         case_dir = self._case_dir(lc_id)
         case_dir.mkdir(parents=True, exist_ok=True)
         target = case_dir / "case.json"
@@ -101,7 +101,7 @@ class CaseStore:
         temporary.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         temporary.replace(target)
 
-    def create(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def create(self, payload: dict[str, Any]) -> dict[str, Any]:
         lc_id = self.validate_case_id(str(payload["lc_id"]))
         if self.exists(lc_id):
             raise FileExistsError(lc_id)
@@ -145,19 +145,20 @@ class CaseStore:
                 "bl_no": "",
                 "bl_vessel": "",
                 "bl_goods_description": "",
-                "bl_on_board_date": "",
-                "bl_gross_weight_kg": 0,
+                "bl_on_board_date": None,
+                "bl_gross_weight_kg": None,
                 "bl_notify_party": "",
-                "packing_gross_weight_kg": 0,
+                "packing_gross_weight_kg": None,
                 "insurance_doc_type": "",
-                "insurance_amount": 0,
-                "insurance_effective_date": "",
+                "insurance_amount": None,
+                "insurance_effective_date": None,
                 "presentation_date": payload.get("presentation_date") or payload["expiry_date"],
             },
             "case_source": "USER_CREATED",
             "evidence_status": "AWAITING_DOCUMENTS",
             "evidence_documents": [],
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "approval_receipt": None,
+            "created_at": datetime.now(UTC).isoformat(),
         }
         self._write_case(lc_id, data)
         return data
@@ -169,8 +170,8 @@ class CaseStore:
         original_filename: str,
         content_type: str,
         content: bytes,
-        extraction: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        extraction: dict[str, Any],
+    ) -> dict[str, Any]:
         if document_type not in DOCUMENT_TYPES:
             raise ValueError("Unsupported document type.")
         data = deepcopy(self.load(lc_id))
@@ -188,7 +189,7 @@ class CaseStore:
             "content_type": content_type,
             "size_bytes": len(content),
             "source_digest_sha256": digest,
-            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+            "uploaded_at": datetime.now(UTC).isoformat(),
             "extraction": extraction,
             "review_status": "NEEDS_REVIEW" if extraction.get("fields") else "OCR_UNAVAILABLE",
         }
@@ -201,10 +202,10 @@ class CaseStore:
         self._write_case(lc_id, data)
         return record
 
-    def accept_evidence(self, lc_id: str, reviewed_documents: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+    def accept_evidence(self, lc_id: str, reviewed_documents: Iterable[dict[str, Any]]) -> dict[str, Any]:
         data = deepcopy(self.load(lc_id))
         by_id = {doc["document_id"]: doc for doc in data.get("evidence_documents", [])}
-        accepted_ids: List[str] = []
+        accepted_ids: list[str] = []
 
         for reviewed in reviewed_documents:
             document_id = reviewed.get("document_id")
@@ -222,7 +223,7 @@ class CaseStore:
                     data["presentation"][presentation_key] = value
             record["review_status"] = "ACCEPTED"
             record["reviewed_fields"] = reviewed_fields
-            record["accepted_at"] = datetime.now(timezone.utc).isoformat()
+            record["accepted_at"] = datetime.now(UTC).isoformat()
             accepted_ids.append(document_id)
 
         data["evidence_documents"] = list(by_id.values())
@@ -240,7 +241,7 @@ class CaseStore:
             data.get("evidence_status", "AWAITING_DOCUMENTS")
         )
         data["evidence_version"] = int(data.get("evidence_version", 0)) + 1
-        data["evidence_accepted_at"] = datetime.now(timezone.utc).isoformat()
+        data["evidence_accepted_at"] = datetime.now(UTC).isoformat()
         self._write_case(lc_id, data)
         return data
 
@@ -251,3 +252,11 @@ class CaseStore:
         if len(matches) != 1 or not matches[0].is_file():
             raise FileNotFoundError(document_id)
         return matches[0]
+
+    def record_approval(self, lc_id: str, receipt_dict: dict[str, Any]) -> dict[str, Any]:
+        """Persist authorized sign-off receipt to durable case storage."""
+        data = deepcopy(self.load(lc_id))
+        data["approval_receipt"] = receipt_dict
+        data["authorized_at"] = datetime.now(UTC).isoformat()
+        self._write_case(lc_id, data)
+        return data

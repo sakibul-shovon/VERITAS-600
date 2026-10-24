@@ -7,9 +7,9 @@ Handles Decimal, Date, and DateTime objects deterministically.
 
 from __future__ import annotations
 
+import json
 from datetime import date, datetime
 from decimal import Decimal
-import json
 from typing import Any
 
 

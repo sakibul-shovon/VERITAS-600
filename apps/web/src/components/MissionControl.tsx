@@ -231,7 +231,7 @@ function AuditWorkspace({ stages, decision, receipt, phase }: { stages: Record<n
         {authorized ? <Fingerprint /> : <LockKeyhole />}
         <small>{authorized ? "VERITAS AUTHORITY SEAL" : "AUTHORITY GATE"}</small>
         <strong>{authorized ? "SEALED" : "LOCKED"}</strong>
-        <p>{authorized ? receipt?.status || "APPROVED_AND_EXECUTED" : decision ? "Recommendation ready for examiner sign-off" : "Complete the agent run before authorization"}</p>
+        <p>{authorized ? receipt?.status || "AUTHORIZED_NOT_DISPATCHED" : decision ? "Recommendation ready for examiner sign-off" : "Complete the agent run before authorization"}</p>
       </div>
       <div className="proof-ledger">
         <div className="proof-ledger-head"><span>CHAIN OF CUSTODY</span><b>{proofRows.filter((row) => row.ready).length} / {proofRows.length} PROOFS READY</b></div>

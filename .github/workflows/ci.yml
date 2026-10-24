@@ -52,9 +52,13 @@ jobs:
           if [ -f apps/api/requirements.txt ]; then pip install -r apps/api/requirements.txt; fi
           pip install pytest pytest-asyncio ruff
 
+      - name: Seed Standby DuckDB Database
+        run: |
+          python apps/api/db/seed_scenarios.py
+
       - name: Run Linting (Ruff)
         run: |
-          ruff check apps/api || echo "Ruff check completed with notes"
+          ruff check apps/api
 
       - name: Run Test Suite
         env:

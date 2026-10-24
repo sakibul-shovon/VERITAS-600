@@ -123,7 +123,7 @@ export default function DecisionActionPane({
                 </div>
               </div>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${theme.badge}`}>
-                {isAuthorized ? "EXECUTED" : "AWAITING SIGN-OFF"}
+                {isAuthorized ? "AUTHORIZED (NOT DISPATCHED)" : "AWAITING SIGN-OFF"}
               </span>
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed border-t border-slate-800/80 pt-2">

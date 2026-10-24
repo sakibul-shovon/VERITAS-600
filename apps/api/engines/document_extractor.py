@@ -6,13 +6,13 @@ and cryptographic source digests from rendered documents and presentations.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
-from io import BytesIO
 import json
-from pathlib import Path
 import re
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from io import BytesIO
+from pathlib import Path
+from typing import Any
 
 from PIL import Image
 from pypdf import PdfReader
@@ -38,7 +38,7 @@ class ExtractedField:
     field_key: str
     value: Any
     confidence: float
-    bounding_box: List[int]  # [ymin, xmin, ymax, xmax] in normalized 0-1000 scale
+    bounding_box: list[int]  # [ymin, xmin, ymax, xmax] in normalized 0-1000 scale
     source_document: str
     source_digest_sha256: str = ""
     page_number: int = 1
@@ -48,7 +48,7 @@ class ExtractedField:
 class DocumentExtractionResult:
     document_type: str
     document_id: str
-    fields: Dict[str, ExtractedField]
+    fields: dict[str, ExtractedField]
     raw_text: str
     extraction_mode: str  # 'LIVE_NEMOTRON_VLM', 'CACHED_REPLAY', or 'STRUCTURED_FIXTURE'
     source_digest_sha256: str = ""
@@ -58,10 +58,10 @@ class DocumentExtractionResult:
 class DocumentExtractor:
     """Multimodal document extractor utilizing Nemotron Vision with honest telemetry and fallbacks."""
 
-    def __init__(self, nim_client: Optional[NvidiaNimClient] = None):
+    def __init__(self, nim_client: NvidiaNimClient | None = None):
         self.nim_client = nim_client or NvidiaNimClient()
 
-    def _load_presentation_context(self, lc_id: str) -> Dict[str, Any]:
+    def _load_presentation_context(self, lc_id: str) -> dict[str, Any]:
         """Load document context for an LC if available."""
         file_path = PRESENTATIONS_DIR / f"{lc_id}.json"
         if file_path.exists():
@@ -74,7 +74,7 @@ class DocumentExtractor:
         document_type: str,
         document_text_or_path: str,
         lc_id: str,
-        presentation_data: Optional[Dict[str, Any]] = None,
+        presentation_data: dict[str, Any] | None = None,
     ) -> DocumentExtractionResult:
         """Extract structured fields with coordinates from document text/scan."""
         context = presentation_data or self._load_presentation_context(lc_id)
@@ -183,20 +183,20 @@ class DocumentExtractor:
             notice=notice,
         )
 
-    def _render_pdf_pages(self, pdf: Any) -> List[tuple[str, bytes]]:
-        images: List[tuple[str, bytes]] = []
+    def _render_pdf_pages(self, pdf: Any) -> list[tuple[str, bytes]]:
+        images: list[tuple[str, bytes]] = []
         for page in list(pdf)[:3]:
             pixmap = page.get_pixmap(matrix=fitz.Matrix(1.6, 1.6), alpha=False)
             images.append(("image/jpeg", self._compress_image(pixmap.tobytes("png"))))
         return images
 
-    def _render_pdf_content(self, content: bytes, fitz_pdf: Any = None) -> List[tuple[str, bytes]]:
+    def _render_pdf_content(self, content: bytes, fitz_pdf: Any = None) -> list[tuple[str, bytes]]:
         if fitz_pdf is not None:
             return self._render_pdf_pages(fitz_pdf)
         if pdfium is None:
             return []
         document = pdfium.PdfDocument(content)
-        images: List[tuple[str, bytes]] = []
+        images: list[tuple[str, bytes]] = []
         try:
             for page_index in range(min(len(document), 3)):
                 page = document[page_index]
@@ -227,7 +227,7 @@ class DocumentExtractor:
         filename: str,
         normalized_type: str,
         digest: str,
-        images: List[tuple[str, bytes]],
+        images: list[tuple[str, bytes]],
     ) -> DocumentExtractionResult:
         requested_fields = {
             "commercial_invoice": ["invoice_no", "invoice_date", "applicant", "goods_description", "unit_price", "total_amount"],
@@ -249,7 +249,7 @@ class DocumentExtractor:
 
         try:
             parsed = self._parse_json_response(response.get("content", ""))
-            fields: Dict[str, ExtractedField] = {}
+            fields: dict[str, ExtractedField] = {}
             for key, item in (parsed.get("fields") or {}).items():
                 if requested_fields and key not in requested_fields:
                     continue
@@ -278,7 +278,7 @@ class DocumentExtractor:
             return self._unavailable_result(document_type, filename, digest, f"Vision response was not valid structured JSON: {type(exc).__name__}")
 
     @staticmethod
-    def _parse_json_response(content: str) -> Dict[str, Any]:
+    def _parse_json_response(content: str) -> dict[str, Any]:
         cleaned = content.strip()
         if cleaned.startswith("```"):
             cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
@@ -292,8 +292,8 @@ class DocumentExtractor:
         pdf: Any,
         digest: str,
         display_type: str,
-    ) -> Dict[str, ExtractedField]:
-        patterns: Dict[str, List[tuple[str, str]]] = {
+    ) -> dict[str, ExtractedField]:
+        patterns: dict[str, list[tuple[str, str]]] = {
             "commercial_invoice": [
                 ("invoice_no", r"(?:invoice\s*(?:no\.?|number|#)|inv\s*#)\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-/]+)"),
                 ("invoice_date", r"(?:invoice\s*)?date\s*[:\-]?\s*(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})"),
@@ -317,7 +317,7 @@ class DocumentExtractor:
             ],
         }
         numeric_fields = {"unit_price", "total_amount", "gross_weight", "packing_gross_weight", "insurance_amount"}
-        fields: Dict[str, ExtractedField] = {}
+        fields: dict[str, ExtractedField] = {}
         for key, pattern in patterns.get(document_type, []):
             match = re.search(pattern, raw_text, flags=re.IGNORECASE)
             if not match:
@@ -338,7 +338,7 @@ class DocumentExtractor:
         return fields
 
     @staticmethod
-    def _locate_text(pdf: Any, value: str) -> tuple[int, List[int]]:
+    def _locate_text(pdf: Any, value: str) -> tuple[int, list[int]]:
         if pdf is None:
             return 1, [0, 0, 1000, 1000]
         for page_index, page in enumerate(pdf):
@@ -358,8 +358,8 @@ class DocumentExtractor:
     def _extract_commercial_invoice(
         self,
         lc_id: str,
-        master: Dict[str, Any],
-        presentation: Dict[str, Any],
+        master: dict[str, Any],
+        presentation: dict[str, Any],
         source_digest: str,
         extraction_mode: str,
     ) -> DocumentExtractionResult:
@@ -394,8 +394,8 @@ class DocumentExtractor:
     def _extract_ocean_bill_of_lading(
         self,
         lc_id: str,
-        master: Dict[str, Any],
-        presentation: Dict[str, Any],
+        master: dict[str, Any],
+        presentation: dict[str, Any],
         source_digest: str,
         extraction_mode: str,
     ) -> DocumentExtractionResult:
@@ -427,8 +427,8 @@ class DocumentExtractor:
     def _extract_packing_list(
         self,
         lc_id: str,
-        master: Dict[str, Any],
-        presentation: Dict[str, Any],
+        master: dict[str, Any],
+        presentation: dict[str, Any],
         source_digest: str,
         extraction_mode: str,
     ) -> DocumentExtractionResult:
@@ -455,8 +455,8 @@ class DocumentExtractor:
     def _extract_insurance_document(
         self,
         lc_id: str,
-        master: Dict[str, Any],
-        presentation: Dict[str, Any],
+        master: dict[str, Any],
+        presentation: dict[str, Any],
         source_digest: str,
         extraction_mode: str,
     ) -> DocumentExtractionResult:

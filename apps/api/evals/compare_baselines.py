@@ -8,11 +8,11 @@ Evaluates 10 trade finance presentation scenarios across three distinct reasonin
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import json
-from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
 
 from apps.api.engines.decision_engine import BankDecisionEngine
 from apps.api.engines.ucp600_deterministic import UCP600DeterministicEngine
@@ -33,7 +33,7 @@ class ArchitectureResult:
     is_correct: bool = False
     latency_sec: float = 0.0
     rationale: str = ""
-    failure_mode: Optional[str] = None
+    failure_mode: str | None = None
 
 
 @dataclass
@@ -43,9 +43,9 @@ class ScenarioBenchmarkRow:
     category: str
     ground_truth_verdict: str
     governing_rule: str
-    regex_baseline: Dict[str, Any]
-    single_prompt_llm: Dict[str, Any]
-    veritas_600: Dict[str, Any]
+    regex_baseline: dict[str, Any]
+    single_prompt_llm: dict[str, Any]
+    veritas_600: dict[str, Any]
 
 
 class BaselineComparisonSuite:
@@ -60,9 +60,9 @@ class BaselineComparisonSuite:
         self.zetaris_client = ZetarisFederationClient()
         self.decision_engine = BankDecisionEngine()
 
-    def load_all_scenarios(self) -> List[Dict[str, Any]]:
+    def load_all_scenarios(self) -> list[dict[str, Any]]:
         """Load 3 golden scenarios + 7 edge eval scenarios."""
-        scenarios: List[Dict[str, Any]] = []
+        scenarios: list[dict[str, Any]] = []
 
         # 1. Golden 3 Scenarios
         for sc_id in ["LC-2026-8841", "LC-2026-9104", "LC-2026-9920"]:
@@ -163,7 +163,7 @@ class BaselineComparisonSuite:
 
         return scenarios
 
-    def evaluate_regex_baseline(self, scenario: Dict[str, Any]) -> ArchitectureResult:
+    def evaluate_regex_baseline(self, scenario: dict[str, Any]) -> ArchitectureResult:
         """Baseline 1: Strict Deterministic / Regex Matching (Brittle Pattern Matching).
         
         Evaluates presentation fields dynamically using strict pattern matching:
@@ -242,8 +242,7 @@ class BaselineComparisonSuite:
                 failure_mode="Wrongful Dishonor (Missed Art. 30(b) +/- 5% tolerance)" if target == "APPROVE_HONOUR" else None,
             )
 
-        # 5. Strict address equality on B/L notify party
-        req_addr = master.get("applicant_address_strict", "")
+        # 5. Strict address equality on B/L notify party (catches explicit address mutations)
         bl_notify = presentation.get("bl_notify_party", "")
         if bl_notify and ("wrong" in bl_notify.lower() or "orchard" in bl_notify.lower() or "mismatch" in bl_notify.lower()):
             return ArchitectureResult(
@@ -295,7 +294,7 @@ class BaselineComparisonSuite:
             failure_mode="Sanctions & TBML Leakage (Missed Z-score & OFAC vessel)" if target != "APPROVE_HONOUR" else None,
         )
 
-    def evaluate_single_prompt_llm(self, scenario: Dict[str, Any]) -> ArchitectureResult:
+    def evaluate_single_prompt_llm(self, scenario: dict[str, Any]) -> ArchitectureResult:
         """Baseline 2: Monolithic Single-Prompt LLM (Nemotron) Baseline.
         
         Evaluates presentation dynamically via unconstrained LLM heuristics:
@@ -428,7 +427,7 @@ class BaselineComparisonSuite:
             rationale="Correctly applied ISBP 745 Para A23 and Art. 14(e).",
         )
 
-    def evaluate_veritas_600(self, scenario: Dict[str, Any]) -> ArchitectureResult:
+    def evaluate_veritas_600(self, scenario: dict[str, Any]) -> ArchitectureResult:
         """VERITAS-600 Lean Autonomous Neuro-Symbolic Engine."""
         start = time.perf_counter()
         master = scenario["master"]
@@ -479,18 +478,18 @@ class BaselineComparisonSuite:
             failure_mode=None,
         )
 
-    def run_benchmark(self) -> Dict[str, Any]:
+    def run_benchmark(self) -> dict[str, Any]:
         """Execute full benchmark evaluation across all 10 scenarios."""
         scenarios = self.load_all_scenarios()
-        rows: List[ScenarioBenchmarkRow] = []
+        rows: list[ScenarioBenchmarkRow] = []
 
         regex_correct = 0
         llm_correct = 0
         veritas_correct = 0
 
-        regex_latencies: List[float] = []
-        llm_latencies: List[float] = []
-        veritas_latencies: List[float] = []
+        regex_latencies: list[float] = []
+        llm_latencies: list[float] = []
+        veritas_latencies: list[float] = []
 
         regex_wrongful_dishonor = 0
         regex_sanctions_leakage = 0

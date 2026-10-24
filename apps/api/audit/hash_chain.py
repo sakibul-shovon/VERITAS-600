@@ -5,31 +5,31 @@ Ensures that examination events cannot be inserted, deleted, or reordered after 
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
 import hashlib
-from typing import Any, Dict, List, Optional
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
 
-from apps.api.audit.canonical_json import canonical_sha256, canonicalize_json
+from apps.api.audit.canonical_json import canonicalize_json
 
 
 @dataclass
 class ChainEvent:
     sequence_no: int
     event_type: str
-    stage_id: Optional[str]
-    payload: Dict[str, Any]
+    stage_id: str | None
+    payload: dict[str, Any]
     prev_hash: str
     event_hash: str
-    timestamp_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp_utc: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     @classmethod
     def create(
         cls,
         sequence_no: int,
         event_type: str,
-        stage_id: Optional[str],
-        payload: Dict[str, Any],
+        stage_id: str | None,
+        payload: dict[str, Any],
         prev_hash: str,
     ) -> ChainEvent:
         canonical_p = canonicalize_json(payload)
@@ -52,13 +52,13 @@ class RunHashChain:
 
     def __init__(self, run_id: str):
         self.run_id = run_id
-        self.events: List[ChainEvent] = []
+        self.events: list[ChainEvent] = []
 
     @property
     def latest_hash(self) -> str:
         return self.events[-1].event_hash if self.events else self.GENESIS_HASH
 
-    def append_event(self, event_type: str, payload: Dict[str, Any], stage_id: Optional[str] = None) -> ChainEvent:
+    def append_event(self, event_type: str, payload: dict[str, Any], stage_id: str | None = None) -> ChainEvent:
         seq = len(self.events) + 1
         prev = self.latest_hash
         event = ChainEvent.create(
@@ -86,5 +86,5 @@ class RunHashChain:
             expected_prev = event.event_hash
         return True
 
-    def to_list(self) -> List[Dict[str, Any]]:
+    def to_list(self) -> list[dict[str, Any]]:
         return [asdict(e) for e in self.events]

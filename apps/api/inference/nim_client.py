@@ -10,11 +10,12 @@ Provides:
 from __future__ import annotations
 
 import base64
-from dataclasses import dataclass
 import hashlib
 import json
+import threading
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import httpx
 
 from apps.api.config import get_settings
@@ -30,19 +31,21 @@ class TokenBucketRateLimiter:
         self.tokens = float(max_rpm)
         self.fill_rate = float(max_rpm) / 60.0  # tokens per second
         self.last_update = time.monotonic()
+        self._lock = threading.Lock()
 
     def acquire(self) -> None:
         """Block until 1 token is available."""
         while True:
-            now = time.monotonic()
-            elapsed = now - self.last_update
-            self.last_update = now
-            self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
+            with self._lock:
+                now = time.monotonic()
+                elapsed = now - self.last_update
+                self.last_update = now
+                self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
 
-            if self.tokens >= 1.0:
-                self.tokens -= 1.0
-                return
-            sleep_needed = (1.0 - self.tokens) / self.fill_rate
+                if self.tokens >= 1.0:
+                    self.tokens -= 1.0
+                    return
+                sleep_needed = (1.0 - self.tokens) / self.fill_rate
             time.sleep(min(sleep_needed, 0.5))
 
 
@@ -59,7 +62,7 @@ class NvidiaNimClient:
         self.api_key = self.settings.NVIDIA_API_KEY
         self.cache_enabled = self.settings.ENABLE_RESPONSE_CACHE
         # In-memory SHA-256 response cache for instant replay
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
 
     @property
     def live_configured(self) -> bool:
@@ -75,9 +78,9 @@ class NvidiaNimClient:
         self,
         prompt: str,
         system_prompt: str = "You are a Senior Trade Finance Examiner adjudicating under ICC UCP 600 and ISBP 745.",
-        model: Optional[str] = None,
+        model: str | None = None,
         force_cache: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute completion via NVIDIA NIM or return cached/deterministic replay."""
         model_name = model or self.settings.NEMOTRON_REASONING_MODEL
         key = self._cache_key(model_name, f"{system_prompt}\n{prompt}")
@@ -141,9 +144,9 @@ class NvidiaNimClient:
     def complete_multimodal(
         self,
         prompt: str,
-        images: List[tuple[str, bytes]],
-        model: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        images: list[tuple[str, bytes]],
+        model: str | None = None,
+    ) -> dict[str, Any]:
         """Send PNG/JPEG evidence to a vision-capable NIM using content parts.
 
         Unlike legal-text replay, document OCR never fabricates a deterministic
@@ -171,7 +174,7 @@ class NvidiaNimClient:
                 "error": "NVIDIA vision credentials are not configured.",
             }
 
-        content: List[Dict[str, Any]] = [{"type": "text", "text": prompt}]
+        content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
         for mime_type, image_bytes in images:
             encoded = base64.b64encode(image_bytes).decode("ascii")
             content.append({
