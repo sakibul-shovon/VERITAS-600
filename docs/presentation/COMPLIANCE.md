@@ -16,7 +16,7 @@ Authority: current expanded official event rules, checked 25 October 2026.
 | 6.1 Video 1–4 minutes | Existing 2:54 launch film | Local artifact verified; platform upload still required |
 | 6.3 Source and README | GitHub repository link | Link included; reviewer access/setup still to verify |
 | 5.1 Zetaris + Meterless integration | Sponsor evidence ledger | Cannot certify full requirement from current evidence |
-| 1/2 Eligibility, accounts and team | Team workspace | User/team confirmation required |
+| 1/2 Eligibility, accounts and team | Plan_C, solo: Sakibul Hassan Shovon | Identity confirmed by participant; eligibility/accounts still to verify |
 | 3 One primary track | Track 03 declared in deck | Platform selection still to verify |
 | 4/5 Build window and prior code | Git history and submission declaration | Team must declare pre-existing components |
 | 9 IP and third-party rights | Apache-2.0 repo; source notes; generated imagery | Team must confirm rights/declarations |

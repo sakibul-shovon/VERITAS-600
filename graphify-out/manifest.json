@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "STATUS.md": {
-    "mtime": 1792949749.3108082,
-    "seen": 1792949757.2966547,
-    "ast_hash": "accaed7a44e7499f6a704ded4604e6d1",
+    "mtime": 1792950619.9491885,
+    "seen": 1792950644.7689075,
+    "ast_hash": "7d16c66352c4866bfff80e7a7a6040ca",
     "semantic_hash": ""
   },
   "apps/api/requirements.txt": {
@@ -600,27 +600,39 @@
     "semantic_hash": ""
   },
   "docs/presentation/COMPLIANCE.md": {
-    "mtime": 1792948748.4279711,
-    "seen": 1792949757.2976544,
-    "ast_hash": "6b550490391ee168b2e5c9f0a4f6ba3b",
+    "mtime": 1792950619.9421914,
+    "seen": 1792950644.7699077,
+    "ast_hash": "3be03950043a91bace90d5ad90790a88",
     "semantic_hash": ""
   },
   "docs/presentation/PRESENTER_GUIDE.md": {
-    "mtime": 1792949675.3584208,
-    "seen": 1792949757.2976544,
-    "ast_hash": "64e88e9b08bcb7bd19946f8c720dc3a7",
+    "mtime": 1792950619.9441912,
+    "seen": 1792950644.7709022,
+    "ast_hash": "f54eb8615bc3d7383055381339b423bd",
     "semantic_hash": ""
   },
   "docs/presentation/README.md": {
-    "mtime": 1792949749.3128133,
-    "seen": 1792949757.2976544,
-    "ast_hash": "e17eab45f13fe74d7495b99ea7207764",
+    "mtime": 1792950619.9571912,
+    "seen": 1792950644.7709022,
+    "ast_hash": "3d41f8633ec30136f5bbcd47ecf969ce",
     "semantic_hash": ""
   },
   "docs/presentation/RESEARCH.md": {
-    "mtime": 1792949711.818905,
-    "seen": 1792949757.2976544,
-    "ast_hash": "bd3d09363f9641004216ff4cacfba3f0",
+    "mtime": 1792950619.945197,
+    "seen": 1792950644.7709022,
+    "ast_hash": "6120931b4c96b7f98698a039477d1d04",
+    "semantic_hash": ""
+  },
+  "docs/presentation/TEAM_AND_EXECUTION.md": {
+    "mtime": 1792950486.5460293,
+    "seen": 1792950644.7709022,
+    "ast_hash": "c0c23a6a3b2e29472d5e8d5c36ec5a60",
+    "semantic_hash": ""
+  },
+  "docs/video/QA.md": {
+    "mtime": 1792949866.0420315,
+    "seen": 1792950644.7709022,
+    "ast_hash": "4320dab75abe6d554c2c6db2fb745190",
     "semantic_hash": ""
   }
 }

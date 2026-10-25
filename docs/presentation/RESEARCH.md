@@ -2,6 +2,8 @@
 
 Research date: 25 October 2026. Research completed before slide authoring. This document distinguishes official requirements, design recommendations and unverified submission conditions.
 
+Participant clarification after first delivery: **Plan_C**, solo participant **Sakibul Hassan Shovon**. The revised deck adds these credits and the supplied dual-execution framing. [The claim audit](TEAM_AND_EXECUTION.md) distinguishes AUTO fallback, local snapshots, six context packets and estimated telemetry from unverified zero-downtime, air-gap and official Scout/engine claims. No live sponsor-console link or execution receipt was supplied in that reply.
+
 ## Official competition requirements
 
 Primary authority: [Open Agent Hackathon 2026 event and expanded rules](https://hackathon.genai.works/event/open-agent-hackathon-2026). All ten rule sections were opened in the live page and read, rather than relying on the collapsed web extract. The [Academy overview](https://academy.genai.works/courses/open-agent-hackathon-2026/details) was cross-checked. Where older project notes or Academy copy differ, use the current event's explicit rule text.

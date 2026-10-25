@@ -13,9 +13,9 @@
 | :--- | :--- |
 | **Current Phase** | **Phase 13 competition presentation — official research and 21-slide deck complete** |
 | **Overall Progress** | **Core phases verified; launch film delivered and user reports good visual quality. Presentation researched, authored and rendered. Mandatory sponsor integration evidence and submission declarations remain unresolved.** |
-| **Active Task** | Deck delivered: `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Competition-Deck-Final.pptx` with PDF preview and research/checklist. |
+| **Active Task** | Revised Plan_C deck: `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Plan_C-Deck.pptx`, with PDF preview. Solo participant: Sakibul Hassan Shovon. |
 | **Last Updated** | 2026-10-25 |
-| **Next Action Item** | **Verify official Meterless integration/conformance and live Zetaris evidence; confirm team/prior-code/IP declarations and complete platform submission review.** |
+| **Next Action Item** | **Verify official Meterless integration/conformance and live Zetaris evidence; confirm eligibility/prior-code/IP declarations and complete platform submission review.** |
 
 ```
 [CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED]
@@ -24,6 +24,8 @@
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
+
+**Current presentation revision:** `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Plan_C-Deck.pptx` and matching PDF. Credits: **Plan_C — Sakibul Hassan Shovon, Solo Builder**. See [participant clarification and execution claim audit](docs/presentation/TEAM_AND_EXECUTION.md). Slides 1, 13, 16 and 19 were revised and visually inspected; every other slide exactly matches the previously inspected version. Final layout has zero findings/warnings. The supplied architecture wording does not establish zero downtime, certified air-gap or official Scout/engine execution; these are not claimed as demonstrated. Team identity is confirmed, eligibility/declarations still require platform verification.
 
 0. **Competition presentation complete:** See [presentation delivery notes](docs/presentation/README.md), [official research](docs/presentation/RESEARCH.md), [coverage checklist](docs/presentation/COMPLIANCE.md) and [presenter guide](docs/presentation/PRESENTER_GUIDE.md). Sibling workspace `H:/Projects/VERITAS-600-presentation` contains 16 main slides + 5 appendix slides, editable PPTX, fixed PDF preview, contact sheet, authoring source, assets, speaker notes and validation receipts. All finalized slides were re-imported, rendered and inspected; package/geometry/font/native-table/chart checks pass with zero final layout warnings. The current official rules mandate Zetaris and Meterless but make Cursor optional. Current Meterless-named routing is local Python without verified official engine integration; recorded Zetaris is local fallback and NIM is replay. The deck covers required topics but cannot certify complete entry compliance. The apparent LLM baseline is scripted, so no live model benchmark/latency claim is made. No team identities were invented, bank action dispatched or entry submitted. Deadline: 27 Oct 2026 23:45 UTC / 28 Oct 05:45 Dhaka.
 
@@ -279,6 +281,7 @@
 
 ### Phase 13: Competition Presentation — Complete
 
+- [x] Revise cover/closing for confirmed team Plan_C, solo participant Sakibul Hassan Shovon. Audit supplied dual-execution framing against code: AUTO fallback, local credit snapshot/Parquet/watchlist and six fixed context packets are inspectable; zero downtime, certified air-gap and official Scout/engine execution remain unverified. Re-finalize and render the 21-slide PPTX/PDF; inspect all changed slides and confirm other slides are unchanged.
 - [x] Research the expanded official event rules, Track 03, judging rubric, deck topics, sponsor requirements and deadline before authoring.
 - [x] Audit current sponsor clients, local routing, replay telemetry and synthetic evaluation claims against repository evidence.
 - [x] Create a 21-slide English deck with original editorial artwork, real product captures, exact citations, eight editable tables and one native chart with embedded data.

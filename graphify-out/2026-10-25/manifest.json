@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "STATUS.md": {
-    "mtime": 1792947426.1475918,
-    "seen": 1792947435.3318093,
-    "ast_hash": "3cb3487dd9db430698990cd7bd762375",
+    "mtime": 1792949749.3108082,
+    "seen": 1792949757.2966547,
+    "ast_hash": "accaed7a44e7499f6a704ded4604e6d1",
     "semantic_hash": ""
   },
   "apps/api/requirements.txt": {
@@ -597,6 +597,30 @@
     "mtime": 1792947426.1485927,
     "seen": 1792947435.3318093,
     "ast_hash": "2a70c93082b2ad12f9724c70c91c15c4",
+    "semantic_hash": ""
+  },
+  "docs/presentation/COMPLIANCE.md": {
+    "mtime": 1792948748.4279711,
+    "seen": 1792949757.2976544,
+    "ast_hash": "6b550490391ee168b2e5c9f0a4f6ba3b",
+    "semantic_hash": ""
+  },
+  "docs/presentation/PRESENTER_GUIDE.md": {
+    "mtime": 1792949675.3584208,
+    "seen": 1792949757.2976544,
+    "ast_hash": "64e88e9b08bcb7bd19946f8c720dc3a7",
+    "semantic_hash": ""
+  },
+  "docs/presentation/README.md": {
+    "mtime": 1792949749.3128133,
+    "seen": 1792949757.2976544,
+    "ast_hash": "e17eab45f13fe74d7495b99ea7207764",
+    "semantic_hash": ""
+  },
+  "docs/presentation/RESEARCH.md": {
+    "mtime": 1792949711.818905,
+    "seen": 1792949757.2976544,
+    "ast_hash": "bd3d09363f9641004216ff4cacfba3f0",
     "semantic_hash": ""
   }
 }

@@ -21,9 +21,11 @@
 | 15 | 25s | Live sponsor proof, blind evaluation, controlled pilot। |
 | 16 | 15s | Code link এবং evidence-carrying decision দিয়ে শেষ। |
 
-মোট প্রায় ৬ মিনিট ৪০ সেকেন্ড। ভিডিও আলাদাভাবে দেখালে তার ২:৫৪ সময় যোগ হবে। Final team name/member roles সরবরাহ করা হয়নি, তাই পরিচয় বানানো হয়নি।
+মোট প্রায় ৬ মিনিট ৪০ সেকেন্ড। ভিডিও আলাদাভাবে দেখালে তার ২:৫৪ সময় যোগ হবে। Team Plan_C-এর solo participant Sakibul Hassan Shovon; deck credit: Solo Builder।
 
 Sponsor প্রশ্নে বলার সৎ উত্তর: “The current demonstration uses local federation fallback and replay. We have implemented the clients and local routing/state logic, but official Meterless engine integration and live sponsor execution remain evidence gates before submission.”
+
+Dual-execution প্রশ্নে: “The Zetaris client supports an AUTO live attempt followed by local fallback. The reproducible local demonstration federates a credit snapshot, customs Parquet and watchlist data. Six context chunks drive local routing and estimated token telemetry. We do not claim measured zero downtime, certified air-gapped operation or verified official Scout execution.”
 
 Evaluation প্রশ্নে: “These are ten synthetic regression scenarios. The labelled LLM baseline in the code is a scripted proxy, so this is not a live model comparison or a production accuracy claim.”
 
