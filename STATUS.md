@@ -11,11 +11,11 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 12 Launch Film — research and first 1080p review cut complete & technically verified** |
-| **Overall Progress** | **Phases 0–11 verified. Phase 12 research, storyboard, capture, narration, captions, music and first film cut complete. 58/58 backend tests and Next.js production build pass.** |
-| **Active Task** | First review cut delivered: `H:/Projects/VERITAS-600-video/out/VERITAS-600-launch-1080p.mp4`. |
+| **Current Phase** | **Phase 13 competition presentation — official research and 21-slide deck complete** |
+| **Overall Progress** | **Core phases verified; launch film delivered and user reports good visual quality. Presentation researched, authored and rendered. Mandatory sponsor integration evidence and submission declarations remain unresolved.** |
+| **Active Task** | Deck delivered: `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Competition-Deck-Final.pptx` with PDF preview and research/checklist. |
 | **Last Updated** | 2026-10-25 |
-| **Next Action Item** | **Creative/listening review of the launch film; production deployment & hackathon submission review.** |
+| **Next Action Item** | **Verify official Meterless integration/conformance and live Zetaris evidence; confirm team/prior-code/IP declarations and complete platform submission review.** |
 
 ```
 [CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED]
@@ -24,6 +24,8 @@
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
+
+0. **Competition presentation complete:** See [presentation delivery notes](docs/presentation/README.md), [official research](docs/presentation/RESEARCH.md), [coverage checklist](docs/presentation/COMPLIANCE.md) and [presenter guide](docs/presentation/PRESENTER_GUIDE.md). Sibling workspace `H:/Projects/VERITAS-600-presentation` contains 16 main slides + 5 appendix slides, editable PPTX, fixed PDF preview, contact sheet, authoring source, assets, speaker notes and validation receipts. All finalized slides were re-imported, rendered and inspected; package/geometry/font/native-table/chart checks pass with zero final layout warnings. The current official rules mandate Zetaris and Meterless but make Cursor optional. Current Meterless-named routing is local Python without verified official engine integration; recorded Zetaris is local fallback and NIM is replay. The deck covers required topics but cannot certify complete entry compliance. The apparent LLM baseline is scripted, so no live model benchmark/latency claim is made. No team identities were invented, bank action dispatched or entry submitted. Deadline: 27 Oct 2026 23:45 UTC / 28 Oct 05:45 Dhaka.
 
 0. **Launch film (first review cut complete):** See [delivery notes](docs/video/README.md), [research](docs/video/research.md), [production blueprint and feature coverage](docs/video/production-plan.md), [narration](docs/video/script.json), and [technical QA](docs/video/qa-report.json). The isolated sibling workspace `H:/Projects/VERITAS-600-video` contains the editable Remotion source and final MP4. Output: 174.016 seconds, 1920×1080 at 30 fps, H.264/AAC, BT.709 limited range, 50 audio-derived caption phrases, SRT/VTT sidecars, poster and contact sheet. Full decode succeeds; zero black intervals; encoded audio −14.10 LUFS / −1.16 dBTP. Thirty sampled master frames were visually inspected. Actual light-theme product captures and synthetic PDF intake are used; cloud fallbacks and pending human sign-off stay explicit. No external dispatch was performed. Human creative/listening review remains appropriate before submission. Fresh product verification: 58/58 backend tests and Next.js production build pass.
 
@@ -274,6 +276,17 @@
 - [x] Retain honest `LOCAL_DUCKDB_FALLBACK`, `CACHED_REPLAY`, local routing and pending human authorization; perform no bank action or external dispatch.
 - [x] Re-verify 58/58 backend tests and the Next.js production build; refresh the knowledge graph.
 - [ ] Complete human creative/listening review and any subsequent polish before hackathon submission.
+
+### Phase 13: Competition Presentation — Complete
+
+- [x] Research the expanded official event rules, Track 03, judging rubric, deck topics, sponsor requirements and deadline before authoring.
+- [x] Audit current sponsor clients, local routing, replay telemetry and synthetic evaluation claims against repository evidence.
+- [x] Create a 21-slide English deck with original editorial artwork, real product captures, exact citations, eight editable tables and one native chart with embedded data.
+- [x] Add source-backed speaker notes, timing guide, research report and rule-to-evidence checklist.
+- [x] Finalize and re-import the PPTX; render and inspect every final slide; independently render the 21-page PDF preview with Poppler and verify embedded pixels against final renders.
+- [x] Preserve clear disclosures for fallback/replay, scripted baseline, pending human sign-off and remaining sponsor integration evidence.
+- [ ] Verify official Meterless integration/conformance and live Zetaris evidence before certifying mandatory integration compliance.
+- [ ] Confirm team eligibility, actual Cursor usage if claimed, prior-code/IP declarations, repository accessibility and platform submission.
 
 ## 🔒 Invariant Engineering Rules (Do Not Violate)
 
