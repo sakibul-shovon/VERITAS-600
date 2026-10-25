@@ -1,17 +1,17 @@
-# Graph Report - VERITAS-600  (2026-10-24)
+# Graph Report - VERITAS-600  (2026-10-25)
 
 ## Corpus Check
-- 92 files · ~100,522 words
+- 97 files · ~105,592 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 10 file(s) not represented in the graph (top: (none) 6, .example 1, .css 1)
 
 ## Summary
-- 1295 nodes · 2098 edges · 115 communities (92 shown, 23 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 207 edges (avg confidence: 0.92)
+- 1393 nodes · 2205 edges · 120 communities (97 shown, 23 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 192 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c281f0bd`
+- Built from commit: `07809ee9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,7 +22,7 @@
 - output
 - package.json
 - BaselineComparisonSuite
-- BankDecisionEngine
+- UCP600DeterministicEngine
 - DocumentExtractor
 - test_audit_fixes.py
 - compilerOptions
@@ -43,7 +43,7 @@
 - 3. The Frontier Reasoning Upgrade
 - test_legal_adjudicator.py
 - 4. The Palantir-Grade Visual Blueprint
-- compare_baselines.py
+- Settings
 - 2. Detailed Stack Components
 - Phase P0 — Demo integrity and truthfulness
 - types.ts
@@ -66,8 +66,7 @@
 - 9. Target Users and UX Research
 - Money
 - CaseStore
-- 2. Mandatory Sponsor Stack (Transparent, Load-Bearing Integration)
-- main.py
+- env
 - 16. Agentic Interaction and Reasoning Visualization
 - 26. Testing and Acceptance Criteria
 - 3. Existing Functionality Inventory
@@ -100,7 +99,7 @@
 - LP-8. Hero Composition and Interactive Behavior
 - LP-10. Detailed Scroll and Motion Choreography
 - MissionControl.tsx
-- 4. Hackathon Context and Verified Requirements
+- postgres
 - 5. Track Selection and Rationale
 - test_security_redteam_fixes.py
 - 2. Detailed Stack Components
@@ -108,15 +107,18 @@
 - 2. Repository Analysis and Product Understanding
 - api.ts
 - 12. Selected Art Direction and Design Rationale
-- AuditVerifier
+- 2. Detailed Technical Implementations
 - 2.1 What is already unusually strong
-- ⚡ Quickstart (Local Development)
+- The Weight of Evidence
 - VERITAS-600: Project Execution & Agent Continuity Tracker
-- VERITAS-600 Security Red Team Remediation Report
+- VERITAS-600 launch-film research
 - LP-12. Light and Dark Theme Specifications
-- 3. Core Technical Differentiation (The 3 Pillars)
+- 7. Phase-by-Phase Execution Plan
 - 6. Contemporary UI/UX Research (Through October 2026)
-- LP-16. React Component Architecture
+- schema.sql
+- ucp600_deterministic.py
+- 3. Core Technical Differentiation (The 3 Pillars)
+- 18. Animation and Visualization Technology Decisions
 
 ## God Nodes (most connected - your core abstractions)
 1. `LANDING PAGE — CREATIVE DIRECTION & IMPLEMENTATION BLUEPRINT` - 36 edges
@@ -137,54 +139,58 @@
   SECURITY_RED_TEAM_REPORT.md → apps/api/domain/decisions.py
 - `1. What the system does (one paragraph)` --references--> `BankDecisionEngine`  [INFERRED]
   SECURITY_RED_TEAM_REPORT.md → apps/api/engines/decision_engine.py
+- `P0-2. Neural layer fails OPEN: NIM unavailable ⇒ verdict “COMPLIANT” on whatever was presented 🟢 VERIFIED` --references--> `BankDecisionEngine`  [INFERRED]
+  SECURITY_RED_TEAM_REPORT.md → apps/api/engines/decision_engine.py
 - `2.2 Critical findings: fix before presenting the system as live` --references--> `DocumentExtractor`  [INFERRED]
   HACKATHON_ARCHITECTURE_ELEVATION.md → apps/api/engines/document_extractor.py
-- `2.4 Present implementation truth and limitations` --references--> `DocumentExtractor`  [INFERRED]
-  ui-redesign.md → apps/api/engines/document_extractor.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (115 total, 23 thin omitted)
+## Communities (120 total, 23 thin omitted)
 
 ### Community 0 - "AmendmentMemoryEngine"
-Cohesion: 0.06
-Nodes (23): parse_date(), UCP600DeterministicEngine, AmendmentMemoryEngine, AmendmentResolution, memory_engine(), test_art_10_c_full_implicit_acceptance(), test_art_10_e_partial_acceptance_prohibition(), test_scenario_1_amendment_lifecycle() (+15 more)
+Cohesion: 0.10
+Nodes (14): AmendmentMemoryEngine, AmendmentResolution, TermRecord, memory_engine(), test_art_10_c_full_implicit_acceptance(), test_art_10_e_partial_acceptance_prohibition(), test_scenario_1_amendment_lifecycle(), det_engine() (+6 more)
 
 ### Community 1 - "Category P0: Correctness & Logic Bugs"
-Cohesion: 0.06
-Nodes (28): test_safe_parse_json_markdown_stripping(), 1. Executive Summary, 2. Inviolable Architectural Invariants Checklist, 3.10. Settlement Voucher Pre-Signoff Status, 3.11. UI Dispatch Status Transparency, 3.12. Honest Health & Telemetry Reporting, 3.17. CI DuckDB Pre-Seeding, 3.18. Unmasked Ruff Lint Verification (+20 more)
+Cohesion: 0.07
+Nodes (27): 1. Executive Summary, 2. Inviolable Architectural Invariants Checklist, 3.10. Settlement Voucher Pre-Signoff Status, 3.11. UI Dispatch Status Transparency, 3.12. Honest Health & Telemetry Reporting, 3.17. CI DuckDB Pre-Seeding, 3.18. Unmasked Ruff Lint Verification, 3.19. Automated Audit Regression Test Suite (+19 more)
 
 ### Community 2 - "2. Detailed Remediations by Vulnerability"
-Cohesion: 0.09
-Nodes (17): ArtifactGenerator, sanitize_swift_text(), BankDecision, normalize_trade_text(), test_settlement_voucher_pending_vs_authorized_status(), test_sanitize_swift_text_strips_delimiters_and_tags(), 2. Detailed Remediations by Vulnerability, P0-1: Human Sign-Off Gate Hardening & Evidence Binding (+9 more)
+Cohesion: 0.08
+Nodes (22): ArtifactGenerator, sanitize_swift_text(), BankDecision, test_settlement_voucher_pending_vs_authorized_status(), test_sanitize_swift_text_strips_delimiters_and_tags(), 1. Executive Summary, 2. Detailed Remediations by Vulnerability, 3. Verification & Test Evidence (+14 more)
 
 ### Community 3 - "output"
 Cohesion: 0.11
 Nodes (18): ignore, customPatterns, useGitignore, include, output, compress, filePath, parsableStyle (+10 more)
 
 ### Community 4 - "package.json"
-Cohesion: 0.06
-Nodes (33): dependencies, clsx, lucide-react, next, react, react-dom, tailwind-merge, devDependencies (+25 more)
+Cohesion: 0.08
+Nodes (32): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, react@^19.0.0, react-dom@^19.0.0, tailwind-merge@^2.6.0, devDependencies, autoprefixer@^10.4.20 (+24 more)
 
 ### Community 5 - "BaselineComparisonSuite"
-Cohesion: 0.09
-Nodes (19): ArchitectureResult, BaselineComparisonSuite, main(), ScenarioBenchmarkRow, get_evals_results(), run_evals_benchmark(), test_baseline_suite_loads_all_10_scenarios(), test_regex_baseline_failure_modes() (+11 more)
+Cohesion: 0.15
+Nodes (10): ArchitectureResult, BaselineComparisonSuite, main(), ScenarioBenchmarkRow, get_evals_results(), run_evals_benchmark(), test_baseline_suite_loads_all_10_scenarios(), test_regex_baseline_failure_modes() (+2 more)
+
+### Community 6 - "UCP600DeterministicEngine"
+Cohesion: 0.11
+Nodes (10): BankDecisionEngine, parse_date(), UCP600DeterministicEngine, test_cif_basis_not_overridden_by_larger_credit_limit(), test_dynamic_demurrage_advisory_text(), test_no_silent_pass_on_unextracted_zero_weights(), test_cover_note_prohibition_art_28_c(), test_late_presentation_art_14_c() (+2 more)
 
 ### Community 7 - "DocumentExtractor"
-Cohesion: 0.19
-Nodes (5): DocumentExtractionResult, DocumentExtractor, ExtractedField, test_document_extractor_bounding_boxes(), P1-3. Upload bombs: PDF decompression + all-pages reads; PIL pixel bombs
+Cohesion: 0.20
+Nodes (4): DocumentExtractionResult, DocumentExtractor, ExtractedField, test_document_extractor_bounding_boxes()
 
 ### Community 8 - "test_audit_fixes.py"
-Cohesion: 0.20
-Nodes (7): ActionType, AuthorityLevel, DecisionReceipt, DispatchStatus, approve_human_action(), test_keyed_hmac_decision_receipt_and_verifier(), test_decision_receipt_cryptographic_verification()
+Cohesion: 0.14
+Nodes (10): get_settings(), ActionType, AuthorityLevel, DecisionReceipt, DispatchStatus, approve_human_action(), test_keyed_hmac_decision_receipt_and_verifier(), test_permissive_date_parser_formats() (+2 more)
 
 ### Community 9 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 10 - "test_document_intake.py"
-Cohesion: 0.09
+Cohesion: 0.10
 Nodes (14): case_payload(), client(), make_text_pdf(), test_approval_rejects_missing_and_stale_run_bindings(), test_image_upload_never_falls_back_to_fixture_ocr(), test_real_pdf_evidence_flows_into_calculations(), test_scanned_pdf_is_rendered_for_vision_without_fixture_fallback(), test_user_case_acceptance_requires_complete_document_set() (+6 more)
 
 ### Community 11 - ".compute_telemetry"
@@ -196,28 +202,28 @@ Cohesion: 0.26
 Nodes (4): main(), seed_customs_parquet(), seed_duckdb_standby(), seed_presentation_files()
 
 ### Community 13 - "hash_chain.py"
-Cohesion: 0.18
-Nodes (5): _canonical_default(), canonical_sha256(), canonicalize_json(), ChainEvent, test_canonical_json_determinism()
+Cohesion: 0.17
+Nodes (5): _canonical_default(), canonical_sha256(), canonicalize_json(), AuditVerifier, test_canonical_json_determinism()
 
 ### Community 22 - "load_presentation_data"
 Cohesion: 0.07
-Nodes (17): accept_case_evidence(), CaseCreateRequest, create_case(), EvidenceAcceptanceRequest, extract_documents(), get_case_document_content(), get_scenario_details(), get_sponsor_evidence() (+9 more)
+Nodes (18): accept_case_evidence(), CaseCreateRequest, create_case(), EvidenceAcceptanceRequest, extract_documents(), get_case_document_content(), get_scenario_details(), get_sponsor_evidence() (+10 more)
 
 ### Community 28 - "examine/page.tsx"
 Cohesion: 0.23
-Nodes (13): ExaminationPage(), HeaderBar(), NewCaseDialog(), NoticeRegion(), NoticeRegionProps, ZetarisDrawer(), fetchHealth(), fetchScenarioDetails() (+5 more)
+Nodes (13): ExaminationPage(), HeaderBar(), HeaderBarProps, NoticeRegion(), NoticeRegionProps, ZetarisDrawer(), fetchHealth(), fetchScenarioDetails() (+5 more)
 
 ### Community 29 - "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)"
 Cohesion: 0.06
 Nodes (33): 1.1 Target User & The High-Stakes Problem, 1. High-Level Architecture Overview, 1. System Vision & Operational Problem, 2.1 Frontend & User Experience, 2.1 Zetaris: In-Situ Federated Data Layer, 2.2 Backend & Core Services, 2.2 Meterless: Context Routing, Stateful Memory & Inference Control, 2.3 Mandatory Sponsor Integrations (+25 more)
 
 ### Community 30 - "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)"
-Cohesion: 0.13
-Nodes (15): 1.1 Target User & The High-Stakes Problem, 1. System Vision & Operational Problem, 4. The 3 Flagship Golden Scenarios (Realistic, Deeply Verifiable Data), 5. Repository Structure, 6.1 PostgreSQL Schema (`apps/api/db/schema.sql`), 6.2 Join-Safe Zetaris 3-Silo Federated Query (`apps/api/zetaris/sql/federated_check.sql`), 6. Database & Join-Safe Federated Query Specifications, 7. Phase-by-Phase Execution Plan (+7 more)
-
-### Community 31 - "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)"
 Cohesion: 0.17
 Nodes (12): 1.1 Target User & The High-Stakes Problem, 1. System Vision & Operational Problem, 3. Core Technical Differentiation (The 3 Pillars), 4. The 3 Flagship Golden Scenarios (Realistic, Deeply Verifiable Data), 5. Repository Structure, 6.1 PostgreSQL Schema (`apps/api/db/schema.sql`), 6.2 Join-Safe Zetaris 3-Silo Federated Query (`apps/api/zetaris/sql/federated_check.sql`), 6. Database & Join-Safe Federated Query Specifications (+4 more)
+
+### Community 31 - "VERITAS-600: Lean Master Architecture & Engineering Execution Plan (v2 — Domain & SQL Hardened)"
+Cohesion: 0.15
+Nodes (13): 1.1 Target User & The High-Stakes Problem, 1. System Vision & Operational Problem, 2.1 Zetaris: In-Situ Federated Data Layer, 2.2 Meterless: Context Routing, Stateful Memory & Inference Control, 2.3 NVIDIA Nemotron: Multimodal Extraction & Legal Adjudication, 2.4 Cursor: AI-Native Development Workflow, 2. Mandatory Sponsor Stack (Transparent, Load-Bearing Integration), 4. The 3 Flagship Golden Scenarios (Realistic, Deeply Verifiable Data) (+5 more)
 
 ### Community 32 - "AGENTS.md: Operational Instructions for Coding Agents"
 Cohesion: 0.22
@@ -232,8 +238,8 @@ Cohesion: 0.10
 Nodes (20): 3.10 Human authorization and safe dispatch, 3.11 Reliability, security, and operations, 3.1 Target architecture: an evidence-carrying decision pipeline, 3.2 Evidence model and cryptographic proof chain, 3.3 Formal amendment state machine, 3.4 Deterministic kernel and legal rule registry, 3.5 Fail-closed semantic adjudication, 3.6 Expanded legal and documentary edge-case matrix (+12 more)
 
 ### Community 36 - "test_legal_adjudicator.py"
-Cohesion: 0.14
-Nodes (10): DeterministicEvaluation, LegalFinding, UCP600LegalAdjudicator, adjudicator(), extractor(), router(), test_consignee_address_mutation_art_14_j(), test_hard_invariant_rule_enforcement() (+2 more)
+Cohesion: 0.09
+Nodes (13): DeterministicCheckResult, DeterministicEvaluation, LegalAdjudicationResult, LegalFinding, UCP600LegalAdjudicator, test_safe_parse_json_markdown_stripping(), adjudicator(), extractor() (+5 more)
 
 ### Community 37 - "4. The Palantir-Grade Visual Blueprint"
 Cohesion: 0.11
@@ -248,28 +254,28 @@ Cohesion: 0.22
 Nodes (9): `apps/api/engines/document_extractor.py`, `apps/api/evals/compare_baselines.py`, `apps/api/inference/meterless_router.py`, `apps/api/inference/nim_client.py`, `apps/api/main.py`, `apps/web/src/components/DocumentViewerPane.tsx`, `apps/web/src/lib/api.ts`, P0 acceptance gates (+1 more)
 
 ### Community 41 - "types.ts"
-Cohesion: 0.18
-Nodes (14): AdjudicationMatrixPaneProps, DecisionActionPaneProps, HeaderBarProps, ExaminationAction, ExaminationPhase, ExaminationState, initialExaminationState, BankDecision (+6 more)
+Cohesion: 0.19
+Nodes (13): AdjudicationMatrixPaneProps, DecisionActionPaneProps, ExaminationAction, ExaminationPhase, ExaminationState, initialExaminationState, BankDecision, DeterministicCheck (+5 more)
 
 ### Community 42 - "15.2 `/examine` — Examination terminal"
 Cohesion: 0.11
 Nodes (19): 15.1 Global shell, 15.2 `/examine` — Examination terminal, 15.3 `/evals` — Architecture benchmark, 15.4 Proof drawers and dialogs, 15.5 Judge handoff inside the terminal, 15. Page-by-Page Redesign Specifications, Benchmark run behavior, Case-specific narrative (+11 more)
 
 ### Community 43 - "MerkleTree"
-Cohesion: 0.18
+Cohesion: 0.14
 Nodes (5): MerkleTree, examine_presentation_sse(), event_generator(), test_merkle_tree_root_and_inclusion_proof(), P1-1. Event-loop blocking: sync LLM calls + `time.sleep` inside async SSE → whole-server stall
 
 ### Community 44 - "LANDING PAGE — CREATIVE DIRECTION & IMPLEMENTATION BLUEPRINT"
 Cohesion: 0.10
-Nodes (20): 18. Animation and Visualization Technology Decisions, 28. Risks, Tradeoffs, and Mitigations, Acceptance gate, Accepted trade-offs, Chosen stack, Desktop, 1440 px reference, Evaluated alternatives, Landing acceptance criteria (+12 more)
+Nodes (20): 28. Risks, Tradeoffs, and Mitigations, Accepted trade-offs, Desktop, 1440 px reference, Landing acceptance criteria, LANDING PAGE — CREATIVE DIRECTION & IMPLEMENTATION BLUEPRINT, LP-15. Recommended Animation Libraries and Tools, LP-16. React Component Architecture, LP-18. Functional Integration Constraints (+12 more)
 
 ### Community 45 - "NvidiaNimClient"
-Cohesion: 0.14
-Nodes (5): NvidiaNimClient, test_benign_word_omitted_does_not_falsely_trigger_discrepancy(), test_divergent_goods_fail_closed_offline_replay(), test_nemotron_lru_cache_bounded_at_max_entries(), 2. Executive verdict
+Cohesion: 0.13
+Nodes (4): NvidiaNimClient, test_benign_word_omitted_does_not_falsely_trigger_discrepancy(), test_divergent_goods_fail_closed_offline_replay(), test_nemotron_lru_cache_bounded_at_max_entries()
 
 ### Community 46 - "14. Complete Light/Dark Design System"
-Cohesion: 0.25
-Nodes (8): 14.1 Theme tokens, 14.2 Type scale, 14.3 Spacing, geometry, and elevation, 14.5 Component specification, 14.6 Status grammar, 14.7 Content rules, 14.8 Focus, selection, loading, and error behavior, 14. Complete Light/Dark Design System
+Cohesion: 0.22
+Nodes (9): 14.1 Theme tokens, 14.2 Type scale, 14.3 Spacing, geometry, and elevation, 14.4 Layout primitives, 14.5 Component specification, 14.6 Status grammar, 14.7 Content rules, 14.8 Focus, selection, loading, and error behavior (+1 more)
 
 ### Community 47 - "ucp600_rules.py"
 Cohesion: 0.29
@@ -292,12 +298,12 @@ Cohesion: 0.17
 Nodes (6): test_join_safe_single_row_guarantee(), test_scenario_1_wrongful_dishonor_amendment_quarantine(), test_scenario_2_cotton_yarn_benchmark(), test_scenario_3_tbml_price_anomaly_and_sanctions_freeze(), zetaris_client(), ZetarisFederationClient
 
 ### Community 52 - "VERITAS-600 UI/UX Redesign Blueprint"
-Cohesion: 0.22
-Nodes (8): 1. Executive Design Vision, 7. Reference Study With Links, 8. Common AI-Generated Design Patterns to Avoid, Anti-Generic-AI checklist, Approved recurring motifs, Design principles, How to read this document, VERITAS-600 UI/UX Redesign Blueprint
+Cohesion: 0.17
+Nodes (11): 1. Executive Design Vision, 4.1 Publicly verified event facts, 4.2 Design implications of scoring, 4. Hackathon Context and Verified Requirements, 7. Reference Study With Links, 8. Common AI-Generated Design Patterns to Avoid, Anti-Generic-AI checklist, Approved recurring motifs (+3 more)
 
 ### Community 53 - "20. Frontend Architecture and Component System"
-Cohesion: 0.22
-Nodes (9): 20.1 Target component hierarchy, 20.2 Server/client boundaries, 20.3 Data access layer, 20.4 Examination reducer, 20.5 SSE lifecycle, 20.6 Type model, 20.7 Theme architecture, 20.8 Error and observability design (+1 more)
+Cohesion: 0.25
+Nodes (8): 20.1 Target component hierarchy, 20.2 Server/client boundaries, 20.3 Data access layer, 20.4 Examination reducer, 20.5 SSE lifecycle, 20.7 Theme architecture, 20.8 Error and observability design, 20. Frontend Architecture and Component System
 
 ### Community 54 - "30. Source References and Research Notes"
 Cohesion: 0.22
@@ -321,11 +327,11 @@ Nodes (8): 9.1 Primary persona: senior documentary-credit examiner, 9.2 Secondar
 
 ### Community 60 - "CaseStore"
 Cohesion: 0.05
-Nodes (37): CaseStore, TokenBucketRateLimiter, test_case_store_durable_approval_recording(), test_evidence_acceptance_rejects_dict_and_nan(), 3.13. CORS Configuration Hardening, 3.14. Thread-Safe Token Bucket Rate Limiting, 3.15. Cryptographic Signature Keying, 3.16. Durable Case Authorization Storage (+29 more)
+Nodes (38): CaseStore, TokenBucketRateLimiter, test_case_store_durable_approval_recording(), test_evidence_acceptance_rejects_dict_and_nan(), 3.13. CORS Configuration Hardening, 3.14. Thread-Safe Token Bucket Rate Limiting, 3.16. Durable Case Authorization Storage, Category P2: Security & Production Readiness (+30 more)
 
-### Community 61 - "2. Mandatory Sponsor Stack (Transparent, Load-Bearing Integration)"
-Cohesion: 0.40
-Nodes (5): 2.1 Zetaris: In-Situ Federated Data Layer, 2.2 Meterless: Context Routing, Stateful Memory & Inference Control, 2.3 NVIDIA Nemotron: Multimodal Extraction & Legal Adjudication, 2.4 Cursor: AI-Native Development Workflow, 2. Mandatory Sponsor Stack (Transparent, Load-Bearing Integration)
+### Community 61 - "env"
+Cohesion: 0.05
+Nodes (42): name, runs-on, services, steps, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT (+34 more)
 
 ### Community 63 - "16. Agentic Interaction and Reasoning Visualization"
 Cohesion: 0.29
@@ -342,6 +348,10 @@ Nodes (6): 3.1 User-facing routes, 3.2 API contracts to preserve, 3.3 Existing c
 ### Community 66 - "Phase P3 — Federated risk and sponsor proof"
 Cohesion: 0.40
 Nodes (5): `apps/api/zetaris/client.py`, `apps/api/zetaris/sql/federated_check.sql`, Data-quality layer, Phase P3 — Federated risk and sponsor proof, Sponsor evidence page
+
+### Community 67 - "RunHashChain"
+Cohesion: 0.23
+Nodes (3): ChainEvent, RunHashChain, test_event_hash_chain_tamper_detection()
 
 ### Community 68 - "7. Phase-by-Phase Execution Plan"
 Cohesion: 0.29
@@ -400,11 +410,11 @@ Cohesion: 0.40
 Nodes (5): Hero A — The Evidence Gate (selected), Hero B — The Rule That Cannot Be Overruled, Hero C — Three Outcomes, One Chain of Custody, Hero decision matrix, LP-4. Three Hero Concepts and Comparison
 
 ### Community 82 - "VERITAS-600"
-Cohesion: 0.29
-Nodes (7): 🏛️ Executive Summary, 📄 License & Team, 📊 Live Baselines Evaluation, 🏆 Mandatory Sponsor Integrations & Verification Guide, 📐 System Architecture, 🎯 The 3 Flagship Golden Scenarios, VERITAS-600
+Cohesion: 0.17
+Nodes (12): 1. Clone & Configure, 2. Start PostgreSQL & Redis, 3. Run Automated Tests, 4. Start Development Servers, 🏛️ Executive Summary, 📄 License & Team, 📊 Live Baselines Evaluation, 🏆 Mandatory Sponsor Integrations & Verification Guide (+4 more)
 
 ### Community 83 - "2.2 Verifiable Domain Models & Cryptographic Proof Chain (Phase P1)"
-Cohesion: 0.13
+Cohesion: 0.15
 Nodes (5): BoundingBox, EvidenceManifest, EvidenceRecord, 2.2 Verifiable Domain Models & Cryptographic Proof Chain (Phase P1), Phase 7: World-Class Elevation & Demo Integrity ✅ [COMPLETED & VERIFIED]
 
 ### Community 84 - "24. File-by-File Implementation Blueprint"
@@ -436,8 +446,8 @@ Cohesion: 0.50
 Nodes (4): Chosen model: one evidence chain, not a miniature application, Data and truth contract, Interaction model, LP-9. Guided Product Demonstration Concept
 
 ### Community 91 - "lucide-react"
-Cohesion: 0.16
-Nodes (11): DemoStage, outcomeCards, stages, DocumentViewerPane(), DocumentViewerPaneProps, INITIAL_FORM, NewCaseDialogProps, ZetarisDrawerProps (+3 more)
+Cohesion: 0.19
+Nodes (9): DemoStage, outcomeCards, stages, DocumentViewerPane(), DocumentViewerPaneProps, ZetarisDrawerProps, extractDocuments(), lucide-react (+1 more)
 
 ### Community 92 - "LP-8. Hero Composition and Interactive Behavior"
 Cohesion: 0.50
@@ -451,89 +461,99 @@ Nodes (4): Global rules, LP-10. Detailed Scroll and Motion Choreography, Optiona
 Cohesion: 0.23
 Nodes (15): AdjudicationMatrixPane(), DecisionActionPane(), AgentNetwork(), AGENTS, AuditWorkspace(), CalculationBoard(), FederationWorkspace(), formatValue() (+7 more)
 
-### Community 95 - "4. Hackathon Context and Verified Requirements"
-Cohesion: 0.67
-Nodes (3): 4.1 Publicly verified event facts, 4.2 Design implications of scoring, 4. Hackathon Context and Verified Requirements
+### Community 95 - "postgres"
+Cohesion: 0.07
+Nodes (31): resources, POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER, interval, retries, test, timeout (+23 more)
 
 ### Community 96 - "5. Track Selection and Rationale"
 Cohesion: 0.67
 Nodes (3): 5.1 Weighted fit comparison, 5.2 Recommendation, 5. Track Selection and Rationale
 
 ### Community 97 - "test_security_redteam_fixes.py"
-Cohesion: 0.21
+Cohesion: 0.22
 Nodes (4): client(), test_health_reports_fallback_on_placeholder_key(), test_signoff_idempotence_rejects_duplicate_approval(), test_signoff_requires_api_key_when_configured()
 
 ### Community 100 - "2. Detailed Stack Components"
-Cohesion: 0.20
+Cohesion: 0.22
 Nodes (9): 1. High-Level Architecture Overview, 2.1 Frontend & User Experience, 2.2 Backend & Core Services, 2.3 Mandatory Sponsor Integrations, 2.4 Deterministic & Symbolic Engines (Python), 2. Detailed Stack Components, 3. Environment & Deployment Footprint, 8. Definition of Done (Pre-Submission Checklist) (+1 more)
 
 ### Community 101 - "evals/page.tsx"
-Cohesion: 0.21
-Nodes (8): EvaluationRow, EvaluationsPage(), runBenchmark(), FEATURED_CASES, metadata, fetchEvalsResults(), runEvalsBenchmark(), next
+Cohesion: 0.19
+Nodes (9): next@^15.1.0, EvaluationRow, EvaluationsPage(), runBenchmark(), FEATURED_CASES, metadata, fetchEvalsResults(), runEvalsBenchmark() (+1 more)
 
 ### Community 102 - "2. Repository Analysis and Product Understanding"
 Cohesion: 0.40
 Nodes (5): 2.1 Actual product purpose, 2.3 Current data and execution sequence, 2.4 Present implementation truth and limitations, 2.5 Baseline verification, 2. Repository Analysis and Product Understanding
 
 ### Community 103 - "api.ts"
-Cohesion: 0.33
-Nodes (10): DOCUMENT_OPTIONS, EvidenceIntake(), EvidenceIntakeProps, fieldValue(), acceptCaseEvidence(), approveHumanAction(), caseDocumentUrl(), createExaminationCase() (+2 more)
+Cohesion: 0.23
+Nodes (13): DOCUMENT_OPTIONS, EvidenceIntake(), EvidenceIntakeProps, fieldValue(), INITIAL_FORM, NewCaseDialog(), NewCaseDialogProps, acceptCaseEvidence() (+5 more)
 
 ### Community 104 - "12. Selected Art Direction and Design Rationale"
 Cohesion: 0.67
 Nodes (3): 12. Selected Art Direction and Design Rationale, Copy voice, Signature moment
 
+### Community 105 - "2. Detailed Technical Implementations"
+Cohesion: 0.20
+Nodes (9): 1. Executive Summary, 2.1 Demo Integrity & Runtime Truthfulness (Phase P0), 2.3 Official Legal Rule Registry (Phase P2), 2.4 Federated Risk & Multi-Sponsor Telemetry (Phase P3), 2.5 Examiner Terminal UI & Verification Display (Phase P4), 2. Detailed Technical Implementations, 3. Verification & Compliance Matrix, 4. Key Upgraded Files (+1 more)
+
 ### Community 107 - "2.1 What is already unusually strong"
 Cohesion: 0.33
 Nodes (6): 2.1 What is already unusually strong, The action model is better than a binary pass/fail, The domain choice has real consequence, The federation query is intentionally join-safe, The neuro-symbolic boundary is directionally correct, The repository is operationally legible
 
-### Community 108 - "⚡ Quickstart (Local Development)"
-Cohesion: 0.40
-Nodes (5): 1. Clone & Configure, 2. Start PostgreSQL & Redis, 3. Run Automated Tests, 4. Start Development Servers, ⚡ Quickstart (Local Development)
+### Community 108 - "The Weight of Evidence"
+Cohesion: 0.29
+Nodes (7): Creative direction, Critical evaluation and QA contract, Design and motion system, Feature coverage matrix, Technical architecture and production phases, The Weight of Evidence, Timed storyboard and camera grammar
 
 ### Community 109 - "VERITAS-600: Project Execution & Agent Continuity Tracker"
-Cohesion: 0.25
+Cohesion: 0.40
 Nodes (5): 📝 Agent Protocol (Follow Every Turn), 🚦 Current Project Status at a Glance, 🔒 Invariant Engineering Rules (Do Not Violate), VERITAS-600: Project Execution & Agent Continuity Tracker, 👉 WHERE TO START NEXT (For the Next Agent)
 
-### Community 110 - "VERITAS-600 Security Red Team Remediation Report"
-Cohesion: 0.33
-Nodes (6): 1. Executive Summary, 3. Verification & Test Evidence, 4. Conclusion, Automated Backend Test Suite, Frontend Production Build, VERITAS-600 Security Red Team Remediation Report
+### Community 110 - "VERITAS-600 launch-film research"
+Cohesion: 0.29
+Nodes (7): 1. Evidence and creative references, 2. Production technology comparison, 3. Female narration and alignment, 4. Mandatory root reference analysis, 5. Product truth and design inspection, First 5–10 seconds, rhythm, typography and sound, VERITAS-600 launch-film research
 
 ### Community 111 - "LP-12. Light and Dark Theme Specifications"
 Cohesion: 0.50
 Nodes (4): Dark, equivalent—not inverted, Light, primary, LP-12. Light and Dark Theme Specifications, Theme behavior
 
-### Community 112 - "3. Core Technical Differentiation (The 3 Pillars)"
-Cohesion: 0.50
-Nodes (4): 3. Core Technical Differentiation (The 3 Pillars), Pillar 1: Strict Neuro-Symbolic Split (Hard Invariant Rule), Pillar 2: Stateful Amendment Memory (Art. 10(c) & 10(e) Quarantine), Pillar 3: Cross-Silo Risk & Bank-Officer Action Engine (With Human-in-the-Loop Gate)
+### Community 112 - "7. Phase-by-Phase Execution Plan"
+Cohesion: 0.29
+Nodes (7): 7. Phase-by-Phase Execution Plan, Phase 1: Sponsor Preflight, Data Seeding & Join-Safe Zetaris Federation, Phase 2: Stateful Amendment Memory & Deterministic UCP 600 Engine, Phase 3: Meterless Integration, Nemotron Live Extraction & Legal Adjudicator, Phase 4: Bank Decision Engine, MT734 / AML Generators & FastAPI SSE Backend, Phase 5: High-Craft 3-Pane Bank Examiner Terminal (Next.js), Phase 6: Honest Empirical Baseline Comparison & Final Polish
 
 ### Community 113 - "6. Contemporary UI/UX Research (Through October 2026)"
 Cohesion: 0.50
 Nodes (4): 6.1 Research synthesis, 6.2 Product-level conclusions, 6.3 Research limitations, 6. Contemporary UI/UX Research (Through October 2026)
 
-### Community 114 - "LP-16. React Component Architecture"
+### Community 114 - "schema.sql"
+Cohesion: 0.53
+Nodes (5): examination_audit_log, idx_audit_log_lc_id, idx_lc_amendments_lc_id, lc_amendments, lc_master
+
+### Community 117 - "3. Core Technical Differentiation (The 3 Pillars)"
 Cohesion: 0.50
-Nodes (4): LP-16. React Component Architecture, Proposed landing files, Proposed tree, Server/client policy
+Nodes (4): 3. Core Technical Differentiation (The 3 Pillars), Pillar 1: Strict Neuro-Symbolic Split (Hard Invariant Rule), Pillar 2: Stateful Amendment Memory (Art. 10(c) & 10(e) Quarantine), Pillar 3: Cross-Silo Risk & Bank-Officer Action Engine (With Human-in-the-Loop Gate)
+
+### Community 118 - "18. Animation and Visualization Technology Decisions"
+Cohesion: 0.50
+Nodes (4): 18. Animation and Visualization Technology Decisions, Acceptance gate, Chosen stack, Evaluated alternatives
 
 ## Knowledge Gaps
-- **10 isolated node(s):** `clsx`, `react-dom`, `tailwind-merge`, `@types/node`, `@types/react` (+5 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 734 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `VERITAS-600 UI/UX Redesign Blueprint` connect `VERITAS-600 UI/UX Redesign Blueprint` to `5. Track Selection and Rationale`, `3. Existing Functionality Inventory`, `2. Repository Analysis and Product Understanding`, `10. Information Architecture and User Journeys`, `11. Three Creative Directions`, `12. Selected Art Direction and Design Rationale`, `15.2 `/examine` — Examination terminal`, `14. Complete Light/Dark Design System`, `6. Contemporary UI/UX Research (Through October 2026)`, `13. Brand and Visual Identity`, `9. Target Users and UX Research`, `4. Hackathon Context and Verified Requirements`?**
-  _High betweenness centrality (0.271) - this node is a cross-community bridge._
+- **Why does `VERITAS-600 UI/UX Redesign Blueprint` connect `VERITAS-600 UI/UX Redesign Blueprint` to `5. Track Selection and Rationale`, `3. Existing Functionality Inventory`, `2. Repository Analysis and Product Understanding`, `10. Information Architecture and User Journeys`, `11. Three Creative Directions`, `12. Selected Art Direction and Design Rationale`, `15.2 `/examine` — Examination terminal`, `14. Complete Light/Dark Design System`, `6. Contemporary UI/UX Research (Through October 2026)`, `13. Brand and Visual Identity`, `9. Target Users and UX Research`?**
+  _High betweenness centrality (0.276) - this node is a cross-community bridge._
 - **Are the 16 inferred relationships involving `ZetarisFederationClient` (e.g. with `BaselineComparisonSuite` and `test_join_safe_single_row_guarantee()`) actually correct?**
   _`ZetarisFederationClient` has 16 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `clsx`, `react-dom`, `tailwind-merge` to the rest of the system?**
-  _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AmendmentMemoryEngine` be split into smaller, more focused modules?**
-  _Cohesion score 0.05909090909090909 - nodes in this community are weakly interconnected._
-- **Why does `2. Repository Analysis and Product Understanding` connect `2. Repository Analysis and Product Understanding` to `AmendmentMemoryEngine`, `VERITAS-600 UI/UX Redesign Blueprint`?**
-  _High betweenness centrality (0.249) - this node is a cross-community bridge._
+  _Cohesion score 0.09915966386554621 - nodes in this community are weakly interconnected._
+- **Why does `2. Repository Analysis and Product Understanding` connect `2. Repository Analysis and Product Understanding` to `VERITAS-600 UI/UX Redesign Blueprint`, `UCP600DeterministicEngine`?**
+  _High betweenness centrality (0.248) - this node is a cross-community bridge._
 - **Are the 5 inferred relationships involving `CaseStore` (e.g. with `3.16. Durable Case Authorization Storage` and `5. P2 — Medium findings`) actually correct?**
   _`CaseStore` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Category P0: Correctness & Logic Bugs` be split into smaller, more focused modules?**
-  _Cohesion score 0.06060606060606061 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07142857142857142 - nodes in this community are weakly interconnected._
+- **Why does `2.2 What makes the architecture distinctive` connect `UCP600DeterministicEngine` to `AmendmentMemoryEngine`, `2. Detailed Remediations by Vulnerability`, `test_legal_adjudicator.py`, `2. Repository Analysis and Product Understanding`, `DocumentExtractor`, `.compute_telemetry`, `ZetarisFederationClient`?**
+  _High betweenness centrality (0.238) - this node is a cross-community bridge._

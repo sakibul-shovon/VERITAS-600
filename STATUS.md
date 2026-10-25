@@ -11,11 +11,11 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 12 Launch Film — research complete; production and render QA in progress** |
-| **Overall Progress** | **Phases 0–11 complete & verified. All 19 security findings from red-team audit remediated. 58/58 pytest suite green. Next.js 15 production build passes cleanly.** |
-| **Active Task** | Produce the 174-second light-theme launch film in sibling workspace `H:/Projects/VERITAS-600-video`. |
+| **Current Phase** | **Phase 12 Launch Film — research and first 1080p review cut complete & technically verified** |
+| **Overall Progress** | **Phases 0–11 verified. Phase 12 research, storyboard, capture, narration, captions, music and first film cut complete. 58/58 backend tests and Next.js production build pass.** |
+| **Active Task** | First review cut delivered: `H:/Projects/VERITAS-600-video/out/VERITAS-600-launch-1080p.mp4`. |
 | **Last Updated** | 2026-10-25 |
-| **Next Action Item** | **Finish full-motion preview, master render and audiovisual QA; then hackathon submission review.** |
+| **Next Action Item** | **Creative/listening review of the launch film; production deployment & hackathon submission review.** |
 
 ```
 [CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED]
@@ -25,7 +25,7 @@
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
 
-0. **Launch film (active):** See [research](docs/video/research.md), [production blueprint and feature coverage](docs/video/production-plan.md), and [narration script](docs/video/script.json). Research finished before production under the user's explicit authorization. The isolated sibling workspace contains the Remotion source, actual light-theme product captures, measured phrase captions, female Kokoro narration and original procedural score. All actions remain pending human sign-off; no external dispatch is performed. Fresh verification: 58/58 backend tests and Next.js production build pass. Preview/master QA is still in progress.
+0. **Launch film (first review cut complete):** See [delivery notes](docs/video/README.md), [research](docs/video/research.md), [production blueprint and feature coverage](docs/video/production-plan.md), [narration](docs/video/script.json), and [technical QA](docs/video/qa-report.json). The isolated sibling workspace `H:/Projects/VERITAS-600-video` contains the editable Remotion source and final MP4. Output: 174.016 seconds, 1920×1080 at 30 fps, H.264/AAC, BT.709 limited range, 50 audio-derived caption phrases, SRT/VTT sidecars, poster and contact sheet. Full decode succeeds; zero black intervals; encoded audio −14.10 LUFS / −1.16 dBTP. Thirty sampled master frames were visually inspected. Actual light-theme product captures and synthetic PDF intake are used; cloud fallbacks and pending human sign-off stay explicit. No external dispatch was performed. Human creative/listening review remains appropriate before submission. Fresh product verification: 58/58 backend tests and Next.js production build pass.
 
 1. **Security & Audit Reports:**
    - [SECURITY_REMEDIATION_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_REMEDIATION_REPORT.md) — Comprehensive technical documentation of all 19 remediated vulnerabilities and verification proofs.
@@ -262,6 +262,18 @@
 - [x] **Comprehensive Documentation:** Created [SECURITY_REMEDIATION_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_REMEDIATION_REPORT.md) detailing all root causes and verification proofs.
 
 ---
+
+### Phase 12: Cinematic Launch Film — First Review Cut Complete
+
+- [x] Complete source-backed production research and inspect the mandatory `video prompt.txt` reference before production.
+- [x] Inventory implemented functionality, inspect the running light theme, and write the feature coverage matrix, 174-second storyboard and narration script.
+- [x] Create the isolated sibling production workspace with pinned Remotion/React/Playwright tooling.
+- [x] Capture the real application, four synthetic PDF uploads, reviewed evidence acceptance, five-stage execution and all three proposed outcomes.
+- [x] Produce female Kokoro narration, 50 sample-timed caption phrases, SRT/VTT, original music and sound effects.
+- [x] Render the full 540p preview and 1080p30 first review cut; verify decode, runtime, color, loudness and representative master frames.
+- [x] Retain honest `LOCAL_DUCKDB_FALLBACK`, `CACHED_REPLAY`, local routing and pending human authorization; perform no bank action or external dispatch.
+- [x] Re-verify 58/58 backend tests and the Next.js production build; refresh the knowledge graph.
+- [ ] Complete human creative/listening review and any subsequent polish before hackathon submission.
 
 ## 🔒 Invariant Engineering Rules (Do Not Violate)
 

@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "STATUS.md": {
-    "mtime": 1792841962.1033154,
-    "seen": 1792842012.420795,
-    "ast_hash": "b4caa8f9bbba1914862e34efe56a900b",
+    "mtime": 1792945934.4432528,
+    "seen": 1792946132.6453965,
+    "ast_hash": "216c27fa27567ae1ca92ce1267bda386",
     "semantic_hash": ""
   },
   "apps/api/requirements.txt": {
@@ -549,6 +549,42 @@
     "mtime": 1792841909.6770356,
     "seen": 1792842012.420795,
     "ast_hash": "5c3ca1ca1161532cdd87d80704533529",
+    "semantic_hash": ""
+  },
+  "apps/api/db/schema.sql": {
+    "mtime": 1792667166.4470387,
+    "seen": 1792946132.6181293,
+    "ast_hash": "66b1cc738d0f9bcc6334972b2b896167",
+    "semantic_hash": ""
+  },
+  "apps/api/zetaris/sql/federated_check.sql": {
+    "mtime": 1792839102.2290769,
+    "seen": 1792946132.630668,
+    "ast_hash": "becc01955dc9789d1c0ec914de3877b5",
+    "semantic_hash": ""
+  },
+  "docs/video/script.json": {
+    "mtime": 1792945163.0627732,
+    "seen": 1792946132.6433785,
+    "ast_hash": "a8355dbf545abf626a6b3aa763258ea5",
+    "semantic_hash": ""
+  },
+  "docs/video/production-plan.md": {
+    "mtime": 1792945622.2972898,
+    "seen": 1792946132.646389,
+    "ast_hash": "72c76dfbdf9583a209940868fd077fc9",
+    "semantic_hash": ""
+  },
+  "docs/video/research.md": {
+    "mtime": 1792945622.291232,
+    "seen": 1792946132.646389,
+    "ast_hash": "323bb85f1b428135ca3159372b86396c",
+    "semantic_hash": ""
+  },
+  "video prompt.txt": {
+    "mtime": 1792943250.679178,
+    "seen": 1792946132.6473885,
+    "ast_hash": "0109e2d407c80abc6284cbc321e72b88",
     "semantic_hash": ""
   }
 }

@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "STATUS.md": {
-    "mtime": 1792945934.4432528,
-    "seen": 1792946132.6453965,
-    "ast_hash": "216c27fa27567ae1ca92ce1267bda386",
+    "mtime": 1792947426.1475918,
+    "seen": 1792947435.3318093,
+    "ast_hash": "3cb3487dd9db430698990cd7bd762375",
     "semantic_hash": ""
   },
   "apps/api/requirements.txt": {
@@ -585,6 +585,18 @@
     "mtime": 1792943250.679178,
     "seen": 1792946132.6473885,
     "ast_hash": "0109e2d407c80abc6284cbc321e72b88",
+    "semantic_hash": ""
+  },
+  "docs/video/qa-report.json": {
+    "mtime": 1792947426.9236631,
+    "seen": 1792947435.3288124,
+    "ast_hash": "7f3f9da0e6f25f386df589be65038a1a",
+    "semantic_hash": ""
+  },
+  "docs/video/README.md": {
+    "mtime": 1792947426.1485927,
+    "seen": 1792947435.3318093,
+    "ast_hash": "2a70c93082b2ad12f9724c70c91c15c4",
     "semantic_hash": ""
   }
 }
