@@ -11,11 +11,11 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 11 Adversarial Red-Team Remediation ✅ [COMPLETED & VERIFIED] on `main`** |
+| **Current Phase** | **Phase 12 Launch Film — research complete; production and render QA in progress** |
 | **Overall Progress** | **Phases 0–11 complete & verified. All 19 security findings from red-team audit remediated. 58/58 pytest suite green. Next.js 15 production build passes cleanly.** |
-| **Active Task** | Complete & Verified. Zero open security issues. |
-| **Last Updated** | 2026-10-24 |
-| **Next Action Item** | **Production deployment & hackathon submission review.** |
+| **Active Task** | Produce the 174-second light-theme launch film in sibling workspace `H:/Projects/VERITAS-600-video`. |
+| **Last Updated** | 2026-10-25 |
+| **Next Action Item** | **Finish full-motion preview, master render and audiovisual QA; then hackathon submission review.** |
 
 ```
 [CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED]
@@ -24,6 +24,8 @@
 ---
 
 ## 👉 WHERE TO START NEXT (For the Next Agent)
+
+0. **Launch film (active):** See [research](docs/video/research.md), [production blueprint and feature coverage](docs/video/production-plan.md), and [narration script](docs/video/script.json). Research finished before production under the user's explicit authorization. The isolated sibling workspace contains the Remotion source, actual light-theme product captures, measured phrase captions, female Kokoro narration and original procedural score. All actions remain pending human sign-off; no external dispatch is performed. Fresh verification: 58/58 backend tests and Next.js production build pass. Preview/master QA is still in progress.
 
 1. **Security & Audit Reports:**
    - [SECURITY_REMEDIATION_REPORT.md](file:///h:/Projects/VERITAS-600/SECURITY_REMEDIATION_REPORT.md) — Comprehensive technical documentation of all 19 remediated vulnerabilities and verification proofs.
