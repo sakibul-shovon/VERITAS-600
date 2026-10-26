@@ -47,12 +47,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allowed origins for Next.js frontend (ports 3000 / 3001)
+# Allowed origins for Next.js frontend (local dev & production domains)
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "http://localhost:3006",
+    "http://127.0.0.1:3006",
+    "https://veritas.165.99.219.253.sslip.io",
+    "http://veritas.165.99.219.253.sslip.io",
 ]
 
 app.add_middleware(
