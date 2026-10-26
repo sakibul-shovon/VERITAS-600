@@ -12,10 +12,10 @@
 | Attribute | Current Value |
 | :--- | :--- |
 | **Current Phase** | **Phase 15 — Live Production Cloud Deployment Complete (HTTPS Verified)** |
-| **Overall Progress** | **Live public deployment operational at `https://veritas.165.99.219.253.sslip.io` with trusted Let's Encrypt SSL, hidden directory isolation (`/home/.veritas-600`), immutable code lock (`chattr +i`), dual systemd services (backend: 8006, frontend: 3006), and CLI manager (`manage-veritas`).** |
+| **Overall Progress** | **Live public deployment operational at `https://veritas.165.99.219.253.sslip.io` with Let's Encrypt SSL. Complete international documentation suite delivered in `docs/` (`ARCHITECTURE.md`, `DOMAIN_SPEC_UCP600.md`, `SPONSORS.md`, `SCENARIOS_AND_EVALS.md`, `DEPLOYMENT_AND_SECURITY.md`, `SUBMISSION_DRAFT.md`), along with world-class flagship `README.md`.** |
 | **Active Task** | Final hackathon portal submission dispatch for Plan_C (Sakibul Hassan Shovon). |
 | **Last Updated** | 2026-10-27 |
-| **Next Action Item** | **Paste public live link (`https://veritas.165.99.219.253.sslip.io`) and `docs/SUBMISSION_DRAFT.md` into hackathon submission portal.** |
+| **Next Action Item** | **Paste public live link (`https://veritas.165.99.219.253.sslip.io`) and `docs/SUBMISSION_DRAFT.md` into hackathon portal and submit.** |
 
 ```
 [CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED] [SUBMISSION PACKAGING: VERIFIED 5/5] [PHASE 15: LIVE VPS DEPLOYED & HTTPS VERIFIED]
