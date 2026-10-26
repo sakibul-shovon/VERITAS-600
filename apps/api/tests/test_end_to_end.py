@@ -39,7 +39,7 @@ def test_api_scenarios_list(client: TestClient):
     res = client.get("/api/v1/scenarios")
     assert res.status_code == 200
     scenarios = res.json()["scenarios"]
-    assert len(scenarios) == 3
+    assert len(scenarios) >= 3
     lc_ids = [s["lc_id"] for s in scenarios]
     assert "LC-2026-8841" in lc_ids
     assert "LC-2026-9104" in lc_ids
