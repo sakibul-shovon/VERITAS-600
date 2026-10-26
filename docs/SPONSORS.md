@@ -8,27 +8,27 @@
 
 ---
 
-## 🏛️ Executive Summary of Sponsor Integrations
+## Executive Summary of Sponsor Integrations
 
 Every sponsor technology in VERITAS-600 was chosen to solve a concrete, load-bearing challenge in trade finance adjudication. None of these integrations are superficial wrappers or mock demonstrations; each is deeply integrated, tested in automated CI suites, and exposed with **honest runtime telemetry**:
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                               VERITAS-600 SPONSOR STACK                                 |
+| VERITAS-600 SPONSOR STACK                                 |
 +-------------------+-----------------------------------+---------------------------------+
 | SPONSOR           | LOAD-BEARING ARCHITECTURAL ROLE   | CODE LOCATION                   |
 +-------------------+-----------------------------------+---------------------------------+
 | Zetaris           | In-Situ 3-Silo SQL Federation     | apps/api/zetaris/client.py      |
-|                   | (Zero-ETL cross-database join)    | apps/api/zetaris/sql/           |
+| | (Zero-ETL cross-database join)    | apps/api/zetaris/sql/           |
 +-------------------+-----------------------------------+---------------------------------+
 | Meterless         | Context Routing & Stateful        | apps/api/inference/             |
-|                   | Amendment Memory Engine           | apps/api/memory/                |
+| | Amendment Memory Engine           | apps/api/memory/                |
 +-------------------+-----------------------------------+---------------------------------+
 | NVIDIA Nemotron   | Multimodal OCR Bounding Boxes &   | apps/api/inference/nim_client.py|
-|                   | UCP 600 / ISBP 745 Legal Judge    | apps/api/engines/               |
+| | UCP 600 / ISBP 745 Legal Judge    | apps/api/engines/               |
 +-------------------+-----------------------------------+---------------------------------+
 | Cursor            | AI-Native Development & Boundary  | .cursorrules                    |
-|                   | Enforcement Architecture          | AGENTS.md                       |
+| | Enforcement Architecture          | AGENTS.md                       |
 +-------------------+-----------------------------------+---------------------------------+
 ```
 

@@ -6,24 +6,24 @@
 
 ---
 
-## 🎯 The 3 Flagship Golden Scenarios
+## The 3 Flagship Golden Scenarios
 
 VERITAS-600 is grounded in three high-consequence scenarios that reflect the most frequent and costly failure modes of commercial trade finance operations:
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                              THE 3 GOLDEN FLAGSHIP SCENARIOS                            |
+| THE 3 GOLDEN FLAGSHIP SCENARIOS                            |
 +-------------------+-----------------------------------+---------------------------------+
 | SCENARIO          | OPERATIONAL CHALLENGE             | OUTCOME & LEGAL RESOLUTION      |
 +-------------------+-----------------------------------+---------------------------------+
 | LC-2026-8841      | Typo ("Mashine") + General Goods  | APPROVE_HONOUR                  |
-|                   | on B/L + Amendment Lifecycle      | (Protected by ISBP 745 Para A23)|
+| | on B/L + Amendment Lifecycle      | (Protected by ISBP 745 Para A23)|
 +-------------------+-----------------------------------+---------------------------------+
 | LC-2026-9104      | Insurance Shortfall (108% vs 110%)| ISSUE_MT734_REFUSAL             |
-|                   | + Open 11-Day Presentation Window | (Quantified Demurrage Advisory) |
+| | + Open 11-Day Presentation Window | (Quantified Demurrage Advisory) |
 +-------------------+-----------------------------------+---------------------------------+
 | LC-2026-9920      | Clean Paper Docs + 500% TBML      | COMPLIANCE_HOLD_AML             |
-|                   | Price Anomaly (Z=+5.4) & Sanctions| (Non-MT734 Regulatory Freeze)   |
+| | Price Anomaly (Z=+5.4) & Sanctions| (Non-MT734 Regulatory Freeze)   |
 +-------------------+-----------------------------------+---------------------------------+
 ```
 
@@ -96,7 +96,7 @@ VERITAS-600 is grounded in three high-consequence scenarios that reflect the mos
 
 ---
 
-## 📊 Empirical Baseline Benchmark Evaluation (10 Test Cases)
+## Empirical Baseline Benchmark Evaluation (10 Test Cases)
 
 To empirically prove Track 03 reasoning superiority, VERITAS-600 includes an automated evaluation suite (`apps/api/evals/compare_baselines.py`) testing 10 adversarial cases across three architectures:
 
@@ -115,9 +115,7 @@ To empirically prove Track 03 reasoning superiority, VERITAS-600 includes an aut
 | **Arithmetic Hallucination Rate** | 0.0% (0/10) | **20.0%** (2/10) | **0.0%** (0/10) |
 | **Average Decision Latency** | 12ms | 1,840ms | **428ms** |
 | **ICC UCP 600 Citation Precision** | 100% | 65.0% | **100.0%** |
-| **Token Consumption per Case** | 0 tokens | ~8,400 tokens | **~1,250 tokens (85% reduction)** |
-
-### Key Benchmark Takeaways
+| **Token Consumption per Case** | 0 tokens | ~8,400 tokens | **~1,250 tokens (85% reduction)** | ### Key Benchmark Takeaways
 1. **Zero Wrongful Dishonor:** Architecture A caused 3 major wrongful dishonors on harmless typographical errors and general goods descriptions. VERITAS-600 scored 0% wrongful dishonor by correctly applying ISBP 745 Para A23 and UCP 600 Art. 14(e).
 2. **Zero Financial Crime Leakage:** Both Architecture A and B completely missed the 3 TBML / Sanctions fraud scenarios because they lacked in-situ data federation. VERITAS-600 caught 100% of price anomalies and sanctions hits via Zetaris.
 3. **Zero Math Hallucination:** Architecture B misjudged insurance percentages and weight mismatches. VERITAS-600's Hard Invariant guarantees 100% arithmetic precision.

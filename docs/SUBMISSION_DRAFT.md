@@ -8,13 +8,13 @@
 
 ---
 
-## 📌 Quick Summary / Elevator Pitch (1–2 sentences)
+## Quick Summary / Elevator Pitch (1–2 sentences)
 
 **VERITAS-600** is an autonomous trade finance adjudication engine designed for bank documentary credit examiners. It replaces brittle regex checks and hallucinatory LLMs with a neuro-symbolic reasoning architecture that enforces ICC UCP 600 and ISBP 745 standards, prevents multi-million dollar wrongful dishonors, and surfaces hidden TBML financial crimes across federated data silos.
 
 ---
 
-## 🔗 Submission Assets & Verification Links
+## Submission Assets & Verification Links
 
 * **Source Code Repository:** [github.com/sakibul-shovon/VERITAS-600](https://github.com/sakibul-shovon/VERITAS-600)
 * **Live Web Application (Public HTTPS):** [https://veritas.165.99.219.253.sslip.io](https://veritas.165.99.219.253.sslip.io)
@@ -33,7 +33,7 @@
 
 ---
 
-## 💡 Project Description & Platform Write-Up
+## Project Description & Platform Write-Up
 
 ### 1. Inspiration & The High-Stakes Problem
 
@@ -66,9 +66,7 @@ VERITAS-600 acts as an intelligent co-pilot and automated adjudication terminal 
 | :--- | :--- | :--- | :--- |
 | **`LC-2026-8841`**<br>*(Wrongful Dishonor Trap)* | Invoice contains harmless typo (`"Industrial AC Servo Mashine"`), B/L uses general description (`"Servo Motors"`), shipment follows Accepted Amendment #1. | **Regex Baseline:** Wrongfully dishonors due to typo.<br>**Flat RAG:** Rejects shipment date due to unaccepted amendment confusion. | **`APPROVE_HONOUR`**: Adjudicates typo as compliant under **ISBP 745 Para A23** and general description under **Art. 14(e)**, protecting the bank from litigation. |
 | **`LC-2026-9104`**<br>*(Curable Shortfall & Demurrage Save)* | Insurance coverage is 108% CIF (minimum 110% required under **Art. 28(f)(ii)**) + packing gross weight mismatch. 11 days remain in presentation window. | **Pure LLM Baseline:** Hallucinates math or cites wrong articles. | **`ISSUE_MT734_REFUSAL`**: Computes exact \$9,600 shortfall. Attaches Demurrage Advisory showing quantifiable \$11,100 port savings if cured within 48 hours. |
-| **`LC-2026-9920`**<br>*(TBML & Sanctions Freeze)* | Paper documents are 100% compliant on face. Unit price is 5x market distribution ($Z = +23.1\sigma$) and vessel owner is on OFAC/sanctions list. | **Document-Only Agent:** Marks compliant, missing financial crime. | **`COMPLIANCE_HOLD_AML`**: Zetaris federation flags price anomaly and sanctions hit. Freezes payment and issues AML Escalation Dossier. |
-
----
+| **`LC-2026-9920`**<br>*(TBML & Sanctions Freeze)* | Paper documents are 100% compliant on face. Unit price is 5x market distribution ($Z = +23.1\sigma$) and vessel owner is on OFAC/sanctions list. | **Document-Only Agent:** Marks compliant, missing financial crime. | **`COMPLIANCE_HOLD_AML`**: Zetaris federation flags price anomaly and sanctions hit. Freezes payment and issues AML Escalation Dossier. | ---
 
 ### 4. Sponsor Technologies Integration
 
@@ -77,9 +75,7 @@ VERITAS-600 acts as an intelligent co-pilot and automated adjudication terminal 
 | **Zetaris** | Federated Data Virtualization | Implemented in `apps/api/zetaris/client.py` and `sql/federated_check.sql`. Queries 3 disparate silos (PostgreSQL trade DB + Parquet customs distributions + OpenSanctions JSON) in a single join-safe CTE query returning 1 row per LC. Includes automatic DuckDB fallback when cloud endpoints are offline. |
 | **Meterless** | Context Routing & State Memory | Implemented in `apps/api/inference/meterless_router.py` and `apps/api/memory/amendment_memory.py`. Enforces a 6-stage Markovian pipeline routing tailored context packets to each stage, eliminating prompt clutter and managing stateful MT707 transitions under Art. 10(c)/(e). |
 | **NVIDIA Nemotron** | Multimodal OCR & Legal Reasoning | Integrated via NVIDIA NIM (`apps/api/inference/nim_client.py` & `apps/api/engines/ucp600_legal_adjudicator.py`) using `nemotron-super-49b` and vision models. Features 25 RPM token-bucket rate limiting and SHA-256 deterministic response caching. |
-| **Cursor** | AI-Native Development Governance | Governed by `.cursorrules` and `AGENTS.md` enforcing the 5 Inviolable Architectural Invariants and strict domain boundaries between symbolic calculations and neural reasoning. |
-
----
+| **Cursor** | AI-Native Development Governance | Governed by `.cursorrules` and `AGENTS.md` enforcing the 5 Inviolable Architectural Invariants and strict domain boundaries between symbolic calculations and neural reasoning. | ---
 
 ### 5. Technical Stack & Clean Architecture
 

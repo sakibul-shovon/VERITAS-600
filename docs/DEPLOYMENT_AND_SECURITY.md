@@ -6,7 +6,7 @@
 
 ---
 
-## 🌐 1. Live Public Endpoints
+## 1. Live Public Endpoints
 
 The application is hosted on an enterprise cloud VPS and exposed to the public internet with a valid, trusted **Let's Encrypt SSL/TLS Certificate** via `sslip.io`:
 
@@ -16,40 +16,38 @@ The application is hosted on an enterprise cloud VPS and exposed to the public i
 | **Bank Examiner Terminal** | [https://veritas.165.99.219.253.sslip.io/examine](https://veritas.165.99.219.253.sslip.io/examine) | 3-Pane Mission Control & Adjudication Workbench |
 | **Evaluations Casebook** | [https://veritas.165.99.219.253.sslip.io/evals](https://veritas.165.99.219.253.sslip.io/evals) | 3-Architecture Benchmark Comparison Dashboard |
 | **API Telemetry & Health** | [https://veritas.165.99.219.253.sslip.io/api/v1/health](https://veritas.165.99.219.253.sslip.io/api/v1/health) | Ground-Truth Health & Sponsor Telemetry |
-| **Real-Time SSE Stream** | [https://veritas.165.99.219.253.sslip.io/api/v1/examine/LC-2026-8841?stream=true](https://veritas.165.99.219.253.sslip.io/api/v1/examine/LC-2026-8841?stream=true) | Live Server-Sent Events Adjudication Pipeline |
-
-*(All HTTP requests automatically redirect to HTTPS with 301 Moved Permanently).*
+| **Real-Time SSE Stream** | [https://veritas.165.99.219.253.sslip.io/api/v1/examine/LC-2026-8841?stream=true](https://veritas.165.99.219.253.sslip.io/api/v1/examine/LC-2026-8841?stream=true) | Live Server-Sent Events Adjudication Pipeline | *(All HTTP requests automatically redirect to HTTPS with 301 Moved Permanently).*
 
 ---
 
-## 🛡️ 2. Shared VPS Multi-Tenant Security Shield
+## 2. Shared VPS Multi-Tenant Security Shield
 
 Because this server is hosted in a shared environment where multiple team members have `root` credentials, VERITAS-600 employs an **operating-system-level defense-in-depth shield**:
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                                4-TIER VPS SECURITY SHIELD                               |
+| 4-TIER VPS SECURITY SHIELD                               |
 +-----------------------------------------------------------------------------------------+
 | 1. Isolated Hidden Directory:                                                           |
-|    Installed exclusively under /home/.veritas-600 (hidden from default ls views).      |
-|                                                                                         |
+| Installed exclusively under /home/.veritas-600 (hidden from default ls views).      |
+| |
 | 2. Linux Kernel Immutable Lock (chattr +i):                                            |
-|    Core source files and data sets are protected with the +i flag.                      |
-|    Even the root user cannot accidentally delete or modify files without unlocking.     |
-|                                                                                         |
+| Core source files and data sets are protected with the +i flag.                      |
+| Even the root user cannot accidentally delete or modify files without unlocking.     |
+| |
 | 3. Systemd Auto-Restart Watchdogs:                                                      |
-|    veritas-backend.service (port 8006) and veritas-frontend.service (port 3006).        |
-|    Automatically restarts services within 2 seconds of process termination or reboot.   |
-|                                                                                         |
+| veritas-backend.service (port 8006) and veritas-frontend.service (port 3006).        |
+| Automatically restarts services within 2 seconds of process termination or reboot.   |
+| |
 | 4. Dedicated Nginx Reverse Proxy with Zero-Interference:                                |
-|    Configured under /etc/nginx/sites-available/veritas.                                 |
-|    Preserves existing co-located services (Pathwarden, Underwrite, Claim-Check).        |
+| Configured under /etc/nginx/sites-available/veritas.                                 |
+| Preserves existing co-located services (Pathwarden, Underwrite, Claim-Check).        |
 +-----------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🛠️ 3. Server Management Tool (`manage-veritas`)
+## 3. Server Management Tool (`manage-veritas`)
 
 To manage, update, or inspect the running deployment, an authenticated CLI management utility is installed at `/usr/local/bin/manage-veritas`:
 
@@ -87,7 +85,7 @@ Select an option [1-7]:
 
 ---
 
-## 🔒 4. The 19 Remediated Security Red-Team Findings (Phase 11)
+## 4. The 19 Remediated Security Red-Team Findings (Phase 11)
 
 During Phase 11 adversarial testing, 19 vulnerabilities were identified, remediated, and validated with 58 automated regression tests:
 

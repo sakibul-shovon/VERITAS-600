@@ -14,20 +14,20 @@ Under **UCP 600 Art. 4** and **Art. 5**, documentary credit operations deal excl
 
 ```
 +------------------------------------------------------------------------------------+
-|                         THE 5-BANKING-DAY EXAMINATION CLOCK                        |
-|                               (UCP 600 Art. 14(b))                                 |
+| THE 5-BANKING-DAY EXAMINATION CLOCK                        |
+| (UCP 600 Art. 14(b))                                 |
 +------------------------------------------------------------------------------------+
 | Day of Presentation (Day 0)                                                        |
-|   |                                                                                |
-|   +--> Day 1 (Banking Day): OCR Intake & Federated Verification                    |
-|   +--> Day 2 (Banking Day): Deterministic Math & Legal Adjudication                 |
-|   +--> Day 3 (Banking Day): Bank Officer Sign-Off & Disposition Decision           |
-|   +--> Day 4 (Banking Day): Final Action (Honour or Refusal)                       |
-|   +--> Day 5 (Banking Day): ABSOLUTE DEADLINE (Preclusion Cliff)                   |
-|          |                                                                         |
-|          +---> If Single MT734 Notice with ALL discrepancies NOT dispatched:       |
-|                BANK IS LEGALLY PRECLUDED FROM REFUSING (UCP 600 Art. 16(f))        |
-|                Total balance-sheet loss on defective/fraudulent shipment!          |
+| | |
+| +--> Day 1 (Banking Day): OCR Intake & Federated Verification                    |
+| +--> Day 2 (Banking Day): Deterministic Math & Legal Adjudication                 |
+| +--> Day 3 (Banking Day): Bank Officer Sign-Off & Disposition Decision           |
+| +--> Day 4 (Banking Day): Final Action (Honour or Refusal)                       |
+| +--> Day 5 (Banking Day): ABSOLUTE DEADLINE (Preclusion Cliff)                   |
+| | |
+| +---> If Single MT734 Notice with ALL discrepancies NOT dispatched:       |
+| BANK IS LEGALLY PRECLUDED FROM REFUSING (UCP 600 Art. 16(f))        |
+| Total balance-sheet loss on defective/fraudulent shipment!          |
 +------------------------------------------------------------------------------------+
 ```
 

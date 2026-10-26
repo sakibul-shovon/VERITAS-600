@@ -15,47 +15,45 @@
 
 ---
 
-## 🧭 Live Quick Access & Submission Assets
+## Live Quick Access & Submission Assets
 
 | Asset / Deliverable | Public Link / Local Path | Description |
 | :--- | :--- | :--- |
-| **🌐 Live Web Application** | **[https://veritas.165.99.219.253.sslip.io](https://veritas.165.99.219.253.sslip.io)** | Production Evidence Ledger Landing & Product Story |
-| **🖥️ Bank Examiner Terminal** | **[https://veritas.165.99.219.253.sslip.io/examine](https://veritas.165.99.219.253.sslip.io/examine)** | 3-Pane Mission Control & Real-Time SSE Adjudication |
-| **📊 Baseline Benchmark** | **[https://veritas.165.99.219.253.sslip.io/evals](https://veritas.165.99.219.253.sslip.io/evals)** | Interactive Casebook & 3-Architecture Benchmark |
-| **⚡ Health & Telemetry API** | **[https://veritas.165.99.219.253.sslip.io/api/v1/health](https://veritas.165.99.219.253.sslip.io/api/v1/health)** | Live Ground-Truth Sponsor Status & Fallback Telemetry |
-| **🎬 Cinematic Launch Film** | `H:/Projects/VERITAS-600-video/out/VERITAS-600-launch-1080p.mp4` | 174s, 1080p30, Kokoro narration, burned-in captions |
-| **📑 Slide Deck (21 Slides)** | `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Plan_C-Deck.pptx` | PPTX / PDF with native editable tables & speaker notes |
-| **📝 Submission Draft** | [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) | Ready-to-paste Hackathon Portal form responses |
+| ** Live Web Application** | **[https://veritas.165.99.219.253.sslip.io](https://veritas.165.99.219.253.sslip.io)** | Production Evidence Ledger Landing & Product Story |
+| ** Bank Examiner Terminal** | **[https://veritas.165.99.219.253.sslip.io/examine](https://veritas.165.99.219.253.sslip.io/examine)** | 3-Pane Mission Control & Real-Time SSE Adjudication |
+| ** Baseline Benchmark** | **[https://veritas.165.99.219.253.sslip.io/evals](https://veritas.165.99.219.253.sslip.io/evals)** | Interactive Casebook & 3-Architecture Benchmark |
+| ** Health & Telemetry API** | **[https://veritas.165.99.219.253.sslip.io/api/v1/health](https://veritas.165.99.219.253.sslip.io/api/v1/health)** | Live Ground-Truth Sponsor Status & Fallback Telemetry |
+| ** Cinematic Launch Film** | `H:/Projects/VERITAS-600-video/out/VERITAS-600-launch-1080p.mp4` | 174s, 1080p30, Kokoro narration, burned-in captions |
+| ** Slide Deck (21 Slides)** | `H:/Projects/VERITAS-600-presentation/output/VERITAS-600-Plan_C-Deck.pptx` | PPTX / PDF with native editable tables & speaker notes |
+| ** Submission Draft** | [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) | Ready-to-paste Hackathon Portal form responses | ---
 
----
-
-## 🏛️ Executive Summary & The $3 Trillion Operational Challenge
+## Executive Summary & The $3 Trillion Operational Challenge
 
 In global merchandise trade, **Letters of Credit (LCs)** govern over **$3 Trillion** annually. When physical shipping documents (Commercial Invoices, Ocean Bills of Lading, Packing Lists, Insurance Certificates) arrive at an issuing or confirming bank, trade finance documentary credit examiners face high-stakes operational traps:
 
 ```
 +--------------------------------------------------------------------------------------------------+
-|                             THE 4 HIGH-STAKES TRADE FINANCE TRAPS                                |
+| THE 4 HIGH-STAKES TRADE FINANCE TRAPS                                |
 +--------------------------------------------------------------------------------------------------+
 | 1. The 5-Banking-Day Preclusion Cliff (UCP 600 Art. 14(b) & Art. 16(f)):                         |
-|    Banks have strictly 5 banking days to audit documents. Failing to state all valid            |
-|    discrepancies in a single SWIFT MT734 Notice of Refusal legally precludes the bank            |
-|    from refusing payment—absorbing total financial liability ($100K–$10M+) on defective cargo.  |
-|                                                                                                  |
+| Banks have strictly 5 banking days to audit documents. Failing to state all valid            |
+| discrepancies in a single SWIFT MT734 Notice of Refusal legally precludes the bank            |
+| from refusing payment—absorbing total financial liability ($100K–$10M+) on defective cargo.  |
+| |
 | 2. The Wrongful Dishonor Trap (ISBP 745 Para A23 & UCP 600 Art. 14(e)):                          |
-|    Legacy regex/rule checkers reject harmless typographical errors (e.g. "Mashine" for           |
-|    "Machine"). Under ISBP 745 Para A23, typos not altering commercial meaning are legally        |
-|    compliant. A wrongful dishonor triggers massive international commercial litigation.          |
-|                                                                                                  |
+| Legacy regex/rule checkers reject harmless typographical errors (e.g. "Mashine" for           |
+| "Machine"). Under ISBP 745 Para A23, typos not altering commercial meaning are legally        |
+| compliant. A wrongful dishonor triggers massive international commercial litigation.          |
+| |
 | 3. Stateful Amendment Confusion (UCP 600 Art. 10(c) & 10(e)):                                    |
-|    Standard flat-prompt LLMs confuse original MT700 clauses with unaccepted MT707 amendments,    |
-|    or allow prohibited partial acceptances, enforcing invalid credit limits and dates.           |
-|                                                                                                  |
+| Standard flat-prompt LLMs confuse original MT700 clauses with unaccepted MT707 amendments,    |
+| or allow prohibited partial acceptances, enforcing invalid credit limits and dates.           |
+| |
 | 4. Cross-Silo TBML & Sanctions Blindness:                                                        |
-|    Documents can be 100% textbook compliant on paper while disguising Trade-Based Money          |
-|    Laundering (TBML) over-invoicing (Z > +3.0) or designated vessels on global watchlists.       |
-|    Issuing a standard MT734 refusal violates anti-tipping-off AML laws; it legally requires     |
-|    a Regulatory Compliance Hold & AML Freeze.                                                    |
+| Documents can be 100% textbook compliant on paper while disguising Trade-Based Money          |
+| Laundering (TBML) over-invoicing (Z > +3.0) or designated vessels on global watchlists.       |
+| Issuing a standard MT734 refusal violates anti-tipping-off AML laws; it legally requires     |
+| a Regulatory Compliance Hold & AML Freeze.                                                    |
 +--------------------------------------------------------------------------------------------------+
 ```
 
@@ -63,7 +61,7 @@ In global merchandise trade, **Letters of Credit (LCs)** govern over **$3 Trilli
 
 ---
 
-## 📐 System Architecture: The Neuro-Symbolic Synthesis
+## System Architecture: The Neuro-Symbolic Synthesis
 
 ```mermaid
 flowchart TD
@@ -113,7 +111,7 @@ flowchart TD
 
 ---
 
-## 🔒 The 5 Inviolable Architectural Invariants
+## The 5 Inviolable Architectural Invariants
 
 VERITAS-600 enforces five architectural rules in code that cannot be violated:
 
@@ -138,7 +136,7 @@ VERITAS-600 enforces five architectural rules in code that cannot be violated:
 
 ---
 
-## 🏆 Mandatory Sponsor Stack Matrix
+## Mandatory Sponsor Stack Matrix
 
 For hackathon judges, every sponsor integration is **load-bearing, auditable, and transparently badged**:
 
@@ -151,7 +149,7 @@ For hackathon judges, every sponsor integration is **load-bearing, auditable, an
 
 ---
 
-## 🎯 The 3 Flagship Golden Scenarios
+## The 3 Flagship Golden Scenarios
 
 | Scenario | Operational Challenge | Baseline Failure Mode | VERITAS-600 Resolution |
 | :--- | :--- | :--- | :--- |
@@ -161,7 +159,7 @@ For hackathon judges, every sponsor integration is **load-bearing, auditable, an
 
 ---
 
-## 📊 Empirical Baseline Evaluation Benchmark
+## Empirical Baseline Evaluation Benchmark
 
 Evaluated across **10 adversarial trade finance test cases** via `apps/api/evals/compare_baselines.py`:
 
@@ -178,7 +176,7 @@ Evaluated across **10 adversarial trade finance test cases** via `apps/api/evals
 
 ---
 
-## 🖥️ 3-Pane Bank Examiner Terminal (Next.js 15)
+## 3-Pane Bank Examiner Terminal (Next.js 15)
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -191,14 +189,14 @@ Evaluated across **10 adversarial trade finance test cases** via `apps/api/evals
 │ • Interactive Spatial        │ • Stage 2: In-Situ SQL Federation        │ • Legal Citations:           │
 │   Bounding Boxes [x, y, w, h]│ • Stage 3: Deterministic Math Checks     │   ISBP 745 A23, Art. 14(e)   │
 │ • Raw PDF Text Layer Toggle  │ • Stage 4: Nemotron Legal Reasoning      │ • Generated Artifact Preview │
-│ • Complete Field Hierarchy   │ • Stage 5: Decision & Merkle Hash Chain  │ • 🔒 Digital Examiner Gate:   │
+│ • Complete Field Hierarchy   │ • Stage 5: Decision & Merkle Hash Chain  │ • Digital Examiner Gate:     │
 │ • Examiner Manual Override   │ • Expandable Zetaris SQL Query Drawer    │   [AUTHORIZE & SIGN VOUCHER] │
 └──────────────────────────────┴──────────────────────────────────────────┴──────────────────────────────┘
 ```
 
 ---
 
-## ⚡ Quickstart & Local Installation
+## Quickstart & Local Installation
 
 ### Prerequisites
 * Python 3.11+
@@ -238,7 +236,7 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 📚 Comprehensive Documentation Suite
+## Comprehensive Documentation Suite
 
 For deep technical evaluation, inspect the specialized documentation modules in `docs/`:
 
@@ -251,7 +249,7 @@ For deep technical evaluation, inspect the specialized documentation modules in 
 
 ---
 
-## 📄 License & Team Credits
+## License & Team Credits
 
 * **License:** [Apache-2.0 License](LICENSE)
 * **Team:** **Plan_C**
