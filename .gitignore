@@ -75,3 +75,9 @@ desktop.ini
 logs/
 temp/
 tmp/
+
+# Tool Caches & Scratch Output
+repomix-output.xml
+video prompt.txt
+graphify-out/cache/
+graphify-out/2026-*/
