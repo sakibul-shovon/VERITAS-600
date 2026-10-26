@@ -17,6 +17,11 @@
 ## 🔗 Submission Assets & Verification Links
 
 * **Source Code Repository:** [github.com/sakibul-shovon/VERITAS-600](https://github.com/sakibul-shovon/VERITAS-600)
+* **Live Web Application (Public HTTPS):** [https://veritas.165.99.219.253.sslip.io](https://veritas.165.99.219.253.sslip.io)
+  * Evidence Ledger Landing: `https://veritas.165.99.219.253.sslip.io/`
+  * 3-Pane Bank Examiner Terminal: `https://veritas.165.99.219.253.sslip.io/examine`
+  * Empirical 3-Baseline Casebook: `https://veritas.165.99.219.253.sslip.io/evals`
+  * Live Telemetry & Health API: `https://veritas.165.99.219.253.sslip.io/api/v1/health`
 * **Demo Video (1080p, 2m 54s):**
   * Local path: `H:/Projects/VERITAS-600-video/out/VERITAS-600-launch-1080p.mp4`
   * Duration: 174 seconds (within the 1–4 minute competition rule)
