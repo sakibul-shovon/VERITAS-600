@@ -11,14 +11,14 @@
 
 | Attribute | Current Value |
 | :--- | :--- |
-| **Current Phase** | **Phase 14 — Submission Packaging Verification & Platform Pre-Flight Complete** |
-| **Overall Progress** | **All 5 packaging checklist items verified: clean test suite (58/58 pytest, ruff clean, Next.js clean), secret scan (0 committed keys), 174s 1080p demo film ready, 21-slide PPTX/PDF deck ready, and full submission draft written.** |
-| **Active Task** | Final platform form filling and submission dispatch for Plan_C (Sakibul Hassan Shovon). |
+| **Current Phase** | **Phase 15 — Live Production Cloud Deployment Complete (HTTPS Verified)** |
+| **Overall Progress** | **Live public deployment operational at `https://veritas.165.99.219.253.sslip.io` with trusted Let's Encrypt SSL, hidden directory isolation (`/home/.veritas-600`), immutable code lock (`chattr +i`), dual systemd services (backend: 8006, frontend: 3006), and CLI manager (`manage-veritas`).** |
+| **Active Task** | Final hackathon portal submission dispatch for Plan_C (Sakibul Hassan Shovon). |
 | **Last Updated** | 2026-10-27 |
-| **Next Action Item** | **Upload demo video to YouTube/Loom/Drive, upload slide deck PDF/link, paste docs/SUBMISSION_DRAFT.md into hackathon portal, and submit.** |
+| **Next Action Item** | **Paste public live link (`https://veritas.165.99.219.253.sslip.io`) and `docs/SUBMISSION_DRAFT.md` into hackathon submission portal.** |
 
 ```
-[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED] [SUBMISSION PACKAGING: VERIFIED 5/5]
+[CORE PHASES 0–8: COMPLETE & VERIFIED] [PHASE 9: VERIFIED] [PHASE 10: COMPLETE 46/46 PYTEST] [PHASE 11: REMEDIATED 58/58 PYTEST & VERIFIED] [SUBMISSION PACKAGING: VERIFIED 5/5] [PHASE 15: LIVE VPS DEPLOYED & HTTPS VERIFIED]
 ```
 
 ---
